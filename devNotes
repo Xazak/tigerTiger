@@ -1,0 +1,11 @@
+04 Oct 2018 - 12:18
+Having trouble getting libtcod to build from source for linux development:
+--  SDL2 installed correctly from slackbuild
+--  libtcod build fails at
+		./configure CFLAGS='-02'
+	--  Check config.log for explicit details; error states that
+			C compiler was unable to build executables
+		apparently due to unsupported compiler options like '-02'
+	--  Still looking for relevant information...
+	!!	Turns out the correct option is '-O2', NOT '-02' !!
+--	libtcod appears to have installed correctly, need to try some builds and check
