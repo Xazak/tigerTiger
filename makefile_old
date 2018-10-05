@@ -30,8 +30,8 @@
 
 #g++ src/*.cpp -o tuto -Iinclude -L. -ltcod -ltcodxx -Wl,-rpath=. -Wall
 #
-CXXFLAGS=-Wall -g -I../include
-LDFLAGS=-ltcod -ltcodxx
+CXXFLAGS=-Wall -g -Iinclude
+LDFLAGS=-ltcod -ltcodgui
 
 # custom variables
 # note that variables can be recursively defined by using $(foo) in the def:
@@ -39,10 +39,12 @@ LDFLAGS=-ltcod -ltcodxx
 #	BETA  = $(ALPHA)
 
 NAME=app
+OBJDIR=obj
+SRCDIR=src
 
 # rules
-genericRule:		main.cpp
-	$(CXX) $(CXXFLAGS) $< -o $(NAME)
+all:		$(SRCDIR)/*.cpp
+	$(CXX) $(CXXFLAGS) $< -o $(NAME) 
 
 # misc
 
@@ -53,4 +55,4 @@ genericRule:		main.cpp
 
 # this rule should NEVER be first, or else make will invoke it by default!
 clean:		#cleans up the working dir
-	rm -f *.o
+	rm -f $(OBJDIR)/*.o
