@@ -20,6 +20,7 @@ public:
    void computeFOV();
    void render() const;
    void addMonster(int x, int y);
+   void addItem(int x, int y);
    unsigned int getScent(int x, int y) const;
    unsigned int currentScentValue;
 

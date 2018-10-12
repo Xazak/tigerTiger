@@ -16,6 +16,14 @@ float Destructible::takeDamage(Actor *owner, float damage) {
     }
     return damage;
 }
+float Destructible::heal(float amount) {
+    curHP += amount;
+    if (curHP > maxHP) {
+        amount -= curHP - maxHP;
+        curHP = maxHP;
+    }
+    return amount;
+}
 void Destructible::die(Actor *owner) {
     // transform the actor into a corpse
     owner->ch = '%';
