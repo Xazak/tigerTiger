@@ -6,9 +6,12 @@ public:
         // symbols located outside the 'normal' range can be used
     TCODColor col; // symbol color
     const char *name; // actor's name
-    char name [MAX_NAME_LENGTH];
+    bool blocks; // does this actor block movement?
+    Attacker *attacker; // something that deals damage
+    Destructible *destructible; // something that can be damaged
+    Ai *ai; // something sentient
 
     Actor(int x, int y, int ch, const char *name, const TCODColor &col);
     void update();
-    bool moveOrAttack(int x, int y);
+    void render() const;
 };

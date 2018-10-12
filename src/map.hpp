@@ -3,7 +3,8 @@ static const int MAX_ROOM_MONSTERS = 3;
 // public Tile class for map objects; passable by default
 struct Tile {
    bool explored; // have we been here already?
-   Tile(): explored(false) {}
+   unsigned int scent; // amount of player scent on the part
+   Tile(): explored(false), scent(0) {}
 };
 
 class Map {
@@ -19,6 +20,8 @@ public:
    void computeFOV();
    void render() const;
    void addMonster(int x, int y);
+   unsigned int getScent(int x, int y) const;
+   unsigned int currentScentValue;
 
 protected:
    Tile *tiles;

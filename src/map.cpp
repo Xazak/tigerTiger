@@ -1,7 +1,5 @@
-#include "libtcod.hpp"
-#include "map.hpp"
-#include "actor.hpp"
-#include "engine.hpp"
+#include <math.h>
+#include "main.hpp"
 
 static const int ROOM_MAX_SIZE=12;
 static const int ROOM_MIN_SIZE=6;
@@ -35,7 +33,7 @@ class BspListener : public ITCODBspCallback {
             return true;
         }
 };
-Map::Map(int width, int height) : width(width), height(height) {
+Map::Map(int width, int height) : width(width), height(height), currentScentValue(SCENT_THRESHOLD) {
     tiles = new Tile[width*height];
     map = new TCODMap(width, height);
     TCODBsp bsp(0, 0, width, height);
@@ -54,6 +52,9 @@ bool Map::isExplored(int x, int y) const {
     return tiles[x + y * width].explored;
 }
 bool Map::isInFOV(int x, int y) const {
+    if (x < 0 || x >= width || y < 0 || y >= height) {
+        return false;
+    }
     if (map->isInFov(x, y)) {
         tiles[x + y * width].explored = true;
         return true;
@@ -66,7 +67,7 @@ bool Map::canWalk(int x, int y) const {
     }
     for (Actor **iterator=engine.actors.begin(); iterator != engine.actors.end(); iterator++) {
         Actor *actor = *iterator;
-        if (actor->x == x && actor->y == y) {
+        if (actor->blocks && actor->x == x && actor->y == y) {
             return false;   // there is an actor in the way
         }
     }
@@ -74,6 +75,21 @@ bool Map::canWalk(int x, int y) const {
 }
 void Map::computeFOV() {
     map->computeFov(engine.player->x, engine.player->y, engine.fovRadius);
+    // update scent field
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            if (isInFOV(x, y)) {
+                unsigned int oldScent = getScent(x, y);
+                int dx = x - engine.player->x;
+                int dy = y - engine.player->y;
+                long distance = (int)sqrt(dx * dx + dy * dy);
+                unsigned int newScent = currentScentValue - distance;
+                if (newScent > oldScent) {
+                    tiles[x + y * width].scent = newScent;
+                }
+            }
+        }
+    }
 }
 void Map::render() const {
     static const TCODColor darkWall(0, 0, 100);
@@ -83,10 +99,15 @@ void Map::render() const {
 
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
+            int scent = SCENT_THRESHOLD - (currentScentValue - getScent(x, y));
+            scent = CLAMP(0, 10, scent);
+            float sc = scent * 0.1f;
             if (isInFOV(x, y)) {
-                TCODConsole::root->setCharBackground(x, y, isWall(x, y) ? lightWall : lightGround);
+                TCODConsole::root->setCharBackground(x, y, isWall(x, y) ? lightWall : TCODColor::lightGrey * sc);
             } else if (isExplored(x, y)) {
-                TCODConsole::root->setCharBackground(x, y, isWall(x, y) ? darkWall : darkGround);
+                TCODConsole::root->setCharBackground(x, y, isWall(x, y) ? darkWall : TCODColor::lightGrey * sc);
+            } else if (!isWall(x, y)) {
+                TCODConsole::root->setCharBackground(x, y, TCODColor::white * sc);
             }
         }
     }
@@ -123,7 +144,7 @@ void Map::createRoom (bool first, int x1, int y1, int x2, int y2) {
             if (canWalk(x, y)) {
                 addMonster(x, y);
             }
-            nbMonster--;
+            nbMonsters--;
         }
     }
 }
@@ -131,9 +152,20 @@ void Map::addMonster(int x, int y) {
     TCODRandom *rng = TCODRandom::getInstance();
     if (rng->getInt(0, 100) < 80) {
         // create an orc
-        engine.actors.push(new Actor(x, y, 'o', "orc", TCODColor::desaturatedGreen));
+        Actor *orc = new Actor (x, y, 'o', "orc", TCODColor::desaturatedGreen);
+        orc->destructible = new MonsterDestructible(10, 0, "dead orc");
+        orc->attacker = new Attacker(3);
+        orc->ai = new MonsterAi();
+        engine.actors.push(orc);
     } else {
         // create a troll
-        engine.actors.push(new Actor(x, y, 'T', "troll", TCODColor::darkerGreen));
+        Actor *troll = new Actor(x, y, 'T', "troll", TCODColor::darkerGreen);
+        troll->destructible = new MonsterDestructible(16, 1, "troll carcass");
+        troll->attacker = new Attacker(4);
+        troll->ai = new MonsterAi();
+        engine.actors.push(troll);
     }
+}
+unsigned int Map::getScent(int x, int y) const {
+    return tiles[x + y * width].scent;
 }
