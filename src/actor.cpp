@@ -1,3 +1,4 @@
+#include <math.h>
 #include "main.hpp"
 
 // x, y coords; actor glyph; glyph color
@@ -18,4 +19,9 @@ void Actor::render() const {
 }
 void Actor::update() {
     if (ai) ai->update(this);
+}
+float Actor::getDistance(int cx, int cy) const {
+    int dx = x - cx;
+    int dy = y - cy;
+    return sqrtf(dx * dx + dy * dy);
 }
