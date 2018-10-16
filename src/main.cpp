@@ -3,12 +3,14 @@
 Engine engine(80, 50);
 
 int main() {
-// outermost game loop: runs until player closes game window
-while ( !TCODConsole::isWindowClosed() ) {
-    engine.update();
-    engine.render();
-    TCODConsole::flush();
-    }
-return 0;
+	engine.load();
+	// outermost game loop: runs until player closes game window
+	while ( !TCODConsole::isWindowClosed() ) {
+		engine.update();
+		engine.render();
+		TCODConsole::flush();
+		}
+	engine.save();
+	return 0;
 }
 
