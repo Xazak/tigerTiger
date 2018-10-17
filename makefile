@@ -12,14 +12,14 @@ OBJS=$(SRCS:.cpp=.o)
 ifeq ($(shell sh -c 'uname -s'),Linux)
 #  LIBS=-L. -ltcod_debug -ltcodgui_debug -Wl,-rpath=.
   LIBS=-L. -ltcod -ltcodgui -Wl,-rpath=.
-else
-  LIBS=-Llib -ltcod-mingw-debug -static-libgcc -static-libstdc++
+#else
+#  LIBS=-Llib -ltcod-mingw-debug -static-libgcc -static-libstdc++
 endif
 CXXFLAGS=-Wall -g -I$(INCDIR)
 LDFLAGS=$(LIBS)
 
 tigerGame:	$(OBJS)
-	$(CXX) $(OBJS) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDFLAGS)
 
 $(OBJDIR)/%.o:	$(SRCDIR)/%.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS)
