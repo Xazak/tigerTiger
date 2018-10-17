@@ -26,6 +26,7 @@ class Engine {
 		bool pickATile(int *x, int *y, float maxRange = 0.0f);
 		Actor *getActor(int x, int y) const;
 		void init();
+		void term();
 		void save();
 		void load();
 };

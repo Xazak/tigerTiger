@@ -9,9 +9,13 @@ Engine::Engine(int screenWidth, int screenHeight) :
 
 }
 Engine::~Engine() {
-	actors.clearAndDelete(); //TCOD helper fxn
-	delete map;
+	term();
 	delete gui;
+}
+void Engine::term() {
+	actors.clearAndDelete();
+	if (map) delete map;
+	gui->clear();
 }
 void Engine::init() {
 	// create a player object
@@ -26,11 +30,16 @@ void Engine::init() {
 	map->init(true);
 	gui->message(TCODColor::red,
 		"Welcome stranger!\nPrepare to perish in the Tombs!");
+	gameStatus=STARTUP;
 }
 void Engine::update() {
 	if (gameStatus == STARTUP) map->computeFOV();
 	gameStatus = IDLE;
 	TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &lastKey, &mouse);
+	if (lastKey.vk == TCODK_ESCAPE) {
+		save();
+		load();
+	}
 	player->update();
 	if (gameStatus == NEW_TURN) {
 		map->currentScentValue++;
@@ -142,6 +151,46 @@ void Engine::save() {
 	}
 }
 void Engine::load() {
+	engine.gui->menu.clear();
+	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
+	if (TCODSystem::fileExists("game.sav")) {
+		engine.gui->menu.addItem(Menu::CONTINUE, "Continue");
+	}
+	engine.gui->menu.addItem(Menu::EXIT, "Exit");
+	Menu::MenuItemCode menuItem = engine.gui->menu.pick();
+	if (menuItem == Menu::EXIT || menuItem == Menu::NONE) {
+		// Exit or user closed window
+		exit(0);
+	} else if (menuItem == Menu::NEW_GAME) {
+		// New game
+		engine.term();
+		engine.init();
+	} else {
+		TCODZip zip;
+		// Continue a saved game
+		engine.term();
+		zip.loadFromFile("game.sav");
+		int width = zip.getInt();
+		int height = zip.getInt();
+		map = new Map(width, height);
+		map->load(zip);
+		player = new Actor(0, 0, 0, NULL, TCODColor::white);
+		actors.push(player);
+		player->load(zip);
+		int nbActors = zip.getInt();
+		while (nbActors > 0) {
+			Actor *actor = new Actor(0, 0, 0, NULL, TCODColor::white);
+			actor->load(zip);
+			actors.push(actor);
+			nbActors--;
+		}
+		// the message log
+		gui->load(zip);
+		// force FOV computation
+		gameStatus = STARTUP;
+	}
+}
+/*void Engine::load() {
 	if (TCODSystem::fileExists("game.sav")) {
 		TCODZip zip;
 		zip.loadFromFile("game.sav");
@@ -167,4 +216,4 @@ void Engine::load() {
 	} else {
 		engine.init();
 	}
-}
+}*/
