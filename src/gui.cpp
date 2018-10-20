@@ -19,13 +19,15 @@ void Gui::render() {
 	guiCon->setDefaultBackground(TCODColor::black);
 	guiCon->clear();
 	// draw the health bar
-	renderBar(1, 1, BAR_WIDTH, "HP", 69.0, 70.0,
+	renderBar(1, 1, BAR_WIDTH, "HP", 69.0f, 70.0f,
 		TCODColor::lightRed, TCODColor::darkerRed);
 	// draw the message log
+	int y = 1;
+	float colorCoef = 0.4f;
 	for (Message **iter = log.begin(); iter != log.end(); iter++) {
-		Message *message = *iter;
-		guiCon->setDefaultForeground(message->color * colorCoef);
-		guiCon->print(MSG_X, y, message->text);
+		Message *logLine = *iter;
+		guiCon->setDefaultForeground(logLine->color * colorCoef);
+		guiCon->printf(MSG_X, y, logLine->msgText);
 		y++;
 		if (colorCoef < 1.0f) {
 			colorCoef += 0.3f;
@@ -83,13 +85,16 @@ void Gui::renderBar(int x, int y, int width, const char *name, float curValue,
 	// print the text on top of the bar
 	guiCon->setDefaultForeground(TCODColor::white); // set text color
 	// draw the text: xy coords, backgrnd color, justification, [printf()]
-	guiCon->printEx((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
+	guiCon->printf((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
 		"%s : %g/%g", name, curValue, maxValue);
 }
-Gui::Message::Message(const char *text, const TCODColor &color):
+Gui::Message::Message(const char *inputText, const TCODColor &color):
 	msgText(strdup(inputText)), color(color) { }
 Gui::Message::~Message() {
 	free(msgText);
+}
+Menu::~Menu() {
+	clear();
 }
 void Menu::clear() {
 	menuListItems.clearAndDelete();
@@ -106,14 +111,15 @@ Menu::MenuItemCode Menu::pick() {
 	while (!TCODConsole::isWindowClosed()) {
 //		img.blit2x(TCODConsole::root, 0, 0); // blit the bkgrnd img on screen
 		int currentItem = 0;
-		for (MenuItem **iter = items.begin(); iter != items.end(); iter++) {
+		for (MenuItem **iter = menuListItems.begin();
+				iter != menuListItems.end(); iter++) {
 			// recolor menu text to act as cursor
 			if (currentItem == selectedItem) {
 				TCODConsole::root->setDefaultForeground(TCODColor::lighterOrange);
 			} else {
 				TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
 			}
-			TCODConsole::root->print(10, 10 + currentItem * 3, (*iter)->label);
+			TCODConsole::root->printf(10, 10 + currentItem * 3, (*iter)->label);
 			currentItem++;
 		}
 		TCODConsole::flush(); //?
@@ -124,14 +130,14 @@ Menu::MenuItemCode Menu::pick() {
 			case TCODK_UP:
 				selectedItem--;
 				if (selectedItem < 0) {
-					selectedItem = items.size() - 1;
+					selectedItem = menuListItems.size() - 1;
 				}
 				break;
 			case TCODK_DOWN:
-				selectedItem = (selectedItem + 1) % items.size();
+				selectedItem = (selectedItem + 1) % menuListItems.size();
 				break;
 			case TCODK_ENTER:
-				return items.get(selectedItem)->code;
+				return menuListItems.get(selectedItem)->code;
 			default:
 				break;
 		}

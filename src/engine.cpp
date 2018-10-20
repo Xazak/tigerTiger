@@ -125,3 +125,68 @@ Actor *Engine::getActor(int x, int y) const {
 	}
 	return NULL;
 }
+void Engine::save() {
+	/*if (player->destructible->isDead()) {
+		TCODSystem::deleteFile("game.sav");
+	} else {
+		TCODZip zip;
+		//save the map first
+		zip.putInt(map->width);
+		zip.putInt(map->height);
+		map->save(zip);
+		// then the player
+		player->save(zip);
+		// then the other actors
+		zip.putInt(actors.size()-1);
+		for (Actor **it = actors.begin(); it != actors.end(); it++) {
+			if (*it != player) {
+				(*it)->save(zip);
+			}
+		}
+		// then the message log
+		gui->save(zip);
+		zip.saveToFile("game.sav");
+	}*/
+}
+void Engine::load() {
+	engine.gui->menu.clear(); // wipe the menu to ensure no artifacts
+	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
+	// add "Continue" if there's a save game to continue with
+	if (TCODSystem::fileExists("game.sav")) {
+		engine.gui->menu.addItem(Menu::CONTINUE, "Continue");
+	}
+	engine.gui->menu.addItem(Menu::EXIT, "Exit");
+	// handle menu choice input
+	Menu::MenuItemCode menuItem = engine.gui->menu.pick();
+	if (menuItem == Menu::EXIT || menuItem == Menu::NONE) {
+		// Exit or user closed window
+		exit(0);
+	} else if (menuItem == Menu::NEW_GAME) {
+		// New game
+		engine.term();
+		engine.init();
+	} else {
+		/*TCODZip zip;
+		// Continue a saved game
+		engine.term();
+		zip.loadFromFile("game.sav");
+		int width = zip.getInt();
+		int height = zip.getInt();
+		map = new Map(width, height);
+		map->load(zip);
+		player = new Actor(0, 0, 0, NULL, TCODColor::white);
+		actors.push(player);
+		player->load(zip);
+		int nbActors = zip.getInt();
+		while (nbActors > 0) {
+			Actor *actor = new Actor(0, 0, 0, NULL, TCODColor::white);
+			actor->load(zip);
+			actors.push(actor);
+			nbActors--;
+		}
+		// the message log
+		gui->load(zip);*/
+		// force FOV computation
+		gameStatus = STARTUP;
+	}
+}

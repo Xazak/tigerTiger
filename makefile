@@ -8,6 +8,7 @@ OBJDIR=src
 SRCS=$(wildcard src/*.cpp)
 OBJS=$(SRCS:.cpp=.o)
 
+CXXFLAGS=-Wall -g -I$(INCDIR) -std=c++14
 # check if on linux or windows and set the linker flags accordingly
 ifeq ($(shell sh -c 'uname -s'),Linux)
 #  LIBS=-L. -ltcod_debug -ltcodgui_debug -Wl,-rpath=.
@@ -15,7 +16,6 @@ ifeq ($(shell sh -c 'uname -s'),Linux)
 #else
 #  LIBS=-Llib -ltcod-mingw-debug -static-libgcc -static-libstdc++
 endif
-CXXFLAGS=-Wall -g -I$(INCDIR)
 LDFLAGS=$(LIBS)
 
 tigerGame:	$(OBJS)
@@ -27,6 +27,9 @@ $(OBJDIR)/%.o:	$(SRCDIR)/%.cpp
 #GUARANTEED WORKING COMPILE LINE
 basic:
 	g++ src/*.cpp -o tigerGame -Iinclude/libtcod -L. -ltcod -ltcodgui -Wl,-rpath=. -Wall
+
+deprecated:	$(OBJS)
+	$(CXX) -E -dD $@ $^ -Wall -I$(INCDIR) $(LDFLAGS)
 
 .PHONY:	clean
 

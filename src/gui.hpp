@@ -29,8 +29,8 @@ class Gui {
 		TCODConsole *guiCon; // pointer to the GUI console
 		// draw a two-color bar on the screen (ie a health bar)
 
-		void renderBar(int x, int y, int width, int height, const char *name,
-			float curValue, float maxValue, const TCODColor &foreColor,
+		void renderBar(int x, int y, int width, const char *name,
+			float value, float maxValue, const TCODColor &barColor,
 			const TCODColor &backColor);
 
 		struct Message {
