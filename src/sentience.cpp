@@ -1,28 +1,29 @@
 #include <stdio.h>
 #include <math.h>
+#include <iostream>
 #include "main.hpp"
 
 void PlayerSentience::update(Actor *subject) {
 	// if the player's dead, don't even try to update
-	if (subject->destructible && subject->destructible->isDead()) {
-		clog << "*** PlayerSentience::update() > Player is dead!\n";
+	if (subject->mortality && subject->mortality->isDead()) {
+		std::clog << "*** PlayerSentience::update(): Player is dead!\n";
 		return;
 	}
-	int dx = 0; // target x-coord
-	int dy = 0; // target y-coord
+	int xdiff = 0; // target x-coord
+	int ydiff = 0; // target y-coord
 	// discover our target square
 	switch (engine.lastKey.vk) {
 		case TCODK_UP:		ydiff =- 1; break;
 		case TCODK_DOWN:	ydiff =  1; break;
 		case TCODK_LEFT:	xdiff =- 1; break;
 		case TCODK_RIGHT:	xdiff =  1; break;
-		case TCODK_CHAR: handleActionKey(subject, engine.lastKey.c); break;
+		case TCODK_CHAR: handleActionInput(subject, engine.lastKey.c); break;
 		default: break;
 	}
 	// update if we've changed position
-	if (dx != 0 || dy != 0) {
+	if (xdiff != 0 || ydiff != 0) {
 		engine.gameStatus=Engine::NEW_TURN;
-		if (moveOrAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
+		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
 			engine.map->computeFOV();
 		}
 	}
@@ -41,13 +42,13 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	subject->ypos = targety;
 	return true;
 }
-void PlayerAi::handleActionInput(Actor *subject, int inputKeystroke) {
+void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	// handles all player keystroke event translation
 	switch(inputKeystroke) {
 		case 'd': { //DROP item
-			Actor *object = choseFromInventory(subject);
+			Actor *object = chooseFromInventory(subject);
 			if (object) {
-				object->pickable->drop(object, subject);
+				object->portable->drop(object, subject);
 				engine.gameStatus = Engine::NEW_TURN;
 			}
 			break;
@@ -58,8 +59,8 @@ void PlayerAi::handleActionInput(Actor *subject, int inputKeystroke) {
 				Actor *object = *iter;
 				// is the object get-able AND
 				// AND is the subject standing over the object?
-				if (object->pickable && object->xpos == subject->xpos && actor->ypos == subject->ypos) {
-					if (actor->pickable->pickUp(owner, subject)) {
+				if (object->portable && object->xpos == subject->xpos && actor->ypos == subject->ypos) {
+					if (actor->portable->pickUp(subject, subject)) {
 						found = true;
 						engine.gui->message(TCODColor::lightGrey, "You pick up the %s.", object->name);
 						break;
@@ -74,20 +75,59 @@ void PlayerAi::handleActionInput(Actor *subject, int inputKeystroke) {
 			}*/
 			// Check the ground under the player's feet for things to GET
 			// is there actually anything on this tile?
-			if (engine.map->tiles[subject->xpos + subject->ypos * engine.map->width]->itemList) { }
+//			if (engine.map->tiles[subject->xpos + subject->ypos * engine.map->width]->itemList) { }
 			// if there is, AND there's just the one thing, pick it up
 			// if there's more than one object, invoke a menu
 			engine.gameStatus=Engine::NEW_TURN;
 			break;
 		}
 		case 'i': { //display inventory
-			Actor *actor = choseFromInventory(subject);
+			// this method requires the player to be Portable, which makes no
+			// sense at all - when would an NPC pick up the Player? - so the
+			// logic for invoking the player's inventory self-container should
+			// be moved elsewhere, probably into the Container class itself?
+			Actor *actor = chooseFromInventory(subject);
 			if (actor) {
-				actor->pickable->use(actor, subject);
+				actor->portable->use(actor, subject);
 				engine.gameStatus = Engine::NEW_TURN;
 			}
 		break;
 		}
-
 	}
 }
+Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
+	// set up the inventory selection menu
+	static const int INVENTORY_WIDTH = 50;
+	static const int INVENTORY_HEIGHT = 28;
+	static TCODConsole con(INVENTORY_WIDTH, INVENTORY_HEIGHT);
+	// display the inventory menu frame
+	con.setDefaultForeground(TCODColor::darkRed);
+	con.printFrame(0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT, true, TCOD_BKGND_DEFAULT, "Inventory");
+	// display the inventory list
+	con.setDefaultForeground(TCODColor::white);
+	int shortcut = 'a';
+	int index = 1;
+	for (Actor **iter = subject->container->inventory.begin();
+		iter != subject->container->inventory.end(); iter++) {
+			Actor *object = *iter;
+			con.printf(2, index, "(%c) %s", shortcut, object->name);
+			shortcut++;
+			index++;
+	}
+	// blit the console onto the main screen
+	TCODConsole::blit(&con, 0, 0, INVENTORY_WIDTH, INVENTORY_HEIGHT,
+		TCODConsole::root, (engine.screenWidth / 2) - (INVENTORY_WIDTH / 2),
+		(engine.screenHeight / 2 ) - (INVENTORY_HEIGHT / 2));
+	TCODConsole::flush();
+	// wait for a keypress
+	TCOD_key_t key;
+	TCODSystem::waitForEvent(TCOD_EVENT_KEY_PRESS, &key, NULL, true);
+	if (key.vk == TCODK_CHAR) {
+		int actorIndex = key.c - 'a';
+		if (actorIndex >= 0 && actorIndex < subject->container->inventory.size()) {
+			return subject->container->inventory.get(actorIndex);
+		}
+	}
+	return NULL;
+}
+

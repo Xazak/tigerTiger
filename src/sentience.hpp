@@ -15,7 +15,7 @@ class PlayerSentience: public Sentience {
 	protected:
 		void handleActionInput(Actor *subject, int inputKeystroke);
 		bool decideMoveAttack(Actor *subject, int targetx, int targety);
-		Actor *choseFromInventory(Actor *subject);
+		Actor *chooseFromInventory(Actor *subject);
 };
 class AnimalSentience: public Sentience {
 	public:

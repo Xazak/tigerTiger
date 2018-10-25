@@ -19,6 +19,14 @@ void Engine::term() {
 void Engine::init() {
 	// create a player object
 	player = new Actor(40, 25, '@', TCODColor::orange, "player");
+	player->sentience = new PlayerSentience();
+	std::clog << "*** sentience OK\n";
+	player->mortality = new PlayerMortality(69, 47, "your corpse");
+	std::clog << "*** mortality OK\n";
+	player->container = new Container(26);
+	std::clog << "*** inventory OK\n";
+	//player-pickable ?
+	//player-attack
 	// specific player ability initializations go here
 	actors.push(player);
 	// initialize the map, show the MOTD
@@ -54,9 +62,9 @@ void Engine::render() {
 	map->render(); // draw the map
 	gui->render(); // update the gui
 	// draw the actors
-	for (Actor **iter=actors.begin(); iter != actors.end(); iter++) {
+	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
 		Actor *actor = *iter;
-		if (map->isVisible(actor->actorX, actor->actorY)) {
+		if (map->isVisible(actor->xpos, actor->ypos)) {
 			actor->render();
 		}
 		player->render();
@@ -119,7 +127,7 @@ Actor *Engine::getActor(int x, int y) const {
 	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
 		Actor *actor = *iter;
 //		if (actor->x == x && actor->y == y && actor->destructible && !actor->destructible->isDead()) {
-		if (actor->actorX == x && actor->actorY == y) {
+		if (actor->xpos == x && actor->ypos == y) {
 			return actor;
 		}
 	}
