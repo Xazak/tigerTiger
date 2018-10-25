@@ -10,4 +10,4 @@ class Actor; // this is a 'forward declaration'
 #include "gui.hpp"
 #include "map.hpp"
 #include "engine.hpp"
-
+#include "sentience.hpp"

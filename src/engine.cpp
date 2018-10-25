@@ -56,7 +56,7 @@ void Engine::render() {
 	// draw the actors
 	for (Actor **iter=actors.begin(); iter != actors.end(); iter++) {
 		Actor *actor = *iter;
-		if (map->isInFOV(actor->actorX, actor->actorY)) {
+		if (map->isVisible(actor->actorX, actor->actorY)) {
 			actor->render();
 		}
 		player->render();
@@ -90,7 +90,7 @@ bool Engine::pickATile(int *x, int *y, float maxRange) {
 		// highlight the possible range
 		for (int cx = 0; cx < map->width; cx++) {
 			for (int cy = 0; cy < map->height; cy++) {
-				if (map->isInFOV(cx, cy) && (maxRange == 0 || player->getDistance(cx, cy) <= maxRange)) {
+				if (map->isVisible(cx, cy) && (maxRange == 0 || player->getDistance(cx, cy) <= maxRange)) {
 					TCODColor color = TCODConsole::root->getCharBackground(cx, cy);
 					color = color * 1.2f;
 					TCODConsole::root->setCharBackground(cx, cy, color);

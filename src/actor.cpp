@@ -3,7 +3,7 @@
 
 Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color, const char *name):
 	actorX(inputX), actorY(inputY), sigil(sigil), color(color), name(name),
-	blockMovement(true) { }
+	obstructs(true) { }
 Actor::~Actor() {
 	// destructor
 }
