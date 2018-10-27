@@ -1,5 +1,8 @@
 #include "main.hpp"
 
+static const int MAP_HEIGHT = 100;
+static const int MAP_WIDTH = 100;
+
 Engine::Engine(int screenWidth, int screenHeight):
 	gameStatus(STARTUP), player(NULL), map(NULL), fovRadius(10),
 	screenWidth(screenWidth), screenHeight(screenHeight) {
@@ -18,19 +21,22 @@ void Engine::term() {
 }
 void Engine::init() {
 	// create a player object
-	player = new Actor(40, 25, '@', TCODColor::orange, "player");
+//	int xLoc = (engine.screenWidth - (engine.screenWidth / 4)) / 2;
+//	int yLoc = (engine.screenHeight - (engine.screenHeight / 4)) / 2;
+//	player = new Actor(xLoc, yLoc, '@', TCODColor::orange, "player");
+	player = new Actor(0, 0, '@', TCODColor::orange, "player");
 	player->sentience = new PlayerSentience();
-	std::clog << "*** sentience OK\n";
+//	LOGMSG("sentience OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
-	std::clog << "*** mortality OK\n";
+//	LOGMSG("mortality OK");
 	player->container = new Container(26);
-	std::clog << "*** inventory OK\n";
+//	LOGMSG("inventory OK");
 	//player-pickable ?
 	//player-attack
 	// specific player ability initializations go here
 	actors.push(player);
 	// initialize the map, show the MOTD
-	map = new Map(80, 43); // init a new map
+	map = new Map(MAP_WIDTH, MAP_HEIGHT); // init a new map
 	map->init(true);
 	gui->message(TCODColor::orange,
 		"Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");

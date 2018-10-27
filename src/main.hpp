@@ -15,3 +15,23 @@ class Actor; // this is a 'forward declaration'
 #include "map.hpp"
 #include "engine.hpp"
 #include <iostream>
+
+// *** DEBUG TOOLS AND DEFINITIONS ***
+// Enable debugging macros; comment out to remove
+#define DEBUG
+
+// Defines a debug macro for sending information to cerr easily. The contents
+// of x will be rendered as literally as possible. Include quotes and newlines.
+//		xxxMSG( "Debug Message\n" )
+// The do-while statement ensures that x is interpreted correctly.
+#ifdef DEBUG
+#define LOGMSG(x) do { std::clog << __FILE__ << ":" << __LINE__ << ":" << __func__ << "() - " << x << std::endl; } while (0)
+#else
+#define LOGMSG(x)
+#endif
+
+#ifdef DEBUG
+#define ERRMSG(x) do { std::cerr << __FILE__ << ":" << __LINE__ << ":" << __func__ << "() - " << x << std::endl; } while (0)
+#else
+#define ERRMSG(x)
+#endif

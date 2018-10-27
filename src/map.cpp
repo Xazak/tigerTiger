@@ -1,5 +1,4 @@
 #include <math.h>
-#include <iostream>
 #include "main.hpp"
 
 static const int ROOM_MAX_SIZE = 12;
@@ -40,63 +39,63 @@ class BspListener : public ITCODBspCallback {
 		}
 };
 // The following code is definitely necessary for the map itself
-/*bool Tile::occupied(int x, int y) {
-	for (Actor **actor = engine.actors.begin(); actor != engine.actors.end(); actor++) {
-		if (actor->x == x && actor->y == y) return true;
-	}
-	return false;
-}*/
-
-Map::Map(int width, int height) : width(width), height(height) {
+Tile::Tile(): glyph(43), foreColor(25, 25, 25), backColor(127, 127, 127),
+	explored(false), occupant(NULL) { }
+//Tile::~Tile() { }
+Map::Map(int inputWidth, int inputHeight) : width(inputWidth), height(inputHeight) {
 	// pick a random seed between 0 and (a big number)
 	seed = TCODRandom::getInstance()->getInt(0, 0x7FFFFFFF);
 }
 Map::~Map() {
 	delete [] tiles;
-	delete map;
+	delete visionMap;
 }
 void Map::computeFOV() {
-	map->computeFov(engine.player->xpos, engine.player->ypos, engine.fovRadius);
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-			if (isVisible(x, y)) {
-//				int dx = x - engine.player->xpos;
-//				int dy = y - engine.player->ypos;
-//				long distance = (int)sqrt(dx * dx + dy * dy); // what for?
-			}
-		}
-	}
+	visionMap->computeFov(engine.player->xpos, engine.player->ypos, engine.fovRadius);
 }
 void Map::render() const {
-	// actually draw the map
-	static const TCODColor darkWall(0, 0, 100);
-	static const TCODColor darkGround(50, 50, 150);
-	static const TCODColor lightWall(130, 110, 50);
-	static const TCODColor lightGround(200, 180, 50);
+	// render the map on the player's screen
+	static const float beyondFOVMod = 0.5f;
+	// draw every tile according to its internal values
+	Tile *target = &tiles[0];
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
+			target = &tiles[x + y * width];
 			if (isVisible(x, y)) {
-				TCODConsole::root->setCharBackground(x, y, isObstructed(x, y) ? lightWall : TCODColor::lightGrey);
+				// draw visible tiles first
+//				engine.gui->renderTile(x, y, target->glyph, target->foreColor, target->backColor);
+//				TCODConsole::root->putCharEx(x, y, target->glyph,
+				engine.gui->viewport->putCharEx(x, y, target->glyph,
+						target->foreColor, target->backColor);
+//				Gui::viewport->con->putCharEx(x, y, target->glyph,
+//						target->foreColor, target->backColor);
 			} else if (isExplored(x, y)) {
-				TCODConsole::root->setCharBackground(x, y, isObstructed(x, y) ? darkWall : TCODColor::lightGrey);
-			} else if (!isObstructed(x, y)) {
-				TCODConsole::root->setCharBackground(x, y, TCODColor::white);
+				// draw unseen, but explored tiles
+//				TCODConsole::root->putCharEx(x, y, target->glyph,
+//						target->foreColor - (target->foreColor * beyondFOVMod),
+//						target->backColor - (target->backColor * beyondFOVMod));
 			}
+			// don't bother drawing anything else
 		}
 	}
+	TCODConsole::blit(engine.gui->viewport, 0, 0, 0, 0, TCODConsole::root,
+		engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight());
+	// this is going to be roughly the place to insert controls for visual FX
 }
 void Map::init(bool withActors) {
 	// create the map objects
 	rng = new TCODRandom(seed, TCOD_RNG_CMWC);
-	tiles = new Tile[width*height];		// use x + y * width to locate a tile
-	map = new TCODMap(width, height);
+	tiles = new Tile[width * height]; // use x + y * width to locate a tile
+	visionMap = new TCODMap(width, height); // invokes the TCOD FOV map object
 	// invoke the BSP tree tools to generate a dungeon graph
 //	TCODBsp bsp(0, 0, width, height);
 //	bsp.splitRecursive(rng, 8, ROOM_MAX_SIZE, ROOM_MAX_SIZE, 1.5f, 1.5f);
 //	BspListener listener(*this);
 //	bsp.traverseInvertedLevelOrder(&listener, (void *)withActors);
 	// invoke our custom mapgen code instead
-	generateMap(true, width, height);
+	LOGMSG(engine.player->xpos << ", " << engine.player->ypos);
+	generateTerrain(true, width, height); // this is my function
+	LOGMSG(engine.player->xpos << ", " << engine.player->ypos);
 }
 /*void Map::save(TCODZip &zip) {
 	zip.putInt(seed);
@@ -112,21 +111,26 @@ void Map::load(TCODZip &zip) {
 	}
 }*/
 // should these be overloaded to use Tile pointers as well?
+bool Map::isWall(int x, int y) const {
+	return !visionMap->isWalkable(x, y);
+}
+bool Map::isOccupied(int x, int y) const {
+	// returns true if the target tile contains an actor
+	return tiles[x + y * width].occupant;
+}
 bool Map::isObstructed(int x, int y) const {
+	// returns true if the target cell contains an obstructing object
 	Tile *target = &tiles[x + y * width];
-	if (!map->isWalkable(x, y)) {
-		return false; // there is a static object in the way
-	} else if (target->occupant && target->occupant->obstructs) {
-		// would just the right side be sufficient above?
-		return false; // there is an actor in the way
+	if (isOccupied(x, y)) {
+		return target->occupant->obstructs;
 	}
-	return true; // didn't find anything obstructive
+	return false;
 }
 bool Map::isVisible(int x, int y) const {
 	if (x < 0 || x >= width || y < 0 || y >= height) {
 		return false;
 	}
-	if (map->isInFov(x, y)) {
+	if (visionMap->isInFov(x, y)) {
 		tiles[x + y * width].explored = true;
 		return true;
 	}
@@ -135,50 +139,30 @@ bool Map::isVisible(int x, int y) const {
 bool Map::isExplored(int x, int y) const {
 	return tiles[x + y * width].explored;
 }
-bool Map::isOccupied(int x, int y) const {
-	return tiles[x + y * width].occupant;
-}
 bool Map::isHolding(int x, int y) const {
 //	return tiles[x + y * width].itemList;
 	return false;
 }
-// Map Generation Tools
-void Map::generateMap(bool isNew, int width, int height) {
+// TOOLS
+Actor *getOccupant (int x, int y) {
+	return NULL;
+}
+// Map Generation
+void Map::generateTerrain(bool isNew, int width, int height) {
 	// isNew controls whether the map is being made from scratch or not
 	// currently all maps are new, and we ARE using the tutorial fxns
-	this->createRoom(true, 1, 1, width - 1, height - 1, true);
+	this->createRoom(true, 3, 3, width - 3, height - 3, true);
 //	this->dig(engine.player->xpos - 3, engine.player->ypos, engine.player->xpos + 3, engine.player->ypos);
-}
-
-// from the tutorial
-// these are used for BSP dungeon generation
-void Map::dig (int x1, int y1, int x2, int y2) {
-	if (x2 < x1) {
-		int tmp = x2;
-		x2 = x1;
-		x1 = tmp;
-	}
-	if (y2 < y1) {
-		int tmp = y2;
-		y2 = y1;
-		y1 = tmp;
-	}
-	for (int tilex = x1; tilex <= x2; tilex++) {
-		for (int tiley = y1; tiley <= y2; tiley++) {
-			map->setProperties(tilex, tiley, true, true);
-		}
-	}
 }
 void Map::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActors) {
 	dig(x1, y1, x2, y2);
-	
 	if (!withActors) {
 		return;
 	}
 	if (first) {
 		// spawn the player in the first room
-		engine.player->xpos = (x1+x2)/2;
-		engine.player->ypos = (y1+y2)/2;
+		engine.player->xpos = 30;
+		engine.player->ypos = 21;
 	} else {
 		TCODRandom *rng = TCODRandom::getInstance();
 		int nbMonsters = rng->getInt(0, MAX_ROOM_MONSTERS);
@@ -202,6 +186,33 @@ void Map::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActor
 		}
 	}
 }
+void Map::dig (int x1, int y1, int x2, int y2) {
+	// this would be the appropriate place to set a tile's biome and terrain
+	// types, but obviously will need to wait until more complex logic is here
+	if (x2 < x1) {
+		int tmp = x2;
+		x2 = x1;
+		x1 = tmp;
+	}
+	if (y2 < y1) {
+		int tmp = y2;
+		y2 = y1;
+		y1 = tmp;
+	}
+	for (int tilex = x1; tilex <= x2; tilex++) {
+		for (int tiley = y1; tiley <= y2; tiley++) {
+			// everything that isn't a wall, becomes grass
+			visionMap->setProperties(tilex, tiley, true, true);
+			Tile *target = &tiles[tilex + tiley * width];
+			target->glyph = 46;
+			target->foreColor = TCODColor::darkestGreen;
+			target->backColor = TCODColor::darkerLime;
+		}
+	}
+}
+
+// from the tutorial
+// these are used for BSP dungeon generation
 void Map::addMonster(int x, int y) {
 	TCODRandom *rng = TCODRandom::getInstance();
 	if (rng->getInt(0, 100) < 80) {

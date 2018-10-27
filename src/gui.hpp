@@ -14,25 +14,39 @@ class Menu {
 		};
 		TCODList<MenuItem *> menuListItems; // pointer to list of menu items
 };
+struct GuiPane {
+	TCODConsole *con;
+	int xpos;
+	int ypos;
+	int width;
+	int height;
+	GuiPane(int inputx, int inputy, int inputw, int inputh);
+	~GuiPane();
+};
 class Gui {
 	public:
 		Menu menu;
+		TCODConsole *viewport;
+//		GuiPane *viewport;
+		GuiPane *statPanel;
+		GuiPane *msgPanel;
 
 		Gui();
 		~Gui();
 		void render(); // draw the GUI on the screen
-		void message(const TCODColor &color, const char *text, ...); //?
+		void renderTile(int inputx, int inputy, int newSigil,
+			const TCODColor foreColor, const TCODColor backColor); // updates viewport to match maps
+		// print a message to the log
+		void message(const TCODColor &color, const char *text, ...);
 		void clear(); // wipe the message log
 //		void renderMouseLook();
 		// need load and save fxns
 	protected:
-		TCODConsole *guiCon; // pointer to the GUI console
 		// draw a two-color bar on the screen (ie a health bar)
-
+		int logSize;
 		void renderBar(int x, int y, int width, const char *name,
 			float value, float maxValue, const TCODColor &barColor,
 			const TCODColor &backColor);
-
 		struct Message {
 			char *msgText;
 			TCODColor color;

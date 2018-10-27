@@ -3,7 +3,6 @@
 
 Mortality::Mortality(float newMaxHP, float newDefense, const char *cadaverTitle):
 	maximumHP(newMaxHP), currentHP(newMaxHP), defense(newDefense) {
-		std::clog << "*** Mortality() called\n";
 		this->cadaverTitle = strdup(cadaverTitle);
 }
 Mortality::~Mortality() {
@@ -29,8 +28,9 @@ float Mortality::adjustHP(Actor *subject, float hpAdjustment) {
 }
 // SUBTYPES
 // Player
-PlayerMortality::PlayerMortality (float newMaxHP, float newDefense, const char *cadaverTitle):
-	Mortality(newMaxHP, newDefense, cadaverTitle) { std::clog << "*** PlayerMortality() called\n";}
+PlayerMortality::PlayerMortality (float newMaxHP, float newDefense,
+	const char *cadaverTitle):
+	Mortality(newMaxHP, newDefense, cadaverTitle) { }
 void PlayerMortality::embraceDeath(Actor *subject) {
 	engine.gui->message(TCODColor::red, "You died!\n");
 	Mortality::embraceDeath(subject);

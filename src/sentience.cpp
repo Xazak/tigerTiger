@@ -1,17 +1,17 @@
 #include <stdio.h>
 #include <math.h>
-#include <iostream>
 #include "main.hpp"
 
 void PlayerSentience::update(Actor *subject) {
 	// if the player's dead, don't even try to update
 	if (subject->mortality && subject->mortality->isDead()) {
-		std::clog << "*** PlayerSentience::update(): Player is dead!\n";
+		ERRMSG(": Player is dead!");
 		return;
 	}
 	int xdiff = 0; // target x-coord
 	int ydiff = 0; // target y-coord
-	// discover our target square
+	// check the TCOD keyboard bindings first
+	// if it's not a special key, pass it to the action handler
 	switch (engine.lastKey.vk) {
 		case TCODK_UP:		ydiff =- 1; break;
 		case TCODK_DOWN:	ydiff =  1; break;
@@ -30,21 +30,73 @@ void PlayerSentience::update(Actor *subject) {
 }
 bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// returns false if the player did not move
-	if (engine.map->isObstructed(targetx, targety)) {
-		if (engine.map->isOccupied(targetx, targety)) {
-			// do something about the living creature
-		} else {
-			// do something about the inanimate object
-		}
+	// is there something in the way?
+//	LOGMSG("TRY: Move player to (" << targetx << ", " << targety << ")");
+	if (engine.map->isWall(targetx, targety)) {
+		// there's a wall
+/*		LOGMSG("FAIL: Target tile is a wall \n ["\
+			<< "WALL:" << engine.map->isWall(targetx, targety) << " "\
+			<< "VISB:" << engine.map->isVisible(targetx, targety) << " "\
+			<< "EXPL:" << engine.map->isExplored(targetx, targety) << " "\
+			<< "]");*/
+		engine.gui->message(TCODColor::white, "You bump your nose.");
+		return false;
+	} else if (engine.map->isOccupied(targetx, targety)) {
+//		LOGMSG("FAIL: Target occupied-obstructed");
+		// there's something or someone
+//		Tile *target = &(engine.map->tiles[targetx + targety * width]);
+//		engine.gui->message(TCODColor::white, "A %s is in the way.\n", target->occupant->
+		return false;
 	}
-	// there's nothing in the way
+	// there's nothing in the way, so move the player
 	subject->xpos = targetx;
 	subject->ypos = targety;
+	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
+			<< (engine.map->isWall(targetx, targety) ? "wall" : "open") \
+			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
+			<< "]");
 	return true;
 }
 void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	// handles all player keystroke event translation
+	int xdiff, ydiff = 0;
 	switch(inputKeystroke) {
+		case 'y': { // move NW
+			xdiff = -1;
+			ydiff = -1;
+			break;
+		}
+		case 'u': { // move NE
+			xdiff =  1;
+			ydiff = -1;
+			break;
+		}
+		case 'b': { // move SW
+			xdiff = -1;
+			ydiff =  1;
+			break;
+		}
+		case 'n': { // move SE
+			xdiff =  1;
+			ydiff =  1;
+			break;
+		}
+		case 'k': { // move player up
+			ydiff = -1;
+			break;
+		}
+		case 'j': { // move player down
+			ydiff =  1;
+			break;
+		}
+		case 'h': { // move player left
+			xdiff = -1;
+			break;
+		}
+		case 'l': { // move player right
+			xdiff =  1;
+			break;
+		}
 		case 'd': { //DROP item
 			Actor *object = chooseFromInventory(subject);
 			if (object) {
@@ -81,7 +133,7 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 			engine.gameStatus=Engine::NEW_TURN;
 			break;
 		}
-		case 'i': { //display inventory
+		case 'i': { //INVENTORY list
 			// this method requires the player to be Portable, which makes no
 			// sense at all - when would an NPC pick up the Player? - so the
 			// logic for invoking the player's inventory self-container should
@@ -92,6 +144,17 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 				engine.gameStatus = Engine::NEW_TURN;
 			}
 		break;
+		}
+		case 'p': { //DEBUG: Print player position
+			LOGMSG("Player location: (" << subject->xpos << ", " << subject->ypos << ")");
+			break;
+		}
+	}
+	// update if we've changed position
+	if (xdiff != 0 || ydiff != 0) {
+		engine.gameStatus=Engine::NEW_TURN;
+		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
+			engine.map->computeFOV();
 		}
 	}
 }
@@ -130,4 +193,3 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	}
 	return NULL;
 }
-

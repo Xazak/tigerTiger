@@ -1,9 +1,10 @@
 #include <math.h> // sqrtf()
 #include "main.hpp"
 
-Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color, const char *name):
+Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
+	const char *name):
 	xpos(inputX), ypos(inputY), sigil(sigil), color(color), name(name),
-	obstructs(true) { }
+	obstructs(true) {LOGMSG("Created player at " << xpos << ", " << ypos); }
 Actor::~Actor() {
 	// destructor
 }
@@ -12,6 +13,7 @@ void Actor::update() {
 }
 void Actor::render() const {
 	// draw the actor on the map
+//	LOGMSG("Drawing " << this->name << " at " << xpos << ", " << ypos);
 	TCODConsole::root->setChar(xpos, ypos, sigil); // draw the character
 	TCODConsole::root->setCharForeground(xpos, ypos, color); // color the character
 }

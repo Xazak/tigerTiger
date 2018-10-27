@@ -6,23 +6,31 @@ struct Tile {
 	enum BiomeType { MOUNTAIN, GRASSLAND, RAINFOREST, MANGROVE, FARMLAND, CAVE } biomeType;
 	enum TerrainType { GRASS, MUD, GRAVEL, WATER, ROCK, TREE, BUILDING } terrain;
 	int  glyph;		// contains the ASCII code for the symbol to allow addressing of extended chars
-	TCODColor color;
-	// Obstruction and Obfuscation are handled by the isWalkable() and
-	// isTransparent() functions provided under TCODMap
-	// these properties can be changed by calling
-	//    TCODMap::setProperties
-	//    (int x, int y, bool isTransparent, bool isWalkable)
+	TCODColor foreColor;
+	TCODColor backColor;
+	/* Obstruction and Obfuscation are handled by the isWalkable() and
+	 * isTransparent() functions provided under TCODMap
+	 * these properties can be changed by calling
+	 *    TCODMap::setProperties
+	 *    (int x, int y, bool isTransparent, bool isWalkable)
+	 */
 	bool explored;	// has the player seen this tile?
-	// Querying whether these pointers exists serves as a yes/no check
 	Actor *occupant; // pointer to the actor occupying this tile
 //	Scent *scentTrail; // pointer to scent information
 //	Item *itemList;	// pointer to tile's contents
-	Tile(): explored(false) {} // set tiles unseen by default
+	Tile();
+//	~Tile();
 };
 
 class Map {
 public:
 	int width, height;
+	enum ObstructionType {
+		NOTHING,
+		WALL,
+		OBJECT,
+		CREATURE
+	};
 //	SYSTEM FXNS
 	Map(int width, int height);
 	~Map();
@@ -32,21 +40,23 @@ public:
 //	void load(TCODZip &zip);
 //	void save(TCODZip &zip);
 //	QUERIES
-	bool isObstructed(int x, int y) const; // can we walk here?
+	bool isWall(int x, int y) const; // is there a wall here?
+	bool isOccupied(int x, int y) const; // is the tile occupied by someone?
+	bool isObstructed(int x, int y) const; // is the tile blocked by an actor?
 	bool isVisible(int x, int y) const; // is the tile visible?
 	bool isExplored(int x, int y) const; // has the tile been explored?
-	bool isOccupied(int x, int y) const; // is the tile occupied by someone?
 	bool isHolding(int x, int y) const; // are there items on the tile?
 //	TOOLS
+	Actor *getOccupant(int x, int y); // get a pointer to the actor standing on the target tile
 	void addMonster(int x, int y); // add a monster to the map
 	void addItem(int x, int y); // add an item to the map
 
 protected:
 	Tile *tiles; // pointer to tile array
-	TCODMap *map; // pointer to master map object
+	TCODMap *visionMap; // pointer to master map object
 	TCODRandom *rng; // pointer to RNG engine
 	long seed; // RNG seed (stored for reuse)
-	void generateMap(bool isNew, int width, int height);
+	void generateTerrain(bool isNew, int width, int height);
 
 	friend class BspListener; // dungeon-generator tool
 	void dig(int x1, int y1, int x2, int y2); // creates a space for a room
