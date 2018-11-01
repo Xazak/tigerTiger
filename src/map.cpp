@@ -54,7 +54,7 @@ void Map::computeFOV() {
 	visionMap->computeFov(engine.player->xpos, engine.player->ypos, engine.fovRadius);
 }
 void Map::render() const {
-	// render the map on the player's screen
+	// draw the map onto the viewport console
 	static const float beyondFOVMod = 0.5f;
 	// draw every tile according to its internal values
 	Tile *target = &tiles[0];
@@ -72,15 +72,15 @@ void Map::render() const {
 			} else if (isExplored(x, y)) {
 				// draw unseen, but explored tiles
 //				TCODConsole::root->putCharEx(x, y, target->glyph,
-//						target->foreColor - (target->foreColor * beyondFOVMod),
-//						target->backColor - (target->backColor * beyondFOVMod));
+				engine.gui->viewport->putCharEx(x, y, target->glyph,
+						target->foreColor - (target->foreColor * beyondFOVMod),
+						target->backColor - (target->backColor * beyondFOVMod));
 			}
-			// don't bother drawing anything else
+			// don't bother drawing anything else right now
 		}
 	}
-	TCODConsole::blit(engine.gui->viewport, 0, 0, 0, 0, TCODConsole::root,
-		engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight());
 	// this is going to be roughly the place to insert controls for visual FX
+	TCODConsole::blit(engine.gui->viewport, 0, 0, engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight(), TCODConsole::root, 0, 0);
 }
 void Map::init(bool withActors) {
 	// create the map objects

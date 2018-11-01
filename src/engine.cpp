@@ -64,7 +64,8 @@ void Engine::update() {
 	}
 }
 void Engine::render() {
-	TCODConsole::root->clear(); // clear any console leftovers
+//	TCODConsole::root->clear(); // clear any console leftovers
+	engine.gui->viewport->clear();
 	map->render(); // draw the map
 	gui->render(); // update the gui
 	// draw the actors
@@ -105,9 +106,11 @@ bool Engine::pickATile(int *x, int *y, float maxRange) {
 		for (int cx = 0; cx < map->width; cx++) {
 			for (int cy = 0; cy < map->height; cy++) {
 				if (map->isVisible(cx, cy) && (maxRange == 0 || player->getDistance(cx, cy) <= maxRange)) {
-					TCODColor color = TCODConsole::root->getCharBackground(cx, cy);
+//					TCODColor color = TCODConsole::root->getCharBackground(cx, cy);
+					TCODColor color = engine.gui->viewport->getCharBackground(cx, cy);
 					color = color * 1.2f;
-					TCODConsole::root->setCharBackground(cx, cy, color);
+//					TCODConsole::root->setCharBackground(cx, cy, color);
+					engine.gui->viewport->setCharBackground(cx, cy, color);
 				}
 			}
 		}

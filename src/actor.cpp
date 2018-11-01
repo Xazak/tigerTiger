@@ -14,8 +14,11 @@ void Actor::update() {
 void Actor::render() const {
 	// draw the actor on the map
 //	LOGMSG("Drawing " << this->name << " at " << xpos << ", " << ypos);
-	TCODConsole::root->setChar(xpos, ypos, sigil); // draw the character
-	TCODConsole::root->setCharForeground(xpos, ypos, color); // color the character
+//	TCODConsole::root->setChar(xpos, ypos, sigil); // draw the character
+//	TCODConsole::root->setCharForeground(xpos, ypos, color); // color the character
+	engine.gui->viewport->setChar(xpos, ypos, sigil); // draw the character
+	engine.gui->viewport->setCharForeground(xpos, ypos, color); // color the character
+//	TCODConsole::blit(engine.gui->viewport, 0, 0, engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight(), TCODConsole::root, 0, 0);
 }
 float Actor::getDistance(int targetX, int targetY) const {
 	// returns the distance between this actor and the specified coordinates

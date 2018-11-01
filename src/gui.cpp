@@ -56,7 +56,7 @@ void Gui::render() {
 	viewport->setDefaultBackground(GUI_BACK);
 	viewport->setDefaultForeground(GUI_FORE);
 	viewport->clear();
-	TCODConsole::blit(viewport, 0, 0, 0, 0, TCODConsole::root,
+	TCODConsole::blit(viewport, 0, 0, viewport->getWidth(), viewport->getHeight(), TCODConsole::root,
 		viewport->getWidth(), viewport->getHeight());
 
 	// draw the stat panel
@@ -161,12 +161,15 @@ Menu::MenuItemCode Menu::pick() {
 	while (!TCODConsole::isWindowClosed()) {
 //		img.blit2x(TCODConsole::root, 0, 0); // blit the bkgrnd img on screen
 		int currentItem = 0;
+		// we're going to let the menu blit to the root console for now
 		for (MenuItem **iter = menuListItems.begin();
 				iter != menuListItems.end(); iter++) {
 			// recolor menu text to act as cursor
 			if (currentItem == selectedItem) {
+//				engine.gui->viewport->setDefaultForeground(TCODColor::lighterOrange);
 				TCODConsole::root->setDefaultForeground(TCODColor::lighterOrange);
 			} else {
+//				engine.gui->viewport->setDefaultForeground(TCODColor::lightGrey);
 				TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
 			}
 			TCODConsole::root->printf(10, 10 + currentItem * 3, (*iter)->label);
