@@ -25,56 +25,77 @@
 #include <stdarg.h>
 #include "main.hpp"
 
-
 static const TCODColor GUI_FORE = TCODColor::silver;
 static const TCODColor GUI_BACK = TCODColor::black;
 
 Gui::Gui() {
 	// change the initializations depending on layout...
 //	viewport = new GuiPane(0, 0, engine.screenWidth - (engine.screenWidth / 4), engine.screenHeight - 6);
-	int msgPanelHeight = 6;
-	int viewportWidth = engine.screenWidth - (engine.screenWidth / 4);
-	int viewportHeight = engine.screenHeight - msgPanelHeight;
-	viewport = new TCODConsole((engine.screenWidth - (engine.screenWidth / 4)), engine.screenHeight - 6);
-	statPanel= new GuiPane((viewportWidth), 0, engine.screenWidth / 4,
-		engine.screenHeight);
-	msgPanel = new GuiPane(0, (viewportHeight), viewportWidth, 6);
-	logSize = msgPanel->height - 1;
+//	int msgPanelHeight = 6;
+//	int viewportWidth = engine.screenWidth - (engine.screenWidth / 4);
+//	int viewportHeight = engine.screenHeight - msgPanelHeight;
+	viewport = new TCODConsole(
+		(engine.screenWidth - (engine.screenWidth / 4)),
+		engine.screenHeight - 6);
+	statPanelXPos = viewport->getWidth();
+	statPanelYPos = 0;
+	msgPanelXPos = 0;
+	msgPanelYPos = viewport->getHeight();
+//	statPanel = new TCODConsole((engine.screenWidth / 4), engine.screenHeight);
+//	msgPanel = new TCODConsole(viewport->getWidth(), 6);
+//	statPanel= new GuiPane((viewport->getWidth()), 0, engine.screenWidth / 4,
+//		engine.screenHeight);
+//	msgPanel = new GuiPane(0, (viewport->getHeight()), viewport->getWidth(), 6);
+//	logSize = (msgPanel->getHeight() - 1);
 }
 Gui::~Gui() {
 	delete viewport;
-	delete statPanel;
-	delete msgPanel;
+//	delete statPanel;
+//	delete msgPanel;
 	clear();
 }
 void Gui::render() {
 	// draw the viewport
-//	viewport->con->setDefaultBackground(GUI_BACK);
-//	viewport->con->setDefaultForeground(GUI_FORE);
-//	viewport->con->clear();
-//	viewport->con->printFrame(viewport->xpos, viewport->ypos, viewport->width, viewport->height);
+	// panel borders
 	viewport->setDefaultBackground(GUI_BACK);
 	viewport->setDefaultForeground(GUI_FORE);
+	LOGMSG("Viewport cleared");
 	viewport->clear();
+	// panel contents
 	TCODConsole::blit(viewport, 0, 0, viewport->getWidth(), viewport->getHeight(), TCODConsole::root,
 		viewport->getWidth(), viewport->getHeight());
 
 	// draw the stat panel
-	statPanel->con->setDefaultBackground(TCODColor::darkestBlue);
-	statPanel->con->setDefaultForeground(GUI_FORE);
-	statPanel->con->clear();
-	statPanel->con->vline(0, 0, statPanel->height);
-	TCODConsole::blit(statPanel->con, 0, 0, 0, 0, TCODConsole::root,
-		statPanel->xpos, statPanel->ypos);
+	// panel borders
+//	statPanel->setDefaultBackground(TCODColor::darkestBlue);
+//	statPanel->setDefaultForeground(GUI_FORE);
+//	statPanel->clear();
+//	statPanel->vline(0, 0, statPanel->getHeight());
+	// panel contents
+//	TCODConsole::blit(statPanel, 0, 0, statPanel->getWidth(), statPanel->getHeight(), TCODConsole::root,
+//		statPanelXPos, statPanelYPos);
 
 	// draw the message log
-	msgPanel->con->setDefaultBackground(TCODColor::darkestGreen);
-	msgPanel->con->setDefaultForeground(GUI_FORE);
-	msgPanel->con->clear();
-	msgPanel->con->hline(0, 0, msgPanel->width);
-	TCODConsole::blit(msgPanel->con, 0, 0, 0, 0, TCODConsole::root,
-		msgPanel->xpos, msgPanel->ypos);
+	// panel borders
+//	msgPanel->setDefaultBackground(TCODColor::darkestGreen);
+//	msgPanel->setDefaultForeground(GUI_FORE);
+//	msgPanel->clear();
+//	msgPanel->hline(0, 0, msgPanel->getWidth());
+	// panel contents
+//	TCODConsole::blit(msgPanel, 0, 0, msgPanel->getWidth(), msgPanel->getHeight(), TCODConsole::root,
+//		msgPanelXPos, msgPanelYPos);
+
+//	blitToScreen();
 }
+/*void Gui::blitToScreen() {
+//	LOGMSG(" has been called\n");
+	TCODConsole::blit(viewport, 0, 0, viewport->getWidth(), viewport->getHeight(), TCODConsole::root,
+		viewport->getWidth(), viewport->getHeight());
+	TCODConsole::blit(statPanel, 0, 0, 0, 0, TCODConsole::root,
+		statPanel->getWidth(), statPanel->getHeight());
+	TCODConsole::blit(msgPanel, 0, 0, 0, 0, TCODConsole::root,
+		msgPanel->getWidth(), msgPanel->getHeight());
+}*/
 void Gui::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreColor,
 	const TCODColor backColor) {
 //	LOGMSG("Placing " << (char)newSigil << " at " << inputx << ", " << inputy);
@@ -113,14 +134,14 @@ void Gui::message(const TCODColor &color, const char *msgText, ...) {
 void Gui::clear() {
 	log.clearAndDelete(); // wipe the message log
 }
-GuiPane::GuiPane(int inputx, int inputy, int inputw, int inputh):
+/*GuiPane::GuiPane(int inputx, int inputy, int inputw, int inputh):
 	xpos(inputx), ypos(inputy), width(inputw), height(inputh) {
 	con = new TCODConsole(width, height);
 	LOGMSG("New panel created at (" << xpos << ", " << ypos << "), " << width << "x" << height);
 }
 GuiPane::~GuiPane() {
 	delete con;
-}
+}*/
 /*void Gui::renderBar(int x, int y, int width, const char *name, float curValue,
 	float maxValue, const TCODColor &foreColor, const TCODColor &backColor) {
 	// draw the background

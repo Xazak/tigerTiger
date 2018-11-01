@@ -24,16 +24,16 @@ void Engine::init() {
 //	int xLoc = (engine.screenWidth - (engine.screenWidth / 4)) / 2;
 //	int yLoc = (engine.screenHeight - (engine.screenHeight / 4)) / 2;
 //	player = new Actor(xLoc, yLoc, '@', TCODColor::orange, "player");
-	player = new Actor(0, 0, '@', TCODColor::orange, "player");
+	player = new Actor(10, 10, '@', TCODColor::orange, "player");
 	player->sentience = new PlayerSentience();
 //	LOGMSG("sentience OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
 //	LOGMSG("mortality OK");
 	player->container = new Container(26);
 //	LOGMSG("inventory OK");
+	// specific player ability initializations go here
 	//player-pickable ?
 	//player-attack
-	// specific player ability initializations go here
 	actors.push(player);
 	// initialize the map, show the MOTD
 	map = new Map(MAP_WIDTH, MAP_HEIGHT); // init a new map
@@ -64,20 +64,17 @@ void Engine::update() {
 	}
 }
 void Engine::render() {
-//	TCODConsole::root->clear(); // clear any console leftovers
-	engine.gui->viewport->clear();
-	map->render(); // draw the map
-	gui->render(); // update the gui
 	// draw the actors
+	map->render(); // draw the map
+	gui->render(); // draw the GUI
 	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
 		Actor *actor = *iter;
 		if (map->isVisible(actor->xpos, actor->ypos)) {
 			actor->render();
 		}
 		player->render();
-		// show the player's stats
-//		TCODConsole::root->print(1, screenHeight-2, "HP: %d/%d", (int)player->destructible->curHP, (int)player->destructible->maxHP);
 	}
+//	engine.gui->blitToScreen();
 }
 void Engine::sendToBack(Actor *actor) {
 	actors.remove(actor);

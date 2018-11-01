@@ -63,15 +63,10 @@ void Map::render() const {
 			target = &tiles[x + y * width];
 			if (isVisible(x, y)) {
 				// draw visible tiles first
-//				engine.gui->renderTile(x, y, target->glyph, target->foreColor, target->backColor);
-//				TCODConsole::root->putCharEx(x, y, target->glyph,
 				engine.gui->viewport->putCharEx(x, y, target->glyph,
 						target->foreColor, target->backColor);
-//				Gui::viewport->con->putCharEx(x, y, target->glyph,
-//						target->foreColor, target->backColor);
 			} else if (isExplored(x, y)) {
 				// draw unseen, but explored tiles
-//				TCODConsole::root->putCharEx(x, y, target->glyph,
 				engine.gui->viewport->putCharEx(x, y, target->glyph,
 						target->foreColor - (target->foreColor * beyondFOVMod),
 						target->backColor - (target->backColor * beyondFOVMod));

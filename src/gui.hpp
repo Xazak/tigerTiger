@@ -25,11 +25,18 @@ struct GuiPane {
 };
 class Gui {
 	public:
+		bool updateView = false; // if true, invoke render()
 		Menu menu;
 		TCODConsole *viewport;
+		TCODConsole *statPanel;
+		TCODConsole *msgPanel;
+		int statPanelXPos;
+		int statPanelYPos;
+		int msgPanelXPos;
+		int msgPanelYPos;
 //		GuiPane *viewport;
-		GuiPane *statPanel;
-		GuiPane *msgPanel;
+//		GuiPane *statPanel;
+//		GuiPane *msgPanel;
 
 		Gui();
 		~Gui();
@@ -39,6 +46,7 @@ class Gui {
 		// print a message to the log
 		void message(const TCODColor &color, const char *text, ...);
 		void clear(); // wipe the message log
+		void blitToScreen(); // draw all GUI panels on the root console
 //		void renderMouseLook();
 		// need load and save fxns
 	protected:
