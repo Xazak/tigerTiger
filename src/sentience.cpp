@@ -51,7 +51,7 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	// there's nothing in the way, so move the player
 	subject->xpos = targetx;
 	subject->ypos = targety;
-	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
+//	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
 			<< (engine.map->isWall(targetx, targety) ? "wall" : "open") \
 			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
 			<< "]");

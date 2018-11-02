@@ -14,15 +14,6 @@ class Menu {
 		};
 		TCODList<MenuItem *> menuListItems; // pointer to list of menu items
 };
-struct GuiPane {
-	TCODConsole *con;
-	int xpos;
-	int ypos;
-	int width;
-	int height;
-	GuiPane(int inputx, int inputy, int inputw, int inputh);
-	~GuiPane();
-};
 class Gui {
 	public:
 		bool updateView = false; // if true, invoke render()
@@ -34,9 +25,6 @@ class Gui {
 		int statPanelYPos;
 		int msgPanelXPos;
 		int msgPanelYPos;
-//		GuiPane *viewport;
-//		GuiPane *statPanel;
-//		GuiPane *msgPanel;
 
 		Gui();
 		~Gui();

@@ -105,11 +105,13 @@ void Map::render() const {
 	int mapX = mapXStart;
 	int mapY = mapYStart;
 	for (int viewportX = 0; viewportX < engine.gui->viewport->getWidth(); viewportX++) {
+		if (viewportX == 0) mapX = mapXStart;
 		for (int viewportY = 0; viewportY < engine.gui->viewport->getHeight(); viewportY++) {
-			if (mapY < mapYEnd) {
+//			if (mapY < mapYEnd) {
 //				LOGMSG("mY: " << mapY << ", mYEnd: " << mapYEnd << ", vY: " << viewportY << ", vYEnd: " << engine.gui->viewport->getHeight());
-				assert(mapY < mapYEnd);
-			}
+//				assert(mapY < mapYEnd);
+//			}
+			if (viewportY == 0) mapY = mapYStart;
 			target = &tiles[mapX + mapY * width];
 			if (isVisible(mapX, mapY)) {
 				// draw visible tiles first
@@ -124,10 +126,8 @@ void Map::render() const {
 					target->backColor - (target->backColor * beyondFOVMod));
 			}
 			mapY++;
-			if (mapY > mapYEnd) mapY = mapYStart;
 		}
 		mapX++;
-		if (mapX > mapXEnd) mapX = mapXStart;
 	}
 /*	for (int cameraXPos = 0; cameraXPos < engine.gui->viewport->getWidth();
 			cameraXPos++) {

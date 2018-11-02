@@ -23,9 +23,6 @@ void Engine::term() {
 }
 void Engine::init() {
 	// create a player object
-//	int xLoc = (engine.screenWidth - (engine.screenWidth / 4)) / 2;
-//	int yLoc = (engine.screenHeight - (engine.screenHeight / 4)) / 2;
-//	player = new Actor(xLoc, yLoc, '@', TCODColor::orange, "player");
 	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@', TCODColor::orange, "player");
 	player->sentience = new PlayerSentience();
 //	LOGMSG("sentience OK");
