@@ -41,61 +41,52 @@ Gui::Gui() {
 	statPanelYPos = 0;
 	msgPanelXPos = 0;
 	msgPanelYPos = viewport->getHeight();
-//	statPanel = new TCODConsole((engine.screenWidth / 4), engine.screenHeight);
-//	msgPanel = new TCODConsole(viewport->getWidth(), 6);
+	statPanel = new TCODConsole((engine.screenWidth / 4), engine.screenHeight);
+	msgPanel = new TCODConsole(viewport->getWidth(), 6);
 //	statPanel= new GuiPane((viewport->getWidth()), 0, engine.screenWidth / 4,
 //		engine.screenHeight);
 //	msgPanel = new GuiPane(0, (viewport->getHeight()), viewport->getWidth(), 6);
-//	logSize = (msgPanel->getHeight() - 1);
+	logSize = (msgPanel->getHeight() - 1);
 }
 Gui::~Gui() {
 	delete viewport;
-//	delete statPanel;
-//	delete msgPanel;
+	delete statPanel;
+	delete msgPanel;
 	clear();
 }
 void Gui::render() {
-	// draw the viewport
-	// panel borders
+	// NOTE: clear() uses the Default_color settings defined above!
+	// Blank the viewport in prep for the upcoming render() calls
 	viewport->setDefaultBackground(GUI_BACK);
 	viewport->setDefaultForeground(GUI_FORE);
-	LOGMSG("Viewport cleared");
 	viewport->clear();
-	// panel contents
-	TCODConsole::blit(viewport, 0, 0, viewport->getWidth(), viewport->getHeight(), TCODConsole::root,
-		viewport->getWidth(), viewport->getHeight());
-
-	// draw the stat panel
+	// Draw the stat panel
 	// panel borders
-//	statPanel->setDefaultBackground(TCODColor::darkestBlue);
-//	statPanel->setDefaultForeground(GUI_FORE);
-//	statPanel->clear();
-//	statPanel->vline(0, 0, statPanel->getHeight());
-	// panel contents
-//	TCODConsole::blit(statPanel, 0, 0, statPanel->getWidth(), statPanel->getHeight(), TCODConsole::root,
-//		statPanelXPos, statPanelYPos);
-
-	// draw the message log
+	statPanel->setDefaultBackground(TCODColor::darkestBlue);
+	statPanel->setDefaultForeground(GUI_FORE);
+	statPanel->clear();
+	statPanel->vline(0, 0, statPanel->getHeight());
+	// --stat blocks go here
+	// Draw the message log
 	// panel borders
-//	msgPanel->setDefaultBackground(TCODColor::darkestGreen);
-//	msgPanel->setDefaultForeground(GUI_FORE);
-//	msgPanel->clear();
-//	msgPanel->hline(0, 0, msgPanel->getWidth());
-	// panel contents
-//	TCODConsole::blit(msgPanel, 0, 0, msgPanel->getWidth(), msgPanel->getHeight(), TCODConsole::root,
-//		msgPanelXPos, msgPanelYPos);
-
-//	blitToScreen();
+	msgPanel->setDefaultBackground(TCODColor::darkestGreen);
+	msgPanel->setDefaultForeground(GUI_FORE);
+	msgPanel->clear();
+	msgPanel->hline(0, 0, msgPanel->getWidth());
+	// --msg log print functions go here
 }
-/*void Gui::blitToScreen() {
+void Gui::blitToScreen() {
 //	LOGMSG(" has been called\n");
-	TCODConsole::blit(viewport, 0, 0, viewport->getWidth(), viewport->getHeight(), TCODConsole::root,
-		viewport->getWidth(), viewport->getHeight());
-	TCODConsole::blit(statPanel, 0, 0, 0, 0, TCODConsole::root,
-		statPanel->getWidth(), statPanel->getHeight());
-	TCODConsole::blit(msgPanel, 0, 0, 0, 0, TCODConsole::root,
-		msgPanel->getWidth(), msgPanel->getHeight());
-}*/
+	TCODConsole::blit( viewport, 0, 0,
+		viewport->getWidth(), viewport->getHeight(),
+		TCODConsole::root, 0, 0);
+	TCODConsole::blit( statPanel, 0, 0,
+		statPanel->getWidth(), statPanel->getHeight(),
+		TCODConsole::root, statPanelXPos, statPanelYPos);
+	TCODConsole::blit(msgPanel, 0, 0,
+		msgPanel->getWidth(), msgPanel->getHeight(),
+		TCODConsole::root, msgPanelXPos, msgPanelYPos);
+}
 void Gui::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreColor,
 	const TCODColor backColor) {
 //	LOGMSG("Placing " << (char)newSigil << " at " << inputx << ", " << inputy);

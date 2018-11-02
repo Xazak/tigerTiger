@@ -15,6 +15,7 @@ class Actor; // this is a 'forward declaration'
 #include "map.hpp"
 #include "engine.hpp"
 #include <iostream>
+#include <assert.h>
 
 // *** DEBUG TOOLS AND DEFINITIONS ***
 // Enable debugging macros; comment out to remove

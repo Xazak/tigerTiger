@@ -1,7 +1,9 @@
 #include "main.hpp"
 
-static const int MAP_HEIGHT = 100;
-static const int MAP_WIDTH = 100;
+static const int MAP_HEIGHT = 1000;
+static const int MAP_WIDTH = 1000;
+static const int PLAYER_START_X = 100;
+static const int PLAYER_START_Y = 100;
 
 Engine::Engine(int screenWidth, int screenHeight):
 	gameStatus(STARTUP), player(NULL), map(NULL), fovRadius(10),
@@ -24,7 +26,7 @@ void Engine::init() {
 //	int xLoc = (engine.screenWidth - (engine.screenWidth / 4)) / 2;
 //	int yLoc = (engine.screenHeight - (engine.screenHeight / 4)) / 2;
 //	player = new Actor(xLoc, yLoc, '@', TCODColor::orange, "player");
-	player = new Actor(10, 10, '@', TCODColor::orange, "player");
+	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@', TCODColor::orange, "player");
 	player->sentience = new PlayerSentience();
 //	LOGMSG("sentience OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
@@ -64,9 +66,22 @@ void Engine::update() {
 	}
 }
 void Engine::render() {
-	// draw the actors
-	map->render(); // draw the map
+/* SCREEN DISPLAY LAYER MODEL
+	-PLAYER-
+
+	[scentLayer]
+	<visual FX: fire, etc>
+	<Actors>
+	<Objects>
+	<Map Tiles>
+	<GUI Information>
+	<GUI Frames>
+	We will draw them on the screen in order from the bottom, so that each new
+	layer overwrites the previous with more important detail and context.
+ */
 	gui->render(); // draw the GUI
+	map->render(); // draw the map
+	// draw all visible actors
 	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
 		Actor *actor = *iter;
 		if (map->isVisible(actor->xpos, actor->ypos)) {
@@ -74,7 +89,7 @@ void Engine::render() {
 		}
 		player->render();
 	}
-//	engine.gui->blitToScreen();
+	gui->blitToScreen();
 }
 void Engine::sendToBack(Actor *actor) {
 	actors.remove(actor);

@@ -55,27 +55,125 @@ void Map::computeFOV() {
 }
 void Map::render() const {
 	// draw the map onto the viewport console
-	static const float beyondFOVMod = 0.5f;
-	// draw every tile according to its internal values
-	Tile *target = &tiles[0];
-	for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-			target = &tiles[x + y * width];
-			if (isVisible(x, y)) {
+	static const float beyondFOVMod = 0.5f; // color coefficient
+	Tile *target = &tiles[0]; // index pointer, starts at beginning
+	/* draw every tile according to its internal values, of those tiles that
+	   fall within the range of the viewport's vision:
+	   +---+-
+	   |   |^
+	   | P |H
+	   |   |v
+	   +---+-
+	   |<W>|
+	   where W and H are the viewportWidth and ..Height respectively.
+	   P should always be located at (W/2, H/2) w/in the viewport, and the tiles
+	   displayed are generated relative to that by their absolute position on 
+	   the map.
+	 * METHOD
+	   Given the player's x,y position (indexing to tiles[x + y * arrayWidth])
+	   viewportXStart, viewportYStart = 0
+	   viewportXEnd = viewportWidth
+	   viewportYEnd = viewportHeight
+	   viewportTarget = (viewportXIndex, viewportYIndex)
+	   mapWindowXStart = playerX - viewportXOffset
+	   mapWindowYStart = playerY - viewportYOffset
+	   mapWindowXEnd = playerX + viewportXOffset
+	   mapWindowYEnd = playerY + viewportYOffset
+	   mapWindowTarget = (mapWindowXIndex, mapWindowYIndex)
+	   1) iterate across all viewportX
+	   		iterate across all mapXIndex
+	   		2) iterate across all viewportY
+				3) draw (mapXIndex, mapYIndex) on (viewportX, viewportY)
+	 */
+	// find out how big an area we need to render using x/y offsets from the
+	// player's absolute position on the map
+	// these could be static const? i think the window size is not allowed to
+	// change once the game is running...
+	int viewportXOffset = engine.gui->viewport->getWidth() / 2;
+	int viewportYOffset = engine.gui->viewport->getHeight() / 2;
+	// find out how much of the map we need to render
+	int mapXStart = engine.player->xpos - viewportXOffset;
+	int mapYStart = engine.player->ypos - viewportYOffset;
+	int mapXEnd = engine.player->xpos + viewportXOffset;
+	int mapYEnd = engine.player->ypos + viewportYOffset;
+	// sanity check against array bounds
+	if (mapXStart < 0) mapXStart = 0;
+	if (mapYStart < 0) mapYStart = 0;
+	if (mapXEnd > width) mapXEnd = width;
+	if (mapYEnd > height) mapYEnd = height;
+	// begin map processing
+	int mapX = mapXStart;
+	int mapY = mapYStart;
+	for (int viewportX = 0; viewportX < engine.gui->viewport->getWidth(); viewportX++) {
+		for (int viewportY = 0; viewportY < engine.gui->viewport->getHeight(); viewportY++) {
+			if (mapY < mapYEnd) {
+//				LOGMSG("mY: " << mapY << ", mYEnd: " << mapYEnd << ", vY: " << viewportY << ", vYEnd: " << engine.gui->viewport->getHeight());
+				assert(mapY < mapYEnd);
+			}
+			target = &tiles[mapX + mapY * width];
+			if (isVisible(mapX, mapY)) {
 				// draw visible tiles first
-				engine.gui->viewport->putCharEx(x, y, target->glyph,
+				engine.gui->viewport->putCharEx(viewportX, viewportY,
+					target->glyph, target->foreColor,
+					target->backColor);
+			} else if (isExplored(mapX, mapY)) {
+				// draw not-visible, but explored tiles
+				engine.gui->viewport->putCharEx(viewportX, viewportY,
+					target->glyph,
+					target->foreColor - (target->foreColor * beyondFOVMod),
+					target->backColor - (target->backColor * beyondFOVMod));
+			}
+			mapY++;
+			if (mapY > mapYEnd) mapY = mapYStart;
+		}
+		mapX++;
+		if (mapX > mapXEnd) mapX = mapXStart;
+	}
+/*	for (int cameraXPos = 0; cameraXPos < engine.gui->viewport->getWidth();
+			cameraXPos++) {
+		for (int cameraYPos = 0; cameraYPos < engine.gui->viewport->getHeight();
+				cameraYPos++) {
+			for (int mapXPos = mapXStart; mapXPos < mapXEnd; mapXPos++) {
+				for (int mapYPos = mapYStart; mapYPos < mapYEnd; mapYPos++) {
+					// decide which tiles to draw
+					target = &tiles[mapXPos + mapYPos * width];
+					if (isVisible(mapXPos, mapYPos)) {
+						// draw visible tiles first
+						engine.gui->viewport->putCharEx(cameraXPos, cameraYPos,
+							target->glyph, target->foreColor,
+							target->backColor);
+					} else if (isExplored(mapXPos, mapYPos)) {
+						// draw not-visible, but explored tiles
+						engine.gui->viewport->putCharEx(cameraXPos, cameraYPos,
+							target->glyph,
+							target->foreColor - (target->foreColor * beyondFOVMod),
+							target->backColor - (target->backColor * beyondFOVMod));
+					}
+					// don't bother drawing anything else right now
+				}//mapY
+			}//mapX
+		}//cameraY
+	}//cameraX
+*/
+/*	for (int xIndex = mapXStart; xIndex < mapXEnd; xIndex++) {
+		for (int yIndex = mapYStart; yIndex < mapYEnd; yIndex++) {
+			target = &tiles[xIndex + yIndex * width];
+			if (isVisible(xIndex, yIndex)) {
+				// draw visible tiles first
+				engine.gui->viewport->putCharEx(xIndex, yIndex, target->glyph,
 						target->foreColor, target->backColor);
-			} else if (isExplored(x, y)) {
+			} else if (isExplored(xIndex, yIndex)) {
 				// draw unseen, but explored tiles
-				engine.gui->viewport->putCharEx(x, y, target->glyph,
+				engine.gui->viewport->putCharEx(xIndex, yIndex, target->glyph,
 						target->foreColor - (target->foreColor * beyondFOVMod),
 						target->backColor - (target->backColor * beyondFOVMod));
 			}
 			// don't bother drawing anything else right now
 		}
-	}
-	// this is going to be roughly the place to insert controls for visual FX
-	TCODConsole::blit(engine.gui->viewport, 0, 0, engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight(), TCODConsole::root, 0, 0);
+	}*/
+//	TCODConsole::blit(engine.gui->viewport, 0, 0,
+//			engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight(),
+//			TCODConsole::root, 0, 0);
 }
 void Map::init(bool withActors) {
 	// create the map objects
@@ -132,6 +230,7 @@ bool Map::isVisible(int x, int y) const {
 	return false;
 }
 bool Map::isExplored(int x, int y) const {
+//	LOGMSG("Checking location (" << x << ", " << y << ") at [" << (x + y * width) << "]");
 	return tiles[x + y * width].explored;
 }
 bool Map::isHolding(int x, int y) const {
@@ -155,9 +254,7 @@ void Map::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActor
 		return;
 	}
 	if (first) {
-		// spawn the player in the first room
-		engine.player->xpos = 30;
-		engine.player->ypos = 21;
+		// do nothing for now
 	} else {
 		TCODRandom *rng = TCODRandom::getInstance();
 		int nbMonsters = rng->getInt(0, MAX_ROOM_MONSTERS);
