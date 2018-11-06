@@ -13,44 +13,6 @@ Actor::~Actor() {
 void Actor::update() {
 	if (sentience) sentience->update(this);
 }
-/*void Actor::render() const {
-	// draw the actor on the map
-	int screenXPos = 0; // x-position of actor on screen relative to map
-	int screenYPos = 0; // y-position of actor on screen relative to map
-	// determine where to draw the actor by the map:viewport relationship
-	if (this == engine.player) {
-		// lock the player position to the viewport middle unless they're too
-		// close to a map edge, and then allow them to slide
-		// left-right edge checks
-		if (xpos < viewportXOffset) {
-			screenXPos = xpos;
-		} else if (xpos > (engine.map->width - viewportXOffset)) {
-			screenXPos = engine.gui->viewport->getWidth() - (engine.map->width - engine.player->xpos);
-		} else {
-			screenXPos = viewportXOffset;
-		}
-		// top-bottom edge checks
-		if (ypos < viewportYOffset) {
-			screenYPos = ypos;
-		} else if (ypos > (engine.map->height - viewportYOffset)) {
-			screenYPos = engine.gui->viewport->getHeight() - (engine.map->height - engine.player->ypos);
-		} else {
-			screenYPos = viewportYOffset;
-		}
-//		LOGMSG("Offset " << viewportXOffset << " by " << (xpos % viewportXOffset));
-//		LOGMSG("PLAYER abs: " << xpos << ", " << ypos << " rel: " << screenXPos << ", " << screenYPos);
-	} else { // how to draw all the other NPCs
-//		screenXPos = engine.player->xpos - xpos - viewportXOffset;
-//		screenYPos = engine.player->ypos - ypos - viewportYOffset;
-		screenXPos = engine.gui->viewport->getWidth() - (engine.map->width - xpos);
-		screenYPos = engine.gui->viewport->getHeight() - (engine.map->height - ypos);
-//		LOGMSG("Drawing " << name << " at " << xpos << ", " << ypos << " [" << screenXPos << ", " << screenYPos << "]");
-	}
-	// draw the actor itself
-	engine.gui->viewport->setCharForeground(screenXPos, screenYPos, color); // color the character
-	engine.gui->viewport->setChar(screenXPos, screenYPos, sigil); // draw the character
-//	LOGMSG("Drawing " << name << " at " << xpos << ", " << ypos << " [" << screenXPos << ", " << screenYPos << "]");
-}*/
 void Actor::render() const {
 	// draw the actor on the map
 	int screenXPos = 0; // x-position of actor on screen relative to map

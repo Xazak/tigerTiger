@@ -76,21 +76,30 @@ void Gui::render() {
 	viewport->clear();
 	// Draw the stat panel
 	// panel borders
-	statPanel->setDefaultBackground(TCODColor::darkestBlue);
+	statPanel->setDefaultBackground(GUI_BACK);
 	statPanel->setDefaultForeground(GUI_FORE);
 	statPanel->clear();
 	statPanel->vline(0, 0, statPanel->getHeight());
 	// --stat blocks go here
-	// DEBUGGING INFORMATION
+	// --DEBUG INFO
 	statPanel->setDefaultForeground(TCODColor::white); // set text color
-	statPanel->printf(statPanelXPos + 2, statPanelYPos + 2, TCOD_BKGND_NONE,
-			TCOD_CENTER, "POS: %g, %g", engine.player->xpos, engine.player->ypos);
+	statPanel->print(1, 0, "POS: %d, %d", engine.player->xpos, engine.player->ypos);
 	// Draw the message log
 	// panel borders
-	msgPanel->setDefaultBackground(TCODColor::darkestGreen);
+	msgPanel->setDefaultBackground(GUI_BACK);
 	msgPanel->setDefaultForeground(GUI_FORE);
 	msgPanel->clear();
 	msgPanel->hline(0, 0, msgPanel->getWidth());
+	// msg log
+	int logIndex = 1; // sets the starting y-value of the log messages
+	float msgFadeCoeff = 0.4f;
+	for (Message **iter = log.begin(); iter != log.end(); iter++) {
+		Message *message = *iter;
+		msgPanel->setDefaultForeground(message->color * msgFadeCoeff);
+		msgPanel->print(1, logIndex, message->msgText);
+		logIndex++;
+		if (msgFadeCoeff < 1.0f) msgFadeCoeff += 0.3f;
+	}
 	// --msg log print functions go here
 }
 void Gui::blitToScreen() {

@@ -152,9 +152,10 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	// update if we've changed position
 	if (xdiff != 0 || ydiff != 0) {
 		engine.gameStatus=Engine::NEW_TURN;
-		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
+		// the if-then statement below prints spurious collision messages...
+//		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
 			engine.map->computeFOV();
-		}
+//		}
 	}
 }
 Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
@@ -194,6 +195,8 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 }
 // NPC Sentience -- AI routines, context handlers, etc
 void AnimalSentience::update(Actor *subject) {
+	// This is the core decision-making function: it will call any other
+	// functions needed for an NPC to decide what to do on their turn
 	// if the subject is dead, don't even try (quietly)
 	if (subject->mortality && subject->mortality->isDead()) {
 		// might need to add logic that removes dead actors from engine queue
@@ -201,15 +204,27 @@ void AnimalSentience::update(Actor *subject) {
 	}
 	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
 		// the player is visible, let's get closer
-		decideMoveAttack(subject, engine.player->xpos, engine.player->ypos);
+		if (subject->getDistance(engine.player->xpos, engine.player->ypos) <= 3) {
+			engine.gui->message(TCODColor::white, "%s dances and hoots!", subject->name);
+		} else {
+			decideMoveAttack(subject, engine.player->xpos, engine.player->ypos);
+		}
+	} else {
+		// the player's not visible, let's just pick a random wander
+		TCODRandom *rng = TCODRandom::getInstance();
+		int targetx = subject->xpos + rng->getInt(-1, 1);
+		int targety = subject->ypos + rng->getInt(-1, 1);
+		decideMoveAttack(subject, targetx, targety);
 	}
 }
 void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
+	// FIX: the movement code does NOT prevent actors from occupying the same
+	// tile as the player!
 	// decides whether the NPC should move to or attack the target square
 	int xdiff = targetx - subject->xpos;
 	int ydiff = targety - subject->ypos;
 	float distance = sqrtf(xdiff * xdiff + ydiff * ydiff);
-	if (distance > 1) { // how far away is the target tile?
+	if (distance >= 1) { // how far away is the target tile?
 		// if it's more than a single step away, move in that direction
 		// do not allow the actor to take more than 1 step in any direction
 		xdiff = (int)(round(xdiff / distance));
@@ -227,11 +242,15 @@ void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	}
 	targetx = subject->xpos + xdiff;
 	targety = subject->ypos + ydiff;
+	LOGMSG (subject->name \
+			<< " @" << subject->xpos << "," << subject->ypos \
+			<< " -> " << targetx << "(" << xdiff \
+			<< "), " << targety << "(" << ydiff << ")");
 	if (engine.map->isWall(targetx, targety)) {
 		// there's a wall
 		engine.gui->message(TCODColor::white, "The %s bumps into a wall.", subject->name);
 		return;
-	} else if (engine.map->isOccupied(xdiff, ydiff)) {
+	} else if (engine.map->isOccupied(targetx, targety)) {
 		// there's something or someone
 		engine.gui->message(TCODColor::white, "The %s can't get past.", subject->name);
 		return;
