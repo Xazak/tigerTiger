@@ -10,8 +10,8 @@ class Actor {
 		//Attack
 		Sentience *sentience; // ptr to AI subroutines
 		Mortality *mortality; // ptr to HP & death subroutines
-		Container *container; // ptr to internal-inventory handling
-		Portable *portable; // ptr to external-inventory handling ???
+		Container *container; // ptr to actor's inventory
+		Portable *portable; // ptr to allow this actor to be picked up
 
 		Actor(int inputX, int inputY, int sigil, const TCODColor &color, const char *name);
 		~Actor();

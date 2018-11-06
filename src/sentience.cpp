@@ -2,6 +2,7 @@
 #include <math.h>
 #include "main.hpp"
 
+// Player Sentience -- command interpreter, context handlers, etc
 void PlayerSentience::update(Actor *subject) {
 	// if the player's dead, don't even try to update
 	if (subject->mortality && subject->mortality->isDead()) {
@@ -51,6 +52,7 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	// there's nothing in the way, so move the player
 	subject->xpos = targetx;
 	subject->ypos = targety;
+//	LOGMSG("Player position: " << targetx << ", " << targety);
 //	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
 			<< (engine.map->isWall(targetx, targety) ? "wall" : "open") \
 			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
@@ -146,7 +148,11 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 		break;
 		}
 		case 'p': { //DEBUG: Print player position
-			LOGMSG("Player location: (" << subject->xpos << ", " << subject->ypos << ")");
+			LOGMSG("P-LOC abs: " << subject->xpos << ", " << subject->ypos);
+			break;
+		}
+		case 'm': { //DEBUG: Spawn a monkey at a random screen location
+			engine.map->addAnimal(subject->xpos - 5, subject->ypos - 5);
 			break;
 		}
 	}
@@ -192,4 +198,42 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 		}
 	}
 	return NULL;
+}
+// NPC Sentience -- AI routines, context handlers, etc
+void AnimalSentience::update(Actor *subject) {
+	// if the subject is dead, don't even try (quietly)
+	if (subject->mortality && subject->mortality->isDead()) {
+		// might need to add logic that removes dead actors from engine queue
+		return;
+	}
+	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
+		// the player is visible, let's get closer
+		decideMoveAttack(subject, engine.player->xpos, engine.player->ypos);
+	}
+}
+void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
+	// decides whether the NPC should move to or attack the target square
+	// FIX: remove target choice decision making from this fxn
+	int xdiff = targetx - subject->xpos;
+	int ydiff = targety - subject->ypos;
+	float distance = sqrtf(xdiff * xdiff + ydiff * ydiff);
+	if (distance > 1) { // how far away is the target tile?
+		// if it's more than a single step away, move in that direction
+		// do not allow the actor to take more than 1 step in any direction
+		xdiff = (int)(round(xdiff / distance));
+		ydiff = (int)(round(ydiff / distance));
+		if (xdiff > 1) {
+			xdiff = xdiff / xdiff;
+		} else if (xdiff < -1) {
+			xdiff = xdiff / -(xdiff);
+		}
+		if (ydiff > 1) {
+			ydiff = ydiff / ydiff;
+		} else if (ydiff < -1) {
+			ydiff = ydiff / -(ydiff);
+		}
+	}
+	subject->xpos += xdiff;
+	subject->ypos += ydiff;
+//	LOGMSG("Moved actor " << subject->name << " to " << subject->xpos << ", " << subject->ypos);
 }

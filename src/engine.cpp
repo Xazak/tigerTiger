@@ -2,8 +2,10 @@
 
 static const int MAP_HEIGHT = 1000;
 static const int MAP_WIDTH = 1000;
-static const int PLAYER_START_X = 100;
-static const int PLAYER_START_Y = 100;
+//static const int PLAYER_START_X = 30;
+//static const int PLAYER_START_Y = 30;
+static const int PLAYER_START_X = 965;
+static const int PLAYER_START_Y = 965;
 
 Engine::Engine(int screenWidth, int screenHeight):
 	gameStatus(STARTUP), player(NULL), map(NULL), fovRadius(10),
@@ -81,7 +83,8 @@ void Engine::render() {
 	// draw all visible actors
 	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
 		Actor *actor = *iter;
-		if (map->isVisible(actor->xpos, actor->ypos)) {
+		if (actor != player && map->isVisible(actor->xpos, actor->ypos)) {
+//			LOGMSG("Rendering actor " << actor->name);
 			actor->render();
 		}
 		player->render();

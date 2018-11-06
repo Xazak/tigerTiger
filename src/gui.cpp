@@ -35,6 +35,7 @@ Gui::Gui() {
 	viewport = new TCODConsole(
 		(engine.screenWidth - (engine.screenWidth / 4)),
 		engine.screenHeight - 6);
+	LOGMSG("viewport dimensions: " << viewport->getWidth() << "x" << viewport->getHeight());
 	statPanel = new TCODConsole((engine.screenWidth / 4), engine.screenHeight);
 	statPanelXPos = viewport->getWidth();
 	statPanelYPos = 0;
@@ -62,6 +63,10 @@ void Gui::render() {
 	statPanel->clear();
 	statPanel->vline(0, 0, statPanel->getHeight());
 	// --stat blocks go here
+	// DEBUGGING INFORMATION
+	statPanel->setDefaultForeground(TCODColor::white); // set text color
+	statPanel->printf(statPanelXPos + 2, statPanelYPos + 2, TCOD_BKGND_NONE,
+			TCOD_CENTER, "POS: %g, %g", engine.player->xpos, engine.player->ypos);
 	// Draw the message log
 	// panel borders
 	msgPanel->setDefaultBackground(TCODColor::darkestGreen);

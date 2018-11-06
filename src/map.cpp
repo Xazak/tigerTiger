@@ -85,8 +85,7 @@ void Map::render() const {
 	   		2) iterate across all viewportY
 				3) draw (mapXIndex, mapYIndex) on (viewportX, viewportY)
 	 */
-	// find out how big an area we need to render using x/y offsets from the
-	// player's absolute position on the map
+	// find out how big our viewport is before we try to render the map
 	// these could be static const? i think the window size is not allowed to
 	// change once the game is running...
 	int viewportXOffset = engine.gui->viewport->getWidth() / 2;
@@ -96,22 +95,31 @@ void Map::render() const {
 	int mapYStart = engine.player->ypos - viewportYOffset;
 	int mapXEnd = engine.player->xpos + viewportXOffset;
 	int mapYEnd = engine.player->ypos + viewportYOffset;
-	// sanity check against array bounds
+	// sanity check against array bounds: readjust the starting points for the
+	// render calls if they're going to run outside the viewport's bounding
+	/* the map origin at 0,0 lies at the NW corner: a map of size nxn looks:
+	 0,0+------
+		|      |
+			   |
+		 ------+ n,n
+	 */
 	if (mapXStart < 0) mapXStart = 0;
+	if (mapXStart > (width - engine.gui->viewport->getWidth())) {
+		mapXStart = (width - engine.gui->viewport->getWidth());
+	}
 	if (mapYStart < 0) mapYStart = 0;
+	if (mapYStart > (height - engine.gui->viewport->getHeight())) {
+		mapYStart = (height - engine.gui->viewport->getHeight());
+	}
 	if (mapXEnd > width) mapXEnd = width;
 	if (mapYEnd > height) mapYEnd = height;
 	// begin map processing
-	int mapX = mapXStart;
-	int mapY = mapYStart;
+	int mapX = mapXStart; // index to x-position of map tile
+	int mapY = mapYStart; // index to y-position of map tile
 	for (int viewportX = 0; viewportX < engine.gui->viewport->getWidth(); viewportX++) {
-		if (viewportX == 0) mapX = mapXStart;
+		if (viewportX == 0) mapX = mapXStart; // removing this causes segfaults! WHY???
 		for (int viewportY = 0; viewportY < engine.gui->viewport->getHeight(); viewportY++) {
-//			if (mapY < mapYEnd) {
-//				LOGMSG("mY: " << mapY << ", mYEnd: " << mapYEnd << ", vY: " << viewportY << ", vYEnd: " << engine.gui->viewport->getHeight());
-//				assert(mapY < mapYEnd);
-//			}
-			if (viewportY == 0) mapY = mapYStart;
+			if (viewportY == 0) mapY = mapYStart; // same for mapX above???
 			target = &tiles[mapX + mapY * width];
 			if (isVisible(mapX, mapY)) {
 				// draw visible tiles first
@@ -253,30 +261,6 @@ void Map::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActor
 	if (!withActors) {
 		return;
 	}
-	if (first) {
-		// do nothing for now
-	} else {
-		TCODRandom *rng = TCODRandom::getInstance();
-		int nbMonsters = rng->getInt(0, MAX_ROOM_MONSTERS);
-		while (nbMonsters > 0) {
-			int x = rng->getInt(x1, x2);
-			int y = rng->getInt(y1, y2);
-			if (!isObstructed(x, y)) {
-				addMonster(x, y);
-			}
-			nbMonsters--;
-		}
-		// add items
-		int nbItems = rng->getInt(0, MAX_ROOM_ITEMS);
-		while (nbItems > 0) {
-			int x = rng->getInt(x1, x2);
-			int y = rng->getInt(y1, y2);
-			if (!isObstructed(x, y)) {
-				addItem(x, y);
-			}
-			nbItems--;
-		}
-	}
 }
 void Map::dig (int x1, int y1, int x2, int y2) {
 	// this would be the appropriate place to set a tile's biome and terrain
@@ -302,10 +286,18 @@ void Map::dig (int x1, int y1, int x2, int y2) {
 		}
 	}
 }
-
+void Map::addAnimal(int x, int y) {
+	// spawns an animal at the specified x,y coords
+	Actor *monkey = new Actor(x, y, 'm', TCODColor::sepia, "monkey");
+	monkey->sentience = new AnimalSentience();
+	monkey->mortality = new NPCMortality(5, 0, "monkey corpse");
+	monkey->container = new Container(1);
+	engine.actors.push(monkey);
+//	LOGMSG("New animal created at " << x << ", " << y);
+}
 // from the tutorial
 // these are used for BSP dungeon generation
-void Map::addMonster(int x, int y) {
+/*void Map::addMonster(int x, int y) {
 	TCODRandom *rng = TCODRandom::getInstance();
 	if (rng->getInt(0, 100) < 80) {
 		// create an orc
@@ -351,4 +343,4 @@ void Map::addItem(int x, int y) {
 //		scrollOfConfusion->pickable = new Confuser(10, 8);
 		engine.actors.push(scrollOfConfusion);
 	}
-}
+}*/

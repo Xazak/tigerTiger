@@ -48,8 +48,9 @@ public:
 	bool isHolding(int x, int y) const; // are there items on the tile?
 //	TOOLS
 	Actor *getOccupant(int x, int y); // get a pointer to the actor standing on the target tile
-	void addMonster(int x, int y); // add a monster to the map
-	void addItem(int x, int y); // add an item to the map
+	void addAnimal(int x, int y); // spawn an animal on the map
+//	void addMonster(int x, int y); // add a monster to the map
+//	void addItem(int x, int y); // add an item to the map
 
 protected:
 	Tile *tiles; // pointer to tile array

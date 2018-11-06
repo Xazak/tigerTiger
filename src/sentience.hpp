@@ -21,5 +21,5 @@ class AnimalSentience: public Sentience {
 	public:
 		void update(Actor *subject);
 	protected:
-		bool decideMoveAttack(Actor *subject, int targetx, int targety);
+		void decideMoveAttack(Actor *subject, int targetx, int targety);
 };
