@@ -21,6 +21,13 @@ class Gui {
 		TCODConsole *viewport;
 		TCODConsole *statPanel;
 		TCODConsole *msgPanel;
+		// the half-sizes of the viewport's width and height
+		int viewportXOffset;
+		int viewportYOffset;
+		// the viewport's x,y origin within the map array
+		int viewportXOrigin;
+		int viewportYOrigin;
+		// these hold the x,y positions within the terminal itself
 		int statPanelXPos;
 		int statPanelYPos;
 		int msgPanelXPos;
@@ -28,6 +35,7 @@ class Gui {
 
 		Gui();
 		~Gui();
+		void refreshViewport();
 		void render(); // draw the GUI on the screen
 		void renderTile(int inputx, int inputy, int newSigil,
 			const TCODColor foreColor, const TCODColor backColor); // updates viewport to match maps

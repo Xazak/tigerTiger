@@ -53,73 +53,47 @@ Map::~Map() {
 void Map::computeFOV() {
 	visionMap->computeFov(engine.player->xpos, engine.player->ypos, engine.fovRadius);
 }
+/*	*** MAP::RENDER METHOD
+	draw every tile according to its internal values, of those tiles that
+	fall within the range of the viewport's vision:
+	+---+-
+	|   |^
+	| P |H
+	|   |v
+	+---+-
+	|<W>|
+	where W and H are the viewportWidth and ..Height respectively.
+	P should always be located at (W/2, H/2) w/in the viewport, and the tiles
+	displayed are generated relative to that by their absolute position on 
+	the map.
+	METHOD
+	Given the player's x,y position (indexing to tiles[x + y * arrayWidth])
+	viewportXStart, viewportYStart = 0
+	viewportXEnd = viewportWidth
+	viewportYEnd = viewportHeight
+	viewportTarget = (viewportXIndex, viewportYIndex)
+	mapWindowXStart = playerX - viewportXOffset
+	mapWindowYStart = playerY - viewportYOffset
+	mapWindowXEnd = playerX + viewportXOffset
+	mapWindowYEnd = playerY + viewportYOffset
+	mapWindowTarget = (mapWindowXIndex, mapWindowYIndex)
+	1) iterate across all viewportX
+		iterate across all mapXIndex
+		2) iterate across all viewportY
+			3) draw (mapXIndex, mapYIndex) on (viewportX, viewportY)
+*/
 void Map::render() const {
 	// draw the map onto the viewport console
 	static const float beyondFOVMod = 0.5f; // color coefficient
 	Tile *target = &tiles[0]; // index pointer, starts at beginning
-	/* draw every tile according to its internal values, of those tiles that
-	   fall within the range of the viewport's vision:
-	   +---+-
-	   |   |^
-	   | P |H
-	   |   |v
-	   +---+-
-	   |<W>|
-	   where W and H are the viewportWidth and ..Height respectively.
-	   P should always be located at (W/2, H/2) w/in the viewport, and the tiles
-	   displayed are generated relative to that by their absolute position on 
-	   the map.
-	 * METHOD
-	   Given the player's x,y position (indexing to tiles[x + y * arrayWidth])
-	   viewportXStart, viewportYStart = 0
-	   viewportXEnd = viewportWidth
-	   viewportYEnd = viewportHeight
-	   viewportTarget = (viewportXIndex, viewportYIndex)
-	   mapWindowXStart = playerX - viewportXOffset
-	   mapWindowYStart = playerY - viewportYOffset
-	   mapWindowXEnd = playerX + viewportXOffset
-	   mapWindowYEnd = playerY + viewportYOffset
-	   mapWindowTarget = (mapWindowXIndex, mapWindowYIndex)
-	   1) iterate across all viewportX
-	   		iterate across all mapXIndex
-	   		2) iterate across all viewportY
-				3) draw (mapXIndex, mapYIndex) on (viewportX, viewportY)
-	 */
-	// find out how big our viewport is before we try to render the map
-	// these could be static const? i think the window size is not allowed to
-	// change once the game is running...
-	int viewportXOffset = engine.gui->viewport->getWidth() / 2;
-	int viewportYOffset = engine.gui->viewport->getHeight() / 2;
-	// find out how much of the map we need to render
-	int mapXStart = engine.player->xpos - viewportXOffset;
-	int mapYStart = engine.player->ypos - viewportYOffset;
-	int mapXEnd = engine.player->xpos + viewportXOffset;
-	int mapYEnd = engine.player->ypos + viewportYOffset;
-	// sanity check against array bounds: readjust the starting points for the
-	// render calls if they're going to run outside the viewport's bounding
-	/* the map origin at 0,0 lies at the NW corner: a map of size nxn looks:
-	 0,0+------
-		|      |
-			   |
-		 ------+ n,n
-	 */
-	if (mapXStart < 0) mapXStart = 0;
-	if (mapXStart > (width - engine.gui->viewport->getWidth())) {
-		mapXStart = (width - engine.gui->viewport->getWidth());
-	}
-	if (mapYStart < 0) mapYStart = 0;
-	if (mapYStart > (height - engine.gui->viewport->getHeight())) {
-		mapYStart = (height - engine.gui->viewport->getHeight());
-	}
-	if (mapXEnd > width) mapXEnd = width;
-	if (mapYEnd > height) mapYEnd = height;
+	engine.gui->refreshViewport(); // update the viewport coords before we start
 	// begin map processing
-	int mapX = mapXStart; // index to x-position of map tile
-	int mapY = mapYStart; // index to y-position of map tile
+	int mapX = engine.gui->viewportXOrigin; // index to x-position of map tile
+	int mapY = engine.gui->viewportYOrigin; // index to y-position of map tile
 	for (int viewportX = 0; viewportX < engine.gui->viewport->getWidth(); viewportX++) {
-		if (viewportX == 0) mapX = mapXStart; // removing this causes segfaults! WHY???
+		if (viewportX == 0) mapX = engine.gui->viewportXOrigin; // removing this causes segfaults! WHY???
 		for (int viewportY = 0; viewportY < engine.gui->viewport->getHeight(); viewportY++) {
-			if (viewportY == 0) mapY = mapYStart; // same for mapX above???
+			if (viewportY == 0) mapY = engine.gui->viewportYOrigin; // same for mapX above???
 			target = &tiles[mapX + mapY * width];
 			if (isVisible(mapX, mapY)) {
 				// draw visible tiles first
@@ -137,51 +111,6 @@ void Map::render() const {
 		}
 		mapX++;
 	}
-/*	for (int cameraXPos = 0; cameraXPos < engine.gui->viewport->getWidth();
-			cameraXPos++) {
-		for (int cameraYPos = 0; cameraYPos < engine.gui->viewport->getHeight();
-				cameraYPos++) {
-			for (int mapXPos = mapXStart; mapXPos < mapXEnd; mapXPos++) {
-				for (int mapYPos = mapYStart; mapYPos < mapYEnd; mapYPos++) {
-					// decide which tiles to draw
-					target = &tiles[mapXPos + mapYPos * width];
-					if (isVisible(mapXPos, mapYPos)) {
-						// draw visible tiles first
-						engine.gui->viewport->putCharEx(cameraXPos, cameraYPos,
-							target->glyph, target->foreColor,
-							target->backColor);
-					} else if (isExplored(mapXPos, mapYPos)) {
-						// draw not-visible, but explored tiles
-						engine.gui->viewport->putCharEx(cameraXPos, cameraYPos,
-							target->glyph,
-							target->foreColor - (target->foreColor * beyondFOVMod),
-							target->backColor - (target->backColor * beyondFOVMod));
-					}
-					// don't bother drawing anything else right now
-				}//mapY
-			}//mapX
-		}//cameraY
-	}//cameraX
-*/
-/*	for (int xIndex = mapXStart; xIndex < mapXEnd; xIndex++) {
-		for (int yIndex = mapYStart; yIndex < mapYEnd; yIndex++) {
-			target = &tiles[xIndex + yIndex * width];
-			if (isVisible(xIndex, yIndex)) {
-				// draw visible tiles first
-				engine.gui->viewport->putCharEx(xIndex, yIndex, target->glyph,
-						target->foreColor, target->backColor);
-			} else if (isExplored(xIndex, yIndex)) {
-				// draw unseen, but explored tiles
-				engine.gui->viewport->putCharEx(xIndex, yIndex, target->glyph,
-						target->foreColor - (target->foreColor * beyondFOVMod),
-						target->backColor - (target->backColor * beyondFOVMod));
-			}
-			// don't bother drawing anything else right now
-		}
-	}*/
-//	TCODConsole::blit(engine.gui->viewport, 0, 0,
-//			engine.gui->viewport->getWidth(), engine.gui->viewport->getHeight(),
-//			TCODConsole::root, 0, 0);
 }
 void Map::init(bool withActors) {
 	// create the map objects
@@ -194,9 +123,7 @@ void Map::init(bool withActors) {
 //	BspListener listener(*this);
 //	bsp.traverseInvertedLevelOrder(&listener, (void *)withActors);
 	// invoke our custom mapgen code instead
-	LOGMSG(engine.player->xpos << ", " << engine.player->ypos);
 	generateTerrain(true, width, height); // this is my function
-	LOGMSG(engine.player->xpos << ", " << engine.player->ypos);
 }
 /*void Map::save(TCODZip &zip) {
 	zip.putInt(seed);
@@ -281,8 +208,8 @@ void Map::dig (int x1, int y1, int x2, int y2) {
 			visionMap->setProperties(tilex, tiley, true, true);
 			Tile *target = &tiles[tilex + tiley * width];
 			target->glyph = 46;
-			target->foreColor = TCODColor::darkestGreen;
-			target->backColor = TCODColor::darkerLime;
+			target->foreColor = TCODColor::darkerGreen;
+			target->backColor = TCODColor::darkestGreen;
 		}
 	}
 }

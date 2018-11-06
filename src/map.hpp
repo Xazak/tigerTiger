@@ -21,7 +21,6 @@ struct Tile {
 	Tile();
 //	~Tile();
 };
-
 class Map {
 public:
 	int width, height;

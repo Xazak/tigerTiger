@@ -35,18 +35,11 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 //	LOGMSG("TRY: Move player to (" << targetx << ", " << targety << ")");
 	if (engine.map->isWall(targetx, targety)) {
 		// there's a wall
-/*		LOGMSG("FAIL: Target tile is a wall \n ["\
-			<< "WALL:" << engine.map->isWall(targetx, targety) << " "\
-			<< "VISB:" << engine.map->isVisible(targetx, targety) << " "\
-			<< "EXPL:" << engine.map->isExplored(targetx, targety) << " "\
-			<< "]");*/
 		engine.gui->message(TCODColor::white, "You bump your nose.");
 		return false;
 	} else if (engine.map->isOccupied(targetx, targety)) {
-//		LOGMSG("FAIL: Target occupied-obstructed");
 		// there's something or someone
-//		Tile *target = &(engine.map->tiles[targetx + targety * width]);
-//		engine.gui->message(TCODColor::white, "A %s is in the way.\n", target->occupant->
+		engine.gui->message(TCODColor::white, "There's someone in the way.");
 		return false;
 	}
 	// there's nothing in the way, so move the player
@@ -213,7 +206,6 @@ void AnimalSentience::update(Actor *subject) {
 }
 void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// decides whether the NPC should move to or attack the target square
-	// FIX: remove target choice decision making from this fxn
 	int xdiff = targetx - subject->xpos;
 	int ydiff = targety - subject->ypos;
 	float distance = sqrtf(xdiff * xdiff + ydiff * ydiff);
@@ -233,7 +225,21 @@ void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 			ydiff = ydiff / -(ydiff);
 		}
 	}
+	targetx = subject->xpos + xdiff;
+	targety = subject->ypos + ydiff;
+	if (engine.map->isWall(targetx, targety)) {
+		// there's a wall
+		engine.gui->message(TCODColor::white, "The %s bumps into a wall.", subject->name);
+		return;
+	} else if (engine.map->isOccupied(xdiff, ydiff)) {
+		// there's something or someone
+		engine.gui->message(TCODColor::white, "The %s can't get past.", subject->name);
+		return;
+	}
+/*	LOGMSG(subject->name \
+			<< "\n abs(" << subject->xpos << "," << subject->ypos << ")\n" \
+			<< " tgt(" << targetx << "," << targety << ")\n" \
+			<< "diff(" << xdiff << "," << ydiff << ")");*/
 	subject->xpos += xdiff;
 	subject->ypos += ydiff;
-//	LOGMSG("Moved actor " << subject->name << " to " << subject->xpos << ", " << subject->ypos);
 }

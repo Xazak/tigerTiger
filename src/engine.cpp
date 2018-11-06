@@ -39,6 +39,7 @@ void Engine::init() {
 	// initialize the map, show the MOTD
 	map = new Map(MAP_WIDTH, MAP_HEIGHT); // init a new map
 	map->init(true);
+	engine.gui->refreshViewport(); // force a viewport update
 	gui->message(TCODColor::orange,
 		"Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
 	gameStatus=STARTUP;

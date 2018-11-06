@@ -36,6 +36,8 @@ Gui::Gui() {
 		(engine.screenWidth - (engine.screenWidth / 4)),
 		engine.screenHeight - 6);
 	LOGMSG("viewport dimensions: " << viewport->getWidth() << "x" << viewport->getHeight());
+	viewportXOffset = viewport->getWidth() / 2;
+	viewportYOffset = viewport->getHeight() / 2;
 	statPanel = new TCODConsole((engine.screenWidth / 4), engine.screenHeight);
 	statPanelXPos = viewport->getWidth();
 	statPanelYPos = 0;
@@ -49,6 +51,22 @@ Gui::~Gui() {
 	delete statPanel;
 	delete msgPanel;
 	clear();
+}
+void Gui::refreshViewport() {
+	// these origin values lack any sanity checking wrt map bounds!
+	viewportXOrigin = engine.player->xpos - viewportXOffset;
+	viewportYOrigin = engine.player->ypos - viewportYOffset;
+	// lock the viewport's origin at one side of the map or the other
+	if (viewportXOrigin < 0) {
+		viewportXOrigin = 0;
+	} else if (viewportXOrigin > (engine.map->width - viewport->getWidth())) {
+		viewportXOrigin = (engine.map->width - viewport->getWidth());
+	}
+	if (viewportYOrigin < 0) {
+		viewportYOrigin = 0;
+	} else if (viewportYOrigin > (engine.map->height - viewport->getHeight())) {
+		viewportYOrigin = (engine.map->height - viewport->getHeight());
+	}
 }
 void Gui::render() {
 	// NOTE: clear() uses the Default_color settings defined above!

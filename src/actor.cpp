@@ -13,19 +13,15 @@ Actor::~Actor() {
 void Actor::update() {
 	if (sentience) sentience->update(this);
 }
-void Actor::render() const {
+/*void Actor::render() const {
 	// draw the actor on the map
-	// find offsets for the viewport size
-	// the camera's centerpoint will always be located at the viewport middle
-	int viewportXOffset = engine.gui->viewport->getWidth() / 2;
-	int viewportYOffset = engine.gui->viewport->getHeight() / 2;
-	int screenXPos = 0; // x-position of actor on screen relative by map
-	int screenYPos = 0; // y-position of actor on screen relative by map
+	int screenXPos = 0; // x-position of actor on screen relative to map
+	int screenYPos = 0; // y-position of actor on screen relative to map
 	// determine where to draw the actor by the map:viewport relationship
 	if (this == engine.player) {
 		// lock the player position to the viewport middle unless they're too
 		// close to a map edge, and then allow them to slide
-		// edge checks, in order: left, right, top, bottom
+		// left-right edge checks
 		if (xpos < viewportXOffset) {
 			screenXPos = xpos;
 		} else if (xpos > (engine.map->width - viewportXOffset)) {
@@ -33,6 +29,7 @@ void Actor::render() const {
 		} else {
 			screenXPos = viewportXOffset;
 		}
+		// top-bottom edge checks
 		if (ypos < viewportYOffset) {
 			screenYPos = ypos;
 		} else if (ypos > (engine.map->height - viewportYOffset)) {
@@ -40,27 +37,54 @@ void Actor::render() const {
 		} else {
 			screenYPos = viewportYOffset;
 		}
-		LOGMSG("Offset " << viewportXOffset << " by " << (xpos % viewportXOffset));
-		LOGMSG("PLAYER abs: " << xpos << ", " << ypos << " rel: " << screenXPos << ", " << screenYPos);
-	} else {
-		// figure out where to draw the NPC actor by calculating the offset
-		if (xpos > viewportXOffset) screenXPos = xpos % viewportXOffset;
-		if (ypos > viewportYOffset) screenYPos = ypos % viewportYOffset;
+//		LOGMSG("Offset " << viewportXOffset << " by " << (xpos % viewportXOffset));
+//		LOGMSG("PLAYER abs: " << xpos << ", " << ypos << " rel: " << screenXPos << ", " << screenYPos);
+	} else { // how to draw all the other NPCs
+//		screenXPos = engine.player->xpos - xpos - viewportXOffset;
+//		screenYPos = engine.player->ypos - ypos - viewportYOffset;
+		screenXPos = engine.gui->viewport->getWidth() - (engine.map->width - xpos);
+		screenYPos = engine.gui->viewport->getHeight() - (engine.map->height - ypos);
+//		LOGMSG("Drawing " << name << " at " << xpos << ", " << ypos << " [" << screenXPos << ", " << screenYPos << "]");
 	}
-
-/*		if (xpos < cameraXPos || xpos > () {
-			screenXPos = xpos;
-		} else {
-			screenXPos = cameraXPos;
-		}
-		if (ypos < cameraYPos) {
-			screenYPos = ypos;
-		} else {
-			screenYPos = cameraYPos;
-		}*/
 	// draw the actor itself
-	engine.gui->viewport->setChar(screenXPos, screenYPos, sigil); // draw the character
 	engine.gui->viewport->setCharForeground(screenXPos, screenYPos, color); // color the character
+	engine.gui->viewport->setChar(screenXPos, screenYPos, sigil); // draw the character
+//	LOGMSG("Drawing " << name << " at " << xpos << ", " << ypos << " [" << screenXPos << ", " << screenYPos << "]");
+}*/
+void Actor::render() const {
+	// draw the actor on the map
+	int screenXPos = 0; // x-position of actor on screen relative to map
+	int screenYPos = 0; // y-position of actor on screen relative to map
+	// determine where to draw the actor by the map:viewport relationship
+	if (this == engine.player) {
+		// lock the player position to the viewport middle unless they're too
+		// close to a map edge, and then allow them to slide
+		// left-right edge checks
+		if (xpos < engine.gui->viewportXOffset) {
+			screenXPos = xpos;
+		} else if (xpos > (engine.map->width - engine.gui->viewportXOffset)) {
+			screenXPos = engine.gui->viewport->getWidth() - (engine.map->width - xpos);
+		} else {
+			screenXPos = engine.gui->viewportXOffset;
+		}
+		// top-bottom edge checks
+		if (ypos < engine.gui->viewportYOffset) {
+			screenYPos = ypos;
+		} else if (ypos > (engine.map->height - engine.gui->viewportYOffset)) {
+			screenYPos = engine.gui->viewport->getHeight() - (engine.map->height - ypos);
+		} else {
+			screenYPos = engine.gui->viewportYOffset;
+		}
+//		LOGMSG("Offset " << viewportXOffset << " by " << (xpos % viewportXOffset));
+//		LOGMSG("PLAYER abs: " << xpos << ", " << ypos << " rel: " << screenXPos << ", " << screenYPos);
+	} else { // how to draw all the other NPCs
+		screenXPos = xpos - engine.gui->viewportXOrigin;
+		screenYPos = ypos - engine.gui->viewportYOrigin;
+//		LOGMSG("Drawing " << name << " at " << xpos << ", " << ypos << " [" << screenXPos << ", " << screenYPos << "]");
+	}
+	// draw the actor itself
+	engine.gui->viewport->setCharForeground(screenXPos, screenYPos, color); // color the character
+	engine.gui->viewport->setChar(screenXPos, screenYPos, sigil); // draw the character
 //	LOGMSG("Drawing " << name << " at " << xpos << ", " << ypos << " [" << screenXPos << ", " << screenYPos << "]");
 }
 float Actor::getDistance(int targetX, int targetY) const {
