@@ -7,6 +7,7 @@
 class Actor; // this is a 'forward declaration'
 // other implementation files go here
 #include "sentience.hpp"
+#include "vitality.hpp"
 #include "mortality.hpp"
 #include "portable.hpp"
 #include "container.hpp"

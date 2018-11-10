@@ -3,9 +3,6 @@
   */
 class Mortality {
 	public:
-		float maximumHP;
-		float currentHP;
-		float defense;
 		const char *cadaverTitle;
 
 		Mortality(float newMaxHP, float newDefense, const char *cadaverTitle);
@@ -13,9 +10,18 @@ class Mortality {
 		inline bool isDead() { return currentHP <= 0; }
 		virtual void embraceDeath(Actor *subject);
 		float adjustHP(Actor *subject, float hpAdjustment);
-		//fxns for load, save, and data-block creation go here
+		// simple sets/gets
+		void setMaximumHP(float newMaxHP);
+		float getMaximumHP();
+		void setCurrentHP(float hpChange);
+		float getCurrentHP();
+		void setDefenseRating(float newRating);
+		float getDefenseRating();
+		//fxns for load, save, and data-block creation will go here
 	protected:
-		enum MortalityType { PLAYER, NPC, OBJECT };
+		float maximumHP;
+		float currentHP;
+		float defense;
 };
 class PlayerMortality: public Mortality {
 	public:

@@ -1,5 +1,7 @@
 #include "main.hpp"
 
+typedef unsigned int uint;
+
 Engine engine(80, 50); // init game engine with window size
 
 int main() {
