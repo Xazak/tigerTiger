@@ -35,14 +35,14 @@ class Gui {
 
 		Gui();
 		~Gui();
-		void refreshViewport();
+		void blitToScreen(); // draw all GUI panels on the root console
 		void render(); // draw the GUI on the screen
 		void renderTile(int inputx, int inputy, int newSigil,
 			const TCODColor foreColor, const TCODColor backColor); // updates viewport to match maps
+		void refreshViewport();
 		// print a message to the log
 		void message(const TCODColor &color, const char *text, ...);
 		void clear(); // wipe the message log
-		void blitToScreen(); // draw all GUI panels on the root console
 //		void renderMouseLook();
 		// need load and save fxns
 	protected:

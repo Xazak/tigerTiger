@@ -52,21 +52,17 @@ Gui::~Gui() {
 	delete msgPanel;
 	clear();
 }
-void Gui::refreshViewport() {
-	// these origin values lack any sanity checking wrt map bounds!
-	viewportXOrigin = engine.player->xpos - viewportXOffset;
-	viewportYOrigin = engine.player->ypos - viewportYOffset;
-	// lock the viewport's origin at one side of the map or the other
-	if (viewportXOrigin < 0) {
-		viewportXOrigin = 0;
-	} else if (viewportXOrigin > (engine.map->width - viewport->getWidth())) {
-		viewportXOrigin = (engine.map->width - viewport->getWidth());
-	}
-	if (viewportYOrigin < 0) {
-		viewportYOrigin = 0;
-	} else if (viewportYOrigin > (engine.map->height - viewport->getHeight())) {
-		viewportYOrigin = (engine.map->height - viewport->getHeight());
-	}
+void Gui::blitToScreen() {
+//	LOGMSG(" has been called\n");
+	TCODConsole::blit( viewport, 0, 0,
+		viewport->getWidth(), viewport->getHeight(),
+		TCODConsole::root, 0, 0);
+	TCODConsole::blit( statPanel, 0, 0,
+		statPanel->getWidth(), statPanel->getHeight(),
+		TCODConsole::root, statPanelXPos, statPanelYPos);
+	TCODConsole::blit(msgPanel, 0, 0,
+		msgPanel->getWidth(), msgPanel->getHeight(),
+		TCODConsole::root, msgPanelXPos, msgPanelYPos);
 }
 void Gui::render() {
 	// NOTE: clear() uses the Default_color settings defined above!
@@ -102,18 +98,6 @@ void Gui::render() {
 	}
 	// --msg log print functions go here
 }
-void Gui::blitToScreen() {
-//	LOGMSG(" has been called\n");
-	TCODConsole::blit( viewport, 0, 0,
-		viewport->getWidth(), viewport->getHeight(),
-		TCODConsole::root, 0, 0);
-	TCODConsole::blit( statPanel, 0, 0,
-		statPanel->getWidth(), statPanel->getHeight(),
-		TCODConsole::root, statPanelXPos, statPanelYPos);
-	TCODConsole::blit(msgPanel, 0, 0,
-		msgPanel->getWidth(), msgPanel->getHeight(),
-		TCODConsole::root, msgPanelXPos, msgPanelYPos);
-}
 void Gui::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreColor,
 	const TCODColor backColor) {
 	// Pretty sure this is supposed to render individual tiles for single
@@ -123,6 +107,42 @@ void Gui::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreC
 //	TCODConsole::blit(viewport->con, 0, 0, 0, 0, TCODConsole::root,
 //		viewport->xpos, viewport->ypos);
 }
+// *** VIEWPORT
+void Gui::refreshViewport() {
+	// these origin values lack any sanity checking wrt map bounds!
+	viewportXOrigin = engine.player->xpos - viewportXOffset;
+	viewportYOrigin = engine.player->ypos - viewportYOffset;
+	// lock the viewport's origin at one side of the map or the other
+	if (viewportXOrigin < 0) {
+		viewportXOrigin = 0;
+	} else if (viewportXOrigin > (engine.map->width - viewport->getWidth())) {
+		viewportXOrigin = (engine.map->width - viewport->getWidth());
+	}
+	if (viewportYOrigin < 0) {
+		viewportYOrigin = 0;
+	} else if (viewportYOrigin > (engine.map->height - viewport->getHeight())) {
+		viewportYOrigin = (engine.map->height - viewport->getHeight());
+	}
+}
+// *** GUI OBJECTS
+/*void Gui::renderBar(int x, int y, int width, const char *name, float curValue,
+	float maxValue, const TCODColor &foreColor, const TCODColor &backColor) {
+	// draw the background
+	guiCon->setDefaultBackground(backColor);
+	guiCon->rect(x, y, width, 1, false, TCOD_BKGND_SET);
+	int barWidth = (int)(curValue / maxValue * width);
+	if (barWidth > 0) {
+		// only draw the bar if there's enough bar worth drawing
+		guiCon->setDefaultBackground(foreColor);
+		guiCon->rect(x, y, barWidth, 1, false, TCOD_BKGND_SET);
+	}
+	// print the text on top of the bar
+	guiCon->setDefaultForeground(TCODColor::white); // set text color
+	// draw the text: xy coords, backgrnd color, justification, [printf()]
+	guiCon->printf((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
+		"%s : %g/%g", name, curValue, maxValue);
+}*/
+// *** MESSAGES
 void Gui::message(const TCODColor &color, const char *msgText, ...) {
 	// this fxn needs better annotation!
 	va_list ap; //?
@@ -154,24 +174,6 @@ void Gui::message(const TCODColor &color, const char *msgText, ...) {
 void Gui::clear() {
 	log.clearAndDelete(); // wipe the message log
 }
-/*void Gui::renderBar(int x, int y, int width, const char *name, float curValue,
-	float maxValue, const TCODColor &foreColor, const TCODColor &backColor) {
-	// draw the background
-	guiCon->setDefaultBackground(backColor);
-	guiCon->rect(x, y, width, 1, false, TCOD_BKGND_SET);
-	int barWidth = (int)(curValue / maxValue * width);
-	if (barWidth > 0) {
-		// only draw the bar if there's enough bar worth drawing
-		guiCon->setDefaultBackground(foreColor);
-		guiCon->rect(x, y, barWidth, 1, false, TCOD_BKGND_SET);
-	}
-	// print the text on top of the bar
-	guiCon->setDefaultForeground(TCODColor::white); // set text color
-	// draw the text: xy coords, backgrnd color, justification, [printf()]
-	guiCon->printf((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
-		"%s : %g/%g", name, curValue, maxValue);
-}*/
-// *** MESSAGES
 Gui::Message::Message(const char *inputText, const TCODColor &color):
 	msgText(strdup(inputText)), color(color) { }
 Gui::Message::~Message() { free(msgText); }

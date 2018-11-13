@@ -13,16 +13,14 @@ Engine::Engine(int screenWidth, int screenHeight):
 	// initialize the console
 	TCODConsole::initRoot(screenWidth, screenHeight, "TIGER!TIGER!", false);
 	gui = new Gui(); // init the GUI
+	time = new GameClock(); // init the calendar and timekeeper
 }
 Engine::~Engine() {
 	term();
 	delete gui;
+	delete time;
 }
-void Engine::term() {
-	actors.clearAndDelete(); // delete all actors
-	if (map) delete map; // delete the map if it still exists
-	gui->clear(); // wipe the GUI
-}
+// *** MAJOR FUNCTIONS
 void Engine::init() {
 	// create a player object
 	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@', TCODColor::orange, "player");
@@ -42,7 +40,13 @@ void Engine::init() {
 	engine.gui->refreshViewport(); // force a viewport update
 	gui->message(TCODColor::orange,
 		"Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
+	//INIT TIMEKEEPER HERE
 	gameStatus=STARTUP;
+}
+void Engine::term() {
+	actors.clearAndDelete(); // delete all actors
+	if (map) delete map; // delete the map if it still exists
+	gui->clear(); // wipe the GUI
 }
 void Engine::update() {
 	if (gameStatus == STARTUP) map->computeFOV(); // force FOV update
@@ -53,7 +57,10 @@ void Engine::update() {
 //		save();
 //		load();
 	}
-	// the player gets to go first
+	// tell the timekeeper to start a new round
+	engine.time->updateTurn();
+	engine.time->updateCalendar();
+/*	// the player gets to go first
 	player->update();
 	// then the NPCs make their moves
 	if (gameStatus == NEW_TURN) {
@@ -63,7 +70,7 @@ void Engine::update() {
 				actor->update();
 			}
 		}
-	}
+	}*/
 }
 void Engine::render() {
 /* SCREEN DISPLAY LAYER MODEL
@@ -91,69 +98,6 @@ void Engine::render() {
 		player->render();
 	}
 	gui->blitToScreen();
-}
-void Engine::sendToBack(Actor *actor) {
-	actors.remove(actor);
-	actors.insertBefore(actor, 0);
-}
-Actor *Engine::getClosestMonster(int x, int y, float range) const {
-	Actor *closestMonster = NULL;
-	float bestDistance = 1E6f; //1E6 == 1000000; how far away are we allowed to select?
-	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
-		Actor *actor = *iter;
-//		if (actor != player && actor->destructible && !actor->destructible->isDead()) {
-		if (actor != player) {
-			float distance = actor->getDistance(x, y);
-			if (distance < bestDistance && (distance <= range || range == 0.0f )) {
-				bestDistance = distance;
-				closestMonster = actor;
-			}
-		}
-	}
-	return closestMonster;
-}
-bool Engine::pickATile(int *x, int *y, float maxRange) {
-	while (!TCODConsole::isWindowClosed()) {
-		render();
-		// highlight the possible range
-		for (int cx = 0; cx < map->width; cx++) {
-			for (int cy = 0; cy < map->height; cy++) {
-				if (map->isVisible(cx, cy) && (maxRange == 0 || player->getDistance(cx, cy) <= maxRange)) {
-//					TCODColor color = TCODConsole::root->getCharBackground(cx, cy);
-					TCODColor color = engine.gui->viewport->getCharBackground(cx, cy);
-					color = color * 1.2f;
-//					TCODConsole::root->setCharBackground(cx, cy, color);
-					engine.gui->viewport->setCharBackground(cx, cy, color);
-				}
-			}
-		}
-		// mouse and ??? handling
-/*		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS|TCOD_EVENT_MOUSE, &lastKey, &mouse);
-		if (map->isInFOV(mouse.cx, mouse.cy) && 
-				(maxRange == 0 || player->getDistance(mouse.cx, mouse.cy) <= maxRange)) {
-			TCODConsole::root->setCharBackground(mouse.cx, mouse.cy, TCODColor::white);
-			if (mouse.lbutton_pressed) {
-				*x = mouse.cx;
-				*y = mouse.cy;
-				return true;
-			}
-		}
-		if (mouse.rbutton_pressed || lastKey.vk != TCODK_NONE) {
-			return false;
-		}*/
-		TCODConsole::flush();
-	}
-	return false;
-}
-Actor *Engine::getActor(int x, int y) const {
-	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
-		Actor *actor = *iter;
-//		if (actor->x == x && actor->y == y && actor->destructible && !actor->destructible->isDead()) {
-		if (actor->xpos == x && actor->ypos == y) {
-			return actor;
-		}
-	}
-	return NULL;
 }
 void Engine::save() {
 	/*if (player->destructible->isDead()) {
@@ -219,4 +163,68 @@ void Engine::load() {
 		// force FOV computation
 		gameStatus = STARTUP;
 	}
+}
+// *** MINOR FUNCTIONS
+void Engine::sendToBack(Actor *actor) {
+	actors.remove(actor);
+	actors.insertBefore(actor, 0);
+}
+Actor *Engine::getClosestMonster(int x, int y, float range) const {
+	Actor *closestMonster = NULL;
+	float bestDistance = 1E6f; //1E6 == 1000000; how far away are we allowed to select?
+	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
+		Actor *actor = *iter;
+//		if (actor != player && actor->destructible && !actor->destructible->isDead()) {
+		if (actor != player) {
+			float distance = actor->getDistance(x, y);
+			if (distance < bestDistance && (distance <= range || range == 0.0f )) {
+				bestDistance = distance;
+				closestMonster = actor;
+			}
+		}
+	}
+	return closestMonster;
+}
+bool Engine::pickATile(int *x, int *y, float maxRange) {
+	while (!TCODConsole::isWindowClosed()) {
+		render();
+		// highlight the possible range
+		for (int cx = 0; cx < map->width; cx++) {
+			for (int cy = 0; cy < map->height; cy++) {
+				if (map->isVisible(cx, cy) && (maxRange == 0 || player->getDistance(cx, cy) <= maxRange)) {
+//					TCODColor color = TCODConsole::root->getCharBackground(cx, cy);
+					TCODColor color = engine.gui->viewport->getCharBackground(cx, cy);
+					color = color * 1.2f;
+//					TCODConsole::root->setCharBackground(cx, cy, color);
+					engine.gui->viewport->setCharBackground(cx, cy, color);
+				}
+			}
+		}
+		// mouse and ??? handling
+/*		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS|TCOD_EVENT_MOUSE, &lastKey, &mouse);
+		if (map->isInFOV(mouse.cx, mouse.cy) && 
+				(maxRange == 0 || player->getDistance(mouse.cx, mouse.cy) <= maxRange)) {
+			TCODConsole::root->setCharBackground(mouse.cx, mouse.cy, TCODColor::white);
+			if (mouse.lbutton_pressed) {
+				*x = mouse.cx;
+				*y = mouse.cy;
+				return true;
+			}
+		}
+		if (mouse.rbutton_pressed || lastKey.vk != TCODK_NONE) {
+			return false;
+		}*/
+		TCODConsole::flush();
+	}
+	return false;
+}
+Actor *Engine::getActor(int x, int y) const {
+	for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
+		Actor *actor = *iter;
+//		if (actor->x == x && actor->y == y && actor->destructible && !actor->destructible->isDead()) {
+		if (actor->xpos == x && actor->ypos == y) {
+			return actor;
+		}
+	}
+	return NULL;
 }

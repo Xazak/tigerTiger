@@ -6,6 +6,12 @@ class Vitality {
 	public:
 
 		// con/destructors?
+		// derived statistics
+		uint getLeapDistance();
+		uint getSprintSpeed();
+		// tools
+		void burnCalories(); // called at end of each player action
+		void gainEnergy(uint calories); // called when player eats food
 		// sets/gets
 		void setFerocity(uint newValue) { this->ferocity = newValue; }
 		uint getFerocity() { return this->ferocity; }

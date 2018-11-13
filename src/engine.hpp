@@ -11,6 +11,7 @@ class Engine {
 		int screenWidth;
 		int screenHeight;
 		Gui *gui; // pointer to main GUI object
+		GameClock *time; // pointer to calendar/scheduler tools
 		TCOD_key_t lastKey; // contains last key pressed by player
 //		TCOD_mouse_t mouse;
 

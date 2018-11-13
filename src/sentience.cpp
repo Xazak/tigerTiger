@@ -4,6 +4,7 @@
 
 // Player Sentience -- command interpreter, context handlers, etc
 void PlayerSentience::update(Actor *subject) {
+//	LOGMSG(" called ");
 	// if the player's dead, don't even try to update
 	if (subject->mortality && subject->mortality->isDead()) {
 		ERRMSG(": Player is dead!");

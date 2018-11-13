@@ -12,6 +12,7 @@ class Actor; // this is a 'forward declaration'
 #include "portable.hpp"
 #include "container.hpp"
 #include "actor.hpp"
+#include "chrono.hpp"
 #include "gui.hpp"
 #include "map.hpp"
 #include "engine.hpp"
