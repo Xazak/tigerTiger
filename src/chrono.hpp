@@ -11,6 +11,7 @@ class GameClock {
 		// allows adjustment of date; calling w/ no args moves time by +1 sec
 		void updateCalendar(int increment = 1); // updates the game calendar
 		void updateTurn(); // invokes the update routines for all actors
+		TCODList<Actor *> actionQueue; // contains NEARBY, SENTIENT actors
 
 	protected:
 		// The turn count and the game date are intentionally segregated from

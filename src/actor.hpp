@@ -10,12 +10,13 @@ class Actor {
 		//Attack
 		Sentience *sentience; // ptr to AI subroutines
 		Mortality *mortality; // ptr to HP & death subroutines
+		ActorClock *tempo; // ptr to AP system
 		Container *container; // ptr to actor's inventory
 		Portable *portable; // ptr to allow this actor to be picked up
 
 		Actor(int inputX, int inputY, int sigil, const TCODColor &color, const char *name);
 		~Actor();
-		void update(); // ?
+		void update(); // tells a sentient actor to make a decision/change state
 		void render() const; // draws the actor on the console
 		float getDistance(int cx, int cy) const;
 		//still needs load/save fxns -- TCODZip or Boost libraries?

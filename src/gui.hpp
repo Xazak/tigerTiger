@@ -51,6 +51,7 @@ class Gui {
 		void renderBar(int x, int y, int width, const char *name,
 			float value, float maxValue, const TCODColor &barColor,
 			const TCODColor &backColor);
+		void debugStats(); // draws a stat panel with debug info
 		// simple object for use with the message log
 		struct Message {
 			char *msgText;

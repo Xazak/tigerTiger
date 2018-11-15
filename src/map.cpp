@@ -219,6 +219,7 @@ void Map::addAnimal(int x, int y) {
 	monkey->sentience = new AnimalSentience();
 	monkey->mortality = new NPCMortality(5, 0, "monkey corpse");
 	monkey->container = new Container(1);
+	monkey->tempo = new ActorClock(100);
 	engine.actors.push(monkey);
 //	LOGMSG("New animal created at " << x << ", " << y);
 }

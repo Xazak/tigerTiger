@@ -33,8 +33,8 @@ Gui::Gui() {
 	// the upper left corner, and then decide how to arrange the others
 	// right now, we lay out the viewport first and the other panels around it
 	viewport = new TCODConsole(
-		(engine.screenWidth - (engine.screenWidth / 4)),
-		engine.screenHeight - 6);
+		(engine.screenWidth - (engine.screenWidth / 4) - 1),
+		engine.screenHeight - 6 - 1);
 	LOGMSG("viewport dimensions: " << viewport->getWidth() << "x" << viewport->getHeight());
 	viewportXOffset = viewport->getWidth() / 2;
 	viewportYOffset = viewport->getHeight() / 2;
@@ -70,6 +70,8 @@ void Gui::render() {
 	viewport->setDefaultBackground(GUI_BACK);
 	viewport->setDefaultForeground(GUI_FORE);
 	viewport->clear();
+//	viewport->vline(viewport->getWidth() - 1, 0, viewport->getHeight());
+//	viewport->hline(0, viewport->getHeight() - 1, viewport->getWidth());
 	// Draw the stat panel
 	// panel borders
 	statPanel->setDefaultBackground(GUI_BACK);
@@ -78,8 +80,8 @@ void Gui::render() {
 	statPanel->vline(0, 0, statPanel->getHeight());
 	// --stat blocks go here
 	// --DEBUG INFO
-	statPanel->setDefaultForeground(TCODColor::white); // set text color
-	statPanel->print(1, 0, "POS: %d, %d", engine.player->xpos, engine.player->ypos);
+	statPanel->setDefaultBackground(TCODColor::brass);
+	debugStats();
 	// Draw the message log
 	// panel borders
 	msgPanel->setDefaultBackground(GUI_BACK);
@@ -92,7 +94,7 @@ void Gui::render() {
 	for (Message **iter = log.begin(); iter != log.end(); iter++) {
 		Message *message = *iter;
 		msgPanel->setDefaultForeground(message->color * msgFadeCoeff);
-		msgPanel->print(1, logIndex, message->msgText);
+		msgPanel->printf(1, logIndex, message->msgText);
 		logIndex++;
 		if (msgFadeCoeff < 1.0f) msgFadeCoeff += 0.3f;
 	}
@@ -142,6 +144,16 @@ void Gui::refreshViewport() {
 	guiCon->printf((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
 		"%s : %g/%g", name, curValue, maxValue);
 }*/
+void Gui::debugStats() {
+	// show some hard info about the game state
+	int debugX = 1;
+	int debugY = statPanel->getHeight() - 20;
+	statPanel->setDefaultForeground(TCODColor::white); // set text color
+	statPanel->rect(1, 0, 20, 20, false, TCOD_BKGND_SET); // portrait block
+	statPanel->printf(debugX, debugY, "   *** DEBUG ***");
+	statPanel->printf(debugX, debugY+1, "POS: %d, %d", engine.player->xpos, engine.player->ypos);
+	statPanel->printf(debugX, debugY+2, " AP: %d", engine.player->tempo->getCurrentAP());
+}
 // *** MESSAGES
 void Gui::message(const TCODColor &color, const char *msgText, ...) {
 	// this fxn needs better annotation!

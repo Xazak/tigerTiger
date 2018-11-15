@@ -47,10 +47,12 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	subject->xpos = targetx;
 	subject->ypos = targety;
 //	LOGMSG("Player position: " << targetx << ", " << targety);
-//	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
+/*	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
 			<< (engine.map->isWall(targetx, targety) ? "wall" : "open") \
 			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
 			<< "]");
+	*/
+	subject->tempo->deductAP(100);
 	return true;
 }
 void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
@@ -243,10 +245,11 @@ void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	}
 	targetx = subject->xpos + xdiff;
 	targety = subject->ypos + ydiff;
-	LOGMSG (subject->name \
+/*	LOGMSG (subject->name \
 			<< " @" << subject->xpos << "," << subject->ypos \
 			<< " -> " << targetx << "(" << xdiff \
 			<< "), " << targety << "(" << ydiff << ")");
+	*/
 	if (engine.map->isWall(targetx, targety)) {
 		// there's a wall
 		engine.gui->message(TCODColor::white, "The %s bumps into a wall.", subject->name);
@@ -259,7 +262,9 @@ void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 /*	LOGMSG(subject->name \
 			<< "\n abs(" << subject->xpos << "," << subject->ypos << ")\n" \
 			<< " tgt(" << targetx << "," << targety << ")\n" \
-			<< "diff(" << xdiff << "," << ydiff << ")");*/
+			<< "diff(" << xdiff << "," << ydiff << ")");
+	*/
 	subject->xpos += xdiff;
 	subject->ypos += ydiff;
+	subject->tempo->deductAP(100);
 }

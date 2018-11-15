@@ -6,8 +6,9 @@
 
 GameClock::GameClock(uint sec, uint min, uint hrs, uint dys, uint mth, uint yrs)
 	:seconds(sec), minutes(min), hours(hrs), days(dys), months(mth), years(yrs){
-//		LOGMSG("Game clock init:" << years << ":" << months << ":" << days \
-//		<< ":" << hours << ":" << minutes << ":" << seconds);
+/*		LOGMSG("Game clock init:" << years << ":" << months << ":" << days \
+		<< ":" << hours << ":" << minutes << ":" << seconds);
+	*/
 	}
 void GameClock::updateCalendar(int increment) {
 	// call this function with the number of seconds to increase the clock by
@@ -36,7 +37,7 @@ void GameClock::updateCalendar(int increment) {
 		years++;
 	}
 }
-void GameClock::updateTurn() {
+/*void GameClock::updateTurn() {
 	// This function polls all local actors for their per-turn actions,
 	// starting with the player
 	// Each actor's update fxn does the math for how many actions they get
@@ -51,6 +52,39 @@ void GameClock::updateTurn() {
 			}
 		}
 	}
+}*/
+void GameClock::updateTurn() {
+	// This function handles the actor action queue
+	// wait for the player to do something worth updating the game state about
+//	engine.player->tempo->refreshAP();
+//	engine.player->update();
+	// refresh the local action queue
+	actionQueue.clear(); // could this be conditional, to prevent extra updates?
+	for (Actor **iter = engine.actors.begin(); iter != engine.actors.end(); iter++) {
+		Actor *actor = *iter;
+		// right now, all this cares about is whether the actors have tempo
+		// later, when the map is large enough to need it, we can refine this
+		// to differentiate between local/distant and in/animate  actors
+		if (actor != engine.player && actor->tempo) actionQueue.push(actor);
+	}
+	// grant AP to all actors in the queue
+	for (Actor **iter = actionQueue.begin(); iter != actionQueue.end(); iter++) {
+		Actor *actor = *iter;
+		actor->tempo->refreshAP();
+	}
+	// organize the queue by: AP remaining, proximity to player
+	// process the action queue
+	for (Actor **iter = actionQueue.begin(); iter != actionQueue.end(); iter++) {
+		Actor *actor = *iter;
+		//ask the actor at front of queue to update
+		actor->update();
+		//move the front-most actor back in the queue by their remaining AP
+	}
+	//declare the turn to be over, allow other game fxns to process
+
+	//NOTES:
+	// when is the game clock advanced? how often?
+	// actors need intermediate states for charging actions, being paralyzed...
 }
 ActorClock::ActorClock(int newAPRate): currentAP(0), refreshRate(newAPRate) { }
 int ActorClock::refreshAP() {

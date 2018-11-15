@@ -28,6 +28,8 @@ void Engine::init() {
 //	LOGMSG("sentience OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
 //	LOGMSG("mortality OK");
+	player->tempo = new ActorClock(100);
+//	LOGMSG("temporality OK");
 	player->container = new Container(26);
 //	LOGMSG("inventory OK");
 	// specific player ability initializations go here
@@ -57,10 +59,15 @@ void Engine::update() {
 //		save();
 //		load();
 	}
-	// tell the timekeeper to start a new round
-	engine.time->updateTurn();
-	engine.time->updateCalendar();
-/*	// the player gets to go first
+	/*
+	// let the player move first
+	player->update();
+	if (gameStatus == NEW_TURN) { // did the player do something important?
+		// tell the timekeeper to start a new turn
+		engine.time->updateTurn();
+		engine.time->updateCalendar();
+	}*/
+	// the player gets to go first
 	player->update();
 	// then the NPCs make their moves
 	if (gameStatus == NEW_TURN) {
@@ -70,7 +77,7 @@ void Engine::update() {
 				actor->update();
 			}
 		}
-	}*/
+	}
 }
 void Engine::render() {
 /* SCREEN DISPLAY LAYER MODEL
