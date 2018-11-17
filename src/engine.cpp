@@ -52,25 +52,27 @@ void Engine::term() {
 	gui->clear(); // wipe the GUI
 }
 void Engine::update() {
+	int waitingActors = 0;
 	// force an FOV refresh on our first update cycle
-	if (gameStatus == STARTUP) map->computeFOV();
-	// game processing logic begins
+	if (gameStatus == STARTUP) { // the startup round converts to a NEW_TURN
+		map->computeFOV();
+		gameStatus = NEW_TURN;
+		LOGMSG("gameStatus: " << gameStatus);
+	}
+	int actionsTaken = 0; // how many actions were performed on this turn?
 	//refresh the action queue: find all local actors, refresh AP, sort the q
-//	gameStatus = NEW_TURN;
-//	LOGMSG("gameStatus: " << gameStatus);
-	int waitingActors = time->refreshActionQueue();
+//	int waitingActors = time->refreshActionQueue();
 //	LOGMSG("Updating " << waitingActors << " actors");
 	//starting from first actor, ask for updates
-	int actionsTaken = 0; // how many actions were performed on this turn?
 	Actor **iter = time->actionQueue.begin();
 	Actor *subject = *iter;
+	int actorIndex = 0;
 	/*	GIVEN:
 		Q: a queue of local actors with full AP
 		I: an iterator pointing into Q
 		S: the actor under consideration
-		G: the current game state = NEW_TURN at start
+		G: the current game state ( = NEW_TURN at start)
 		A: the number of actions taken during this turn
-
 		METHOD:
 I		? is G = NEW_TURN?
 			Y:  REFRESH AP (fill AP pools)
@@ -92,7 +94,55 @@ II		SET S = I
 			N- SET G = NEW_TURN
 			GOTO <I>
 	*/
-	do {
+	switch(gameStatus) {
+		case ONGOING_TURN:
+			// sort the action queue by AP; DO NOT refresh
+			waitingActors = time->refreshActionQueue();
+//			LOGMSG("Updating " << waitingActors << " actors");
+//			*iter = time->actionQueue.begin();
+			for (actorIndex; actorIndex != 0; actorIndex--) iter++;
+//			for (**iter = time->actionQueue.begin(); iter != time->actionQueue.end(); iter++) {
+			do { // process actors until we get to the player
+				subject = *iter;
+				if (subject->tempo->hasEnergy()) {
+					//when the player is reached, wait until they change the game state
+					if (subject == player) {
+						gameStatus = IDLE;
+						LOGMSG("gameStatus: " << gameStatus);
+						TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &lastKey, NULL);
+						// invoke the main menu when the player hits Esc
+						if (lastKey.vk == TCODK_ESCAPE) {
+		//					save();
+		//					load();
+						}
+					} // gameStatus = IDLE if it's the player's turn, else ONGOING_TURN
+					if (subject->update()) { // will the subject change the game state?
+						actionsTaken++;
+						iter++;
+						gameStatus = ONGOING_TURN;
+						LOGMSG("gameStatus: " << gameStatus);
+					} // gameStatus = IDLE if the player DID NOT change state, else ONGOING_TURN
+				} // else do nothing and move on
+				if (time->actionQueue.size() > 1 && iter == time->actionQueue.end()) {
+					engine.gameStatus = NEW_TURN;
+					LOGMSG("gameStatus: " << gameStatus);
+				}
+			} while (actionsTaken != 0);
+			break;
+		case IDLE:
+			// do nothing, loop back around to see if the player hit a button
+			break;
+		case NEW_TURN:
+			time->refreshActionQueue(); // refill AP pools and sort the queue
+			actionsTaken = 0;
+			iter = time->actionQueue.begin();
+			gameStatus = ONGOING_TURN;
+//			LOGMSG("gameStatus: " << gameStatus);
+			break;
+		default:
+			break;
+	}
+/*	do {
 		// if everyone's had a chance to go, sort the queue and start over
 		if (iter == time->actionQueue.end()) {
 			actionsTaken = 0;
@@ -125,11 +175,10 @@ II		SET S = I
 		// change the game state
 		if (gameStatus == ONGOING_TURN) iter++;
 	} while (actionsTaken != 0);
-	
 	//finish the action queue, re-sorting and waiting as needed
 	//after all of the actors have used their AP, exit the loop
 	
-}
+}*/
 	/*
 	// let the player move first
 	player->update();
@@ -149,6 +198,7 @@ II		SET S = I
 			}
 		}
 	}*/
+}
 void Engine::render() {
 /* SCREEN DISPLAY LAYER MODEL
 	-PLAYER-
