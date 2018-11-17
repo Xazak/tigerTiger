@@ -10,8 +10,14 @@ Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
 Actor::~Actor() {
 	// destructor
 }
-void Actor::update() {
-	if (sentience) sentience->update(this);
+bool Actor::update() {
+	bool stateChange = false;
+	this->tempo->setMinimumAPCost(this->sentience->getCheapestActionCost());
+	if (sentience) {
+		stateChange = sentience->update(this);
+//		stateChange = true;
+	}
+	return stateChange;
 }
 void Actor::render() const {
 	// draw the actor on the map
@@ -24,7 +30,7 @@ void Actor::render() const {
 		// left-right edge checks
 		if (xpos < engine.gui->viewportXOffset) {
 			screenXPos = xpos;
-		} else if (xpos > (engine.map->width - engine.gui->viewportXOffset)) {
+		} else if (xpos >= (engine.map->width - engine.gui->viewportXOffset)) {
 			screenXPos = engine.gui->viewport->getWidth() - (engine.map->width - xpos);
 		} else {
 			screenXPos = engine.gui->viewportXOffset;
@@ -32,7 +38,7 @@ void Actor::render() const {
 		// top-bottom edge checks
 		if (ypos < engine.gui->viewportYOffset) {
 			screenYPos = ypos;
-		} else if (ypos > (engine.map->height - engine.gui->viewportYOffset)) {
+		} else if (ypos >= (engine.map->height - engine.gui->viewportYOffset)) {
 			screenYPos = engine.gui->viewport->getHeight() - (engine.map->height - ypos);
 		} else {
 			screenYPos = engine.gui->viewportYOffset;

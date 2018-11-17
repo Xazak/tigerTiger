@@ -13,7 +13,6 @@ Engine::Engine(int screenWidth, int screenHeight):
 	// initialize the console
 	TCODConsole::initRoot(screenWidth, screenHeight, "TIGER!TIGER!", false);
 	gui = new Gui(); // init the GUI
-	time = new GameClock(); // init the calendar and timekeeper
 }
 Engine::~Engine() {
 	term();
@@ -43,7 +42,9 @@ void Engine::init() {
 	gui->message(TCODColor::orange,
 		"Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
 	//INIT TIMEKEEPER HERE
-	gameStatus=STARTUP;
+	time = new GameClock(); // create a world clock and set up AP tracking
+	gameStatus = STARTUP;
+	LOGMSG("gameStatus: " << gameStatus);
 }
 void Engine::term() {
 	actors.clearAndDelete(); // delete all actors
@@ -51,14 +52,84 @@ void Engine::term() {
 	gui->clear(); // wipe the GUI
 }
 void Engine::update() {
-	if (gameStatus == STARTUP) map->computeFOV(); // force FOV update
-	gameStatus = IDLE; // await player input
-	TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &lastKey, NULL);
-	// invoke the main menu when the player hits Esc
-	if (lastKey.vk == TCODK_ESCAPE) {
-//		save();
-//		load();
-	}
+	// force an FOV refresh on our first update cycle
+	if (gameStatus == STARTUP) map->computeFOV();
+	// game processing logic begins
+	//refresh the action queue: find all local actors, refresh AP, sort the q
+//	gameStatus = NEW_TURN;
+//	LOGMSG("gameStatus: " << gameStatus);
+	int waitingActors = time->refreshActionQueue();
+//	LOGMSG("Updating " << waitingActors << " actors");
+	//starting from first actor, ask for updates
+	int actionsTaken = 0; // how many actions were performed on this turn?
+	Actor **iter = time->actionQueue.begin();
+	Actor *subject = *iter;
+	/*	GIVEN:
+		Q: a queue of local actors with full AP
+		I: an iterator pointing into Q
+		S: the actor under consideration
+		G: the current game state = NEW_TURN at start
+		A: the number of actions taken during this turn
+
+		METHOD:
+I		? is G = NEW_TURN?
+			Y:  REFRESH AP (fill AP pools)
+				SORT Q by AP
+		SET A = 0
+		SET I = Q.start
+II		SET S = I
+		? does S have remaining AP?
+			Y- S.update
+			>> IF PLAYER, G = IDLE; wait for game state to change; G = (previous)
+			>> IF ANIMAL, get NPC update
+			SET I = Q.previous
+			MOVE S within Q to new position by AP
+			SET A+1
+			SET I = Q.next
+			GOTO <II>
+		? did anyone move this turn? (A ?= 0)
+			Y- SET G = ONGOING
+			N- SET G = NEW_TURN
+			GOTO <I>
+	*/
+	do {
+		// if everyone's had a chance to go, sort the queue and start over
+		if (iter == time->actionQueue.end()) {
+			actionsTaken = 0;
+			LOGMSG("starting over");
+			gameStatus = NEW_TURN;
+			LOGMSG("gameStatus: " << gameStatus);
+		}
+		time->refreshActionQueue();
+		iter = time->actionQueue.begin();
+		subject = *iter;
+		if (subject->tempo->hasEnergy()) {
+			//when the player is reached, wait until they change the game state
+			if (subject == player) {
+				gameStatus = IDLE;
+//				LOGMSG("gameStatus: " << gameStatus);
+				TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &lastKey, NULL);
+				// invoke the main menu when the player hits Esc
+				if (lastKey.vk == TCODK_ESCAPE) {
+//					save();
+//					load();
+				}
+			} // gameStatus = IDLE by now if it's the player's turn, else ONGOING_TURN
+			if (subject->update()) { // will the subject change the game state?
+				actionsTaken++;
+				gameStatus = ONGOING_TURN;
+				LOGMSG("gameStatus: " << gameStatus);
+			} // gameStatus = IDLE if the player DID NOT change state, else ONGOING_TURN
+		}
+		// move down the queue unless we're still waiting for the player to
+		// change the game state
+		if (gameStatus == ONGOING_TURN) iter++;
+	} while (actionsTaken != 0);
+	
+	//finish the action queue, re-sorting and waiting as needed
+	//after all of the actors have used their AP, exit the loop
+	
+}
 	/*
 	// let the player move first
 	player->update();
@@ -66,7 +137,7 @@ void Engine::update() {
 		// tell the timekeeper to start a new turn
 		engine.time->updateTurn();
 		engine.time->updateCalendar();
-	}*/
+	}
 	// the player gets to go first
 	player->update();
 	// then the NPCs make their moves
@@ -77,8 +148,7 @@ void Engine::update() {
 				actor->update();
 			}
 		}
-	}
-}
+	}*/
 void Engine::render() {
 /* SCREEN DISPLAY LAYER MODEL
 	-PLAYER-
@@ -169,6 +239,7 @@ void Engine::load() {
 		gui->load(zip);*/
 		// force FOV computation
 		gameStatus = STARTUP;
+		LOGMSG("gameStatus: " << gameStatus);
 	}
 }
 // *** MINOR FUNCTIONS

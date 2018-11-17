@@ -11,6 +11,7 @@ int main() {
 		engine.update();
 		engine.render();
 		TCODConsole::flush();
+		engine.gameStatus = Engine::NEW_TURN;
 	}
 	engine.save();
 	return 0; // NOTE: does this need to return exception codes?

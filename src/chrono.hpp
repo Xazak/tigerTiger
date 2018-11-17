@@ -4,14 +4,15 @@
   */
 class GameClock {
 	public:
+		TCODList<Actor *> actionQueue; // contains NEARBY, SENTIENT actors
 		GameClock(uint sec = 0, uint min = 0, uint hrs = 0, uint dys = 0,
 				uint mth = 0, uint yrs = 0);
 //		~GameClock();
 		// how should we return the game date? const string pointer?
 		// allows adjustment of date; calling w/ no args moves time by +1 sec
+		int refreshActionQueue();
 		void updateCalendar(int increment = 1); // updates the game calendar
 		void updateTurn(); // invokes the update routines for all actors
-		TCODList<Actor *> actionQueue; // contains NEARBY, SENTIENT actors
 
 	protected:
 		// The turn count and the game date are intentionally segregated from
@@ -33,13 +34,16 @@ class ActorClock {
 //		~ActorClock();
 		int refreshAP();
 		int deductAP(int deduction);
+		bool hasEnergy() { return (currentAP >= minimumAPCost); }
 		// sets/gets
 		void setCurrentAP(uint newValue) { currentAP = newValue; }
-		uint getCurrentAP() { return currentAP; }
+		int getCurrentAP() { return currentAP; }
 		void setRefreshRate(uint newValue) { refreshRate = newValue; }
-		uint getRefreshRate() { return refreshRate; }
-
+		int getRefreshRate() { return refreshRate; }
+		void setMinimumAPCost(int newValue) { minimumAPCost = newValue; }
+		int getMinimumAPCost() { return minimumAPCost; }
 	protected:
 		int currentAP;
 		int refreshRate;
+		int minimumAPCost = 1; // = the cost of the cheapest action available to the actor
 };

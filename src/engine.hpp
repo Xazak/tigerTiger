@@ -2,7 +2,7 @@ class Engine {
 	public:
 		// changing gameStatus tells the engine to change states
 		enum GameStatus {
-			STARTUP, IDLE, NEW_TURN, VICTORY, DEFEAT
+			STARTUP, IDLE, NEW_TURN, ONGOING_TURN, VICTORY, DEFEAT
 		} gameStatus;
 		TCODList<Actor *> actors; // the list of all actors on the map
 		Actor *player; // ptr to the player object

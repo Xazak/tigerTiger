@@ -3,7 +3,8 @@
   */
 class Sentience {
 	public:
-		virtual void update(Actor *subject) = 0;
+		virtual bool update(Actor *subject) = 0;
+		virtual int getCheapestActionCost() = 0;
 	protected:
 		enum SentienceType {
 			PLAYER, PREY, PREDATOR, HUMAN
@@ -11,15 +12,17 @@ class Sentience {
 };
 class PlayerSentience: public Sentience {
 	public:
-		void update(Actor *subject);
+		bool update(Actor *subject);
+		int getCheapestActionCost();
 	protected:
-		void handleActionInput(Actor *subject, int inputKeystroke);
+		bool handleActionInput(Actor *subject, int inputKeystroke);
 		bool decideMoveAttack(Actor *subject, int targetx, int targety);
 		Actor *chooseFromInventory(Actor *subject);
 };
 class AnimalSentience: public Sentience {
 	public:
-		void update(Actor *subject);
+		bool update(Actor *subject);
+		int getCheapestActionCost();
 	protected:
-		void decideMoveAttack(Actor *subject, int targetx, int targety);
+		bool decideMoveAttack(Actor *subject, int targetx, int targety);
 };

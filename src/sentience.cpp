@@ -3,12 +3,13 @@
 #include "main.hpp"
 
 // Player Sentience -- command interpreter, context handlers, etc
-void PlayerSentience::update(Actor *subject) {
+bool PlayerSentience::update(Actor *subject) {
 //	LOGMSG(" called ");
 	// if the player's dead, don't even try to update
+	bool stateChange = false;
 	if (subject->mortality && subject->mortality->isDead()) {
 		ERRMSG(": Player is dead!");
-		return;
+		return stateChange;
 	}
 	int xdiff = 0; // target x-coord
 	int ydiff = 0; // target y-coord
@@ -19,16 +20,20 @@ void PlayerSentience::update(Actor *subject) {
 		case TCODK_DOWN:	ydiff =  1; break;
 		case TCODK_LEFT:	xdiff =- 1; break;
 		case TCODK_RIGHT:	xdiff =  1; break;
-		case TCODK_CHAR: handleActionInput(subject, engine.lastKey.c); break;
+		case TCODK_CHAR:
+			stateChange = handleActionInput(subject, engine.lastKey.c);
+			break;
 		default: break;
 	}
 	// update if we've changed position
 	if (xdiff != 0 || ydiff != 0) {
-		engine.gameStatus=Engine::NEW_TURN;
+//		engine.gameStatus=Engine::NEW_TURN;
 		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
 			engine.map->computeFOV();
+			stateChange = true;
 		}
 	}
+	return stateChange;
 }
 bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// returns false if the player did not move
@@ -53,11 +58,13 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 			<< "]");
 	*/
 	subject->tempo->deductAP(100);
+	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
 }
-void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
+bool PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	// handles all player keystroke event translation
 	int xdiff, ydiff = 0;
+	bool stateChange = false;
 	switch(inputKeystroke) {
 		case 'y': { // move NW
 			xdiff = -1;
@@ -99,8 +106,9 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 			Actor *object = chooseFromInventory(subject);
 			if (object) {
 				object->portable->drop(object, subject);
-				engine.gameStatus = Engine::NEW_TURN;
+//				engine.gameStatus = Engine::NEW_TURN;
 			}
+			stateChange = true;
 			break;
 		}
 		case 'g': { //GET item
@@ -128,7 +136,8 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 //			if (engine.map->tiles[subject->xpos + subject->ypos * engine.map->width]->itemList) { }
 			// if there is, AND there's just the one thing, pick it up
 			// if there's more than one object, invoke a menu
-			engine.gameStatus=Engine::NEW_TURN;
+//			engine.gameStatus=Engine::NEW_TURN;
+			stateChange = true;
 			break;
 		}
 		case 'i': { //INVENTORY list
@@ -139,7 +148,7 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 			Actor *actor = chooseFromInventory(subject);
 			if (actor) {
 				actor->portable->use(actor, subject);
-				engine.gameStatus = Engine::NEW_TURN;
+//				engine.gameStatus = Engine::NEW_TURN;
 			}
 		break;
 		}
@@ -154,12 +163,12 @@ void PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	}
 	// update if we've changed position
 	if (xdiff != 0 || ydiff != 0) {
-		engine.gameStatus=Engine::NEW_TURN;
+//		engine.gameStatus=Engine::NEW_TURN;
 		// the if-then statement below prints spurious collision messages...
-//		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
-			engine.map->computeFOV();
-//		}
+		engine.map->computeFOV();
+		stateChange = true;
 	}
+	return stateChange;
 }
 Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	// set up the inventory selection menu
@@ -196,21 +205,26 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	}
 	return NULL;
 }
+int PlayerSentience::getCheapestActionCost() {
+	return 100;
+}
 // NPC Sentience -- AI routines, context handlers, etc
-void AnimalSentience::update(Actor *subject) {
+bool AnimalSentience::update(Actor *subject) {
 	// This is the core decision-making function: it will call any other
 	// functions needed for an NPC to decide what to do on their turn
+	bool stateChange = false;
 	// if the subject is dead, don't even try (quietly)
 	if (subject->mortality && subject->mortality->isDead()) {
 		// might need to add logic that removes dead actors from engine queue
-		return;
+		return stateChange;
 	}
 	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
 		// the player is visible, let's get closer
 		if (subject->getDistance(engine.player->xpos, engine.player->ypos) <= 3) {
 			engine.gui->message(TCODColor::white, "%s dances and hoots!", subject->name);
+			stateChange = true;
 		} else {
-			decideMoveAttack(subject, engine.player->xpos, engine.player->ypos);
+			stateChange = decideMoveAttack(subject, engine.player->xpos, engine.player->ypos);
 		}
 	} else {
 		// the player's not visible, let's just pick a random wander
@@ -218,9 +232,11 @@ void AnimalSentience::update(Actor *subject) {
 		int targetx = subject->xpos + rng->getInt(-1, 1);
 		int targety = subject->ypos + rng->getInt(-1, 1);
 		decideMoveAttack(subject, targetx, targety);
+		stateChange = true;
 	}
+	return stateChange;
 }
-void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
+bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// FIX: the movement code does NOT prevent actors from occupying the same
 	// tile as the player!
 	// decides whether the NPC should move to or attack the target square
@@ -253,11 +269,11 @@ void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	if (engine.map->isWall(targetx, targety)) {
 		// there's a wall
 		engine.gui->message(TCODColor::white, "The %s bumps into a wall.", subject->name);
-		return;
+		return true;
 	} else if (engine.map->isOccupied(targetx, targety)) {
 		// there's something or someone
 		engine.gui->message(TCODColor::white, "The %s can't get past.", subject->name);
-		return;
+		return true;;
 	}
 /*	LOGMSG(subject->name \
 			<< "\n abs(" << subject->xpos << "," << subject->ypos << ")\n" \
@@ -267,4 +283,9 @@ void AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	subject->xpos += xdiff;
 	subject->ypos += ydiff;
 	subject->tempo->deductAP(100);
+	LOGMSG(subject->name << " deducted 100 AP");
+	return true;
+}
+int AnimalSentience::getCheapestActionCost() {
+	return 100;
 }

@@ -37,6 +37,45 @@ void GameClock::updateCalendar(int increment) {
 		years++;
 	}
 }
+int GameClock::refreshActionQueue() {
+	// returns the number of actors who will be taking actions (=size of queue)
+	int numberOfActors = 0;
+	// right now, all this does is copy the list of sentient actors from the engine
+	// later, we will narrow the scope such that it only gets local actors
+	// if we started a new turn, flush the queue and rebuild it
+	if (engine.gameStatus == Engine::NEW_TURN || engine.gameStatus == Engine::STARTUP) {
+		actionQueue.clear();
+		// fill the queue
+		for (Actor **iter = engine.actors.begin(); iter != engine.actors.end(); iter++) {
+			Actor *actor = *iter;
+			if (engine.gameStatus == Engine::NEW_TURN) actor->tempo->refreshAP();
+			actionQueue.push(actor);
+			numberOfActors++;
+		}
+	}
+	// sort the queue if there's anyone besides the player
+	if (actionQueue.size() > 1) {
+		Actor **iter = actionQueue.begin();
+		Actor *subject = NULL;
+		Actor *neighbor = NULL;
+		int actorsMoved = 0;
+		do { // perform sorting operations until nothing is moved around
+			if (iter == actionQueue.end()) {
+				// reset the iterator and start sorting again
+				iter = actionQueue.begin();
+				actorsMoved = 0;
+			}
+			subject = *iter;
+			neighbor = *iter + 1;
+			if (subject->tempo->getCurrentAP() < neighbor->tempo->getCurrentAP()) {
+				// swap their positions
+				actorsMoved++;
+			}
+			iter++;
+		} while (actorsMoved != 0);
+	}
+	return numberOfActors;
+}
 /*void GameClock::updateTurn() {
 	// This function polls all local actors for their per-turn actions,
 	// starting with the player
@@ -52,7 +91,7 @@ void GameClock::updateCalendar(int increment) {
 			}
 		}
 	}
-}*/
+}
 void GameClock::updateTurn() {
 	// This function handles the actor action queue
 	// wait for the player to do something worth updating the game state about
@@ -85,8 +124,10 @@ void GameClock::updateTurn() {
 	//NOTES:
 	// when is the game clock advanced? how often?
 	// actors need intermediate states for charging actions, being paralyzed...
+}*/
+ActorClock::ActorClock(int newAPRate): currentAP(0), refreshRate(newAPRate) {
+	// this space left blank
 }
-ActorClock::ActorClock(int newAPRate): currentAP(0), refreshRate(newAPRate) { }
 int ActorClock::refreshAP() {
 	currentAP += refreshRate;
 	return currentAP;
