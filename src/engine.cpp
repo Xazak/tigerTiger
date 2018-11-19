@@ -7,6 +7,82 @@ static const int MAP_WIDTH = 1000;
 static const int PLAYER_START_X = 965;
 static const int PLAYER_START_Y = 965;
 
+// *** ENGINE STATES
+/*	ENGINE STATE MACHINE PROCESS
+	GIVEN:
+	Q: a queue of local actors with full AP
+	I: an iterator pointing into Q
+	S: the actor under consideration
+	G: the current game state ( = NEW_TURN at start)
+	A: the number of actions taken during this turn
+	METHOD:
+I		? is G = NEW_TURN?
+		Y:  REFRESH AP (fill AP pools)
+			SORT Q by AP
+	SET A = 0
+	SET I = Q.start
+II		SET S = I
+	? does S have remaining AP?
+		Y- S.update
+		>> IF PLAYER, G = IDLE; wait for game state to change; G = (previous)
+		>> IF ANIMAL, get NPC update
+		SET I = Q.previous
+		MOVE S within Q to new position by AP
+		SET A+1
+		SET I = Q.next
+		GOTO <II>
+	? did anyone move this turn? (A ?= 0)
+		Y- SET G = ONGOING
+		N- SET G = NEW_TURN
+		GOTO <I>
+*/
+void StartupTurn::update() {
+	// perform any start-of-game bookkeeping, then start a new turn
+	// force an FOV update to ensure that the map appears on the first turn
+	engine.map->computeFOV();
+	// start a new turn
+	engine.switchMode(&newTurn);
+}
+void NewTurn::update() {
+	// perform new-turn bookkeeping before asking the first actor to update
+	// refresh actor AP pools and put the queue in order
+	engine.time->refreshActionQueue(true);
+	// start asking actors to update
+	engine.switchMode(&ongoingTurn);
+}
+void OngoingTurn::update() {
+	// perform per-turn processing until the player's turn comes up
+	// sort the queue by AP remaining, but DO NOT refresh
+	engine.time->refreshActionQueue(false);
+	// ask the first actor to update
+	if (engine.time->actionQueue.next() == engine.player) {
+		// if it's the player, change to IDLE and stay there until told otherwise
+		engine.switchMode(&idleMode);
+	} else {
+		// it's not the player, so ask the NPC to update and move on
+//		actionQueue.update();
+	}
+}
+void IdleMode::update() {
+	// perform player input processing until they change the game state
+	TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &engine.lastKey, NULL);
+	// invoke the main menu if the player hit ESC
+	if (engine.lastKey.vk == TCODK_ESCAPE) {
+		engine.save();
+		engine.load();
+	} else {
+		// ask the player-actor to update()
+	}
+}
+void VictoryMode::update() {
+	// perform victory bookkeeping
+	LOGMSG("*** Victory mode engaged");
+}
+void DefeatMode::update() {
+	// perform defeat bookkeeping
+	LOGMSG("*** Defeat mode engaged");
+}
+// *** ENGINE MECHANICS
 Engine::Engine(int screenWidth, int screenHeight):
 	gameStatus(STARTUP), player(NULL), map(NULL), fovRadius(10),
 	screenWidth(screenWidth), screenHeight(screenHeight) {
@@ -51,153 +127,13 @@ void Engine::term() {
 	if (map) delete map; // delete the map if it still exists
 	gui->clear(); // wipe the GUI
 }
+void Engine::switchMode(EngineState *newMode) {
+	prevMode = currMode;
+	currMode = newMode;
+	LOGMSG("mode switch: " << currMode);
+}
 void Engine::update() {
-	int waitingActors = 0;
-	// force an FOV refresh on our first update cycle
-	if (gameStatus == STARTUP) { // the startup round converts to a NEW_TURN
-		map->computeFOV();
-		gameStatus = NEW_TURN;
-		LOGMSG("gameStatus: " << gameStatus);
-	}
-	int actionsTaken = 0; // how many actions were performed on this turn?
-	//refresh the action queue: find all local actors, refresh AP, sort the q
-//	int waitingActors = time->refreshActionQueue();
-//	LOGMSG("Updating " << waitingActors << " actors");
-	//starting from first actor, ask for updates
-	Actor **iter = time->actionQueue.begin();
-	Actor *subject = *iter;
-	int actorIndex = 0;
-	/*	GIVEN:
-		Q: a queue of local actors with full AP
-		I: an iterator pointing into Q
-		S: the actor under consideration
-		G: the current game state ( = NEW_TURN at start)
-		A: the number of actions taken during this turn
-		METHOD:
-I		? is G = NEW_TURN?
-			Y:  REFRESH AP (fill AP pools)
-				SORT Q by AP
-		SET A = 0
-		SET I = Q.start
-II		SET S = I
-		? does S have remaining AP?
-			Y- S.update
-			>> IF PLAYER, G = IDLE; wait for game state to change; G = (previous)
-			>> IF ANIMAL, get NPC update
-			SET I = Q.previous
-			MOVE S within Q to new position by AP
-			SET A+1
-			SET I = Q.next
-			GOTO <II>
-		? did anyone move this turn? (A ?= 0)
-			Y- SET G = ONGOING
-			N- SET G = NEW_TURN
-			GOTO <I>
-	*/
-	switch(gameStatus) {
-		case ONGOING_TURN:
-			// sort the action queue by AP; DO NOT refresh
-			waitingActors = time->refreshActionQueue();
-//			LOGMSG("Updating " << waitingActors << " actors");
-//			*iter = time->actionQueue.begin();
-			for (actorIndex; actorIndex != 0; actorIndex--) iter++;
-//			for (**iter = time->actionQueue.begin(); iter != time->actionQueue.end(); iter++) {
-			do { // process actors until we get to the player
-				subject = *iter;
-				if (subject->tempo->hasEnergy()) {
-					//when the player is reached, wait until they change the game state
-					if (subject == player) {
-						gameStatus = IDLE;
-						LOGMSG("gameStatus: " << gameStatus);
-						TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &lastKey, NULL);
-						// invoke the main menu when the player hits Esc
-						if (lastKey.vk == TCODK_ESCAPE) {
-		//					save();
-		//					load();
-						}
-					} // gameStatus = IDLE if it's the player's turn, else ONGOING_TURN
-					if (subject->update()) { // will the subject change the game state?
-						actionsTaken++;
-						iter++;
-						gameStatus = ONGOING_TURN;
-						LOGMSG("gameStatus: " << gameStatus);
-					} // gameStatus = IDLE if the player DID NOT change state, else ONGOING_TURN
-				} // else do nothing and move on
-				if (time->actionQueue.size() > 1 && iter == time->actionQueue.end()) {
-					engine.gameStatus = NEW_TURN;
-					LOGMSG("gameStatus: " << gameStatus);
-				}
-			} while (actionsTaken != 0);
-			break;
-		case IDLE:
-			// do nothing, loop back around to see if the player hit a button
-			break;
-		case NEW_TURN:
-			time->refreshActionQueue(); // refill AP pools and sort the queue
-			actionsTaken = 0;
-			iter = time->actionQueue.begin();
-			gameStatus = ONGOING_TURN;
-//			LOGMSG("gameStatus: " << gameStatus);
-			break;
-		default:
-			break;
-	}
-/*	do {
-		// if everyone's had a chance to go, sort the queue and start over
-		if (iter == time->actionQueue.end()) {
-			actionsTaken = 0;
-			LOGMSG("starting over");
-			gameStatus = NEW_TURN;
-			LOGMSG("gameStatus: " << gameStatus);
-		}
-		time->refreshActionQueue();
-		iter = time->actionQueue.begin();
-		subject = *iter;
-		if (subject->tempo->hasEnergy()) {
-			//when the player is reached, wait until they change the game state
-			if (subject == player) {
-				gameStatus = IDLE;
-//				LOGMSG("gameStatus: " << gameStatus);
-				TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &lastKey, NULL);
-				// invoke the main menu when the player hits Esc
-				if (lastKey.vk == TCODK_ESCAPE) {
-//					save();
-//					load();
-				}
-			} // gameStatus = IDLE by now if it's the player's turn, else ONGOING_TURN
-			if (subject->update()) { // will the subject change the game state?
-				actionsTaken++;
-				gameStatus = ONGOING_TURN;
-				LOGMSG("gameStatus: " << gameStatus);
-			} // gameStatus = IDLE if the player DID NOT change state, else ONGOING_TURN
-		}
-		// move down the queue unless we're still waiting for the player to
-		// change the game state
-		if (gameStatus == ONGOING_TURN) iter++;
-	} while (actionsTaken != 0);
-	//finish the action queue, re-sorting and waiting as needed
-	//after all of the actors have used their AP, exit the loop
-	
-}*/
-	/*
-	// let the player move first
-	player->update();
-	if (gameStatus == NEW_TURN) { // did the player do something important?
-		// tell the timekeeper to start a new turn
-		engine.time->updateTurn();
-		engine.time->updateCalendar();
-	}
-	// the player gets to go first
-	player->update();
-	// then the NPCs make their moves
-	if (gameStatus == NEW_TURN) {
-		for (Actor **iter = actors.begin(); iter != actors.end(); iter++) {
-			Actor *actor = *iter;
-			if (actor != player) {
-				actor->update();
-			}
-		}
-	}*/
+	currMode->update();
 }
 void Engine::render() {
 /* SCREEN DISPLAY LAYER MODEL

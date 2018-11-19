@@ -37,13 +37,14 @@ void GameClock::updateCalendar(int increment) {
 		years++;
 	}
 }
-int GameClock::refreshActionQueue() {
+int GameClock::refreshActionQueue(bool refreshPools) {
 	// returns the number of actors who will be taking actions (=size of queue)
 	int numberOfActors = 0;
 	// right now, all this does is copy the list of sentient actors from the engine
 	// later, we will narrow the scope such that it only gets local actors
 	// if we started a new turn, flush the queue and rebuild it
-	if (engine.gameStatus == Engine::NEW_TURN || engine.gameStatus == Engine::STARTUP) {
+//	if (engine.gameStatus == Engine::NEW_TURN || engine.gameStatus == Engine::STARTUP) {
+	if (refreshPools == true) {
 		actionQueue.clear();
 		// fill the queue
 		for (Actor **iter = engine.actors.begin(); iter != engine.actors.end(); iter++) {

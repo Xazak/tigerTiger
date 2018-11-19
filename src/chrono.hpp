@@ -10,7 +10,7 @@ class GameClock {
 //		~GameClock();
 		// how should we return the game date? const string pointer?
 		// allows adjustment of date; calling w/ no args moves time by +1 sec
-		int refreshActionQueue();
+		int refreshActionQueue(bool refreshPools = false);
 		void updateCalendar(int increment = 1); // updates the game calendar
 		void updateTurn(); // invokes the update routines for all actors
 

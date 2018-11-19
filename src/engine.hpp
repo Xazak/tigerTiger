@@ -1,45 +1,32 @@
 class EngineState {
 	public:
-		virtual ~EngineState() { };
-		virtual void update();
-
-//		static StartupTurn startup;
-//		static NewTurn newTurn;
-//		static OngoingTurn ongoingTurn;
-//		static IdleMode idleMode;
-//		static VictoryMode victoryMode;
-//		static DefeatMode defeatMode;
+		virtual void update() {};
+	private:
 };
 class StartupTurn: public EngineState {
 	public:
-		~StartupTurn() { };
 		void update();
 } static startupTurn;
 class NewTurn: public EngineState {
 	public:
-		~NewTurn() { };
 		void update();
-};
+} static newTurn;
 class OngoingTurn: public EngineState {
 	public:
-		~OngoingTurn() { };
 		void update();
-};
+} static ongoingTurn;
 class IdleMode: public EngineState {
 	public:
-		~IdleMode() { };
 		void update();
-};
+} static idleMode;
 class VictoryMode: public EngineState {
 	public:
-		~VictoryMode() { };
 		void update();
-};
+} static victory;
 class DefeatMode: public EngineState {
 	public:
-		~DefeatMode() { };
 		void update();
-};
+} static defeat;
 class Engine {
 	public:
 		// changing gameStatus tells the engine to change states
@@ -51,7 +38,11 @@ class Engine {
 			VICTORY,		//4
 			DEFEAT			//5
 		} gameStatus;
-		EngineState *mode;
+		// changing engine.currMode is how individual game turns are processed
+		// engine.prevMode is included for later troubleshooting needs
+		EngineState *currMode;
+		EngineState *prevMode;
+		void switchMode(EngineState *newMode);
 
 		TCODList<Actor *> actors; // the list of all actors on the map
 		Actor *player; // ptr to the player object
@@ -66,8 +57,8 @@ class Engine {
 
 		Engine(int screenWidth, int screenHeight);
 		~Engine();
-		void update(); //?
-		void render(); //?
+		void update(); // invokes update depending on engineState
+		void render(); // invokes full panoply of rendering function calls
 		// pushes the *actor to the rear-most screen layer so that other sigils
 		// can be drawn on top of it, ie for non-blocking actors
 		void sendToBack(Actor *actor);
