@@ -46,21 +46,28 @@ void StartupTurn::update() {
 void NewTurn::update() {
 	// perform new-turn bookkeeping before asking the first actor to update
 	// refresh actor AP pools and put the queue in order
-	engine.time->refreshActionQueue(true);
+	engine.time->updateQueue();
+	engine.time->refresh();
+	engine.time->sort();
 	// start asking actors to update
 	engine.switchMode(&ongoingTurn);
 }
 void OngoingTurn::update() {
 	// perform per-turn processing until the player's turn comes up
-	// sort the queue by AP remaining, but DO NOT refresh
-	engine.time->refreshActionQueue(false);
-	// ask the first actor to update
-	if (engine.time->actionQueue.next() == engine.player) {
+	// ask whoever's in line next to update
+	Actor *subject = engine.time->actionQueue->next;
+	if (subject == engine.player) {
 		// if it's the player, change to IDLE and stay there until told otherwise
 		engine.switchMode(&idleMode);
 	} else {
 		// it's not the player, so ask the NPC to update and move on
-//		actionQueue.update();
+		subject->update();
+		// when the actor's finished with their turn, move them down the queue
+		engine.time->actionQueue->adjustActor(subject);
+	}
+	// if no one else is waiting in line to update, start a new turn
+	if (engine.time->actionQueue.empty()) {
+		engine.switchMode(&newTurn);
 	}
 }
 void IdleMode::update() {
@@ -126,11 +133,6 @@ void Engine::term() {
 	actors.clearAndDelete(); // delete all actors
 	if (map) delete map; // delete the map if it still exists
 	gui->clear(); // wipe the GUI
-}
-void Engine::switchMode(EngineState *newMode) {
-	prevMode = currMode;
-	currMode = newMode;
-	LOGMSG("mode switch: " << currMode);
 }
 void Engine::update() {
 	currMode->update();
@@ -227,6 +229,11 @@ void Engine::load() {
 		gameStatus = STARTUP;
 		LOGMSG("gameStatus: " << gameStatus);
 	}
+}
+void Engine::switchMode(EngineState *newMode) {
+	prevMode = currMode;
+	currMode = newMode;
+	LOGMSG("mode switch: " << currMode);
 }
 // *** MINOR FUNCTIONS
 void Engine::sendToBack(Actor *actor) {

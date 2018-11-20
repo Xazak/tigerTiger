@@ -4,17 +4,23 @@
   */
 class GameClock {
 	public:
-		TCODList<Actor *> actionQueue; // contains NEARBY, SENTIENT actors
 		GameClock(uint sec = 0, uint min = 0, uint hrs = 0, uint dys = 0,
 				uint mth = 0, uint yrs = 0);
 //		~GameClock();
 		// how should we return the game date? const string pointer?
 		// allows adjustment of date; calling w/ no args moves time by +1 sec
-		int refreshActionQueue(bool refreshPools = false);
-		void updateCalendar(int increment = 1); // updates the game calendar
-		void updateTurn(); // invokes the update routines for all actors
+		void incrCalendar(int increment = 1); // updates the game calendar
+//		int refreshActionQueue(bool refreshPools = false);
+//		void updateTurn(); // invokes the update routines for all actors
+		int updateQueue(); // checks local area for actors that should be in queue
+		void refresh(); // adds AP to all actors in queue by their refresh rates
+		void sort(); // organizes queue by AP levels
+		void updateActor(); // asks the next waiting actor to update
+//		Actor * getNextActor(); // returns a pointer to the next waiting actor
+//		int getQueueSize(); // returns # of actors in queue
 
 	protected:
+		TCODList<Actor *> actionQueue; // contains NEARBY, SENTIENT actors
 		// The turn count and the game date are intentionally segregated from
 		// each other! this allows things like starting from turn 0 but the
 		// year 1041, for example.

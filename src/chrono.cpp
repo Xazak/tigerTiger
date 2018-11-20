@@ -4,13 +4,14 @@
 
 #include "main.hpp"
 
+// *** GAME CLOCK: calendar tools, local update methodology
 GameClock::GameClock(uint sec, uint min, uint hrs, uint dys, uint mth, uint yrs)
 	:seconds(sec), minutes(min), hours(hrs), days(dys), months(mth), years(yrs){
 /*		LOGMSG("Game clock init:" << years << ":" << months << ":" << days \
 		<< ":" << hours << ":" << minutes << ":" << seconds);
 	*/
 	}
-void GameClock::updateCalendar(int increment) {
+void GameClock::incrCalendar(int increment) {
 	// call this function with the number of seconds to increase the clock by
 	// if no argument is supplied, will advance the game clock by 1 second
 	// it should be possible to use any arbitrary timekeeping system by
@@ -37,7 +38,7 @@ void GameClock::updateCalendar(int increment) {
 		years++;
 	}
 }
-int GameClock::refreshActionQueue(bool refreshPools) {
+/*int GameClock::refreshActionQueue(bool refreshPools) {
 	// returns the number of actors who will be taking actions (=size of queue)
 	int numberOfActors = 0;
 	// right now, all this does is copy the list of sentient actors from the engine
@@ -76,7 +77,7 @@ int GameClock::refreshActionQueue(bool refreshPools) {
 		} while (actorsMoved != 0);
 	}
 	return numberOfActors;
-}
+}*/
 /*void GameClock::updateTurn() {
 	// This function polls all local actors for their per-turn actions,
 	// starting with the player
@@ -126,6 +127,38 @@ void GameClock::updateTurn() {
 	// when is the game clock advanced? how often?
 	// actors need intermediate states for charging actions, being paralyzed...
 }*/
+int GameClock::updateQueue() {
+	// looks around the player for actors that should be in the queue
+	// later, we will smarten this up so that:
+	// 1- the queue is checked to see if any actors should be removed
+	// 2- all nearby actors are checked to see if they're in the queue:
+	//       if (!actionQueue.contains(actor)) [add actor];
+	// right now, all it does is copy sentient actors from the master list
+	actionQueue.clear();
+	for (Actor **iter = engine.actors.begin(); iter != engine.actors.end(); iter++) {
+		Actor *actor = *iter;
+		if (actor->sentience) actionQueue.push(actor);
+	}
+	return actionQueue->size();
+}
+void GameClock::refresh() {
+	// goes through actionQueue and grants AP to actors by their refresh rates
+	for (Actor **iter = actionQueue.begin(); iter != actionQueue.end(); iter++) {
+		Actor *actor = *iter;
+		actor->tempo->refreshAP();
+	}
+}
+void GameClock::sort() {
+	// sorts the actionQueue by individual AP levels
+}
+void GameClock::updateActor() {
+	// asks the actor on the top of the actionQueue to update
+	actionQueue.begin()->update();
+}
+Actor * GameClock::getNextActor() {
+	// returns a pointer to the actor on the top of actionQueue
+}
+// *** ACTOR CLOCK: individual AP pools and assoc. tools
 ActorClock::ActorClock(int newAPRate): currentAP(0), refreshRate(newAPRate) {
 	// this space left blank
 }
