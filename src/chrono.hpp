@@ -16,8 +16,11 @@ class GameClock {
 		void refresh(); // adds AP to all actors in queue by their refresh rates
 		void sort(); // organizes queue by AP levels
 		void updateActor(); // asks the next waiting actor to update
-//		Actor * getNextActor(); // returns a pointer to the next waiting actor
-//		int getQueueSize(); // returns # of actors in queue
+		void insertActor(); // adds an actor to the queue by their remaining AP
+		Actor * getNextActor(); // returns a pointer to the next waiting actor
+		void advanceQueue(); // pops an actor off the front of the action queue
+		int getQueueLength(); // returns # of actors in queue
+		bool isQueueEmpty();
 
 	protected:
 		TCODList<Actor *> actionQueue; // contains NEARBY, SENTIENT actors

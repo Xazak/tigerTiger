@@ -55,7 +55,7 @@ void NewTurn::update() {
 void OngoingTurn::update() {
 	// perform per-turn processing until the player's turn comes up
 	// ask whoever's in line next to update
-	Actor *subject = engine.time->actionQueue->next;
+	Actor *subject = engine.time->getNextActor();
 	if (subject == engine.player) {
 		// if it's the player, change to IDLE and stay there until told otherwise
 		engine.switchMode(&idleMode);
@@ -63,10 +63,10 @@ void OngoingTurn::update() {
 		// it's not the player, so ask the NPC to update and move on
 		subject->update();
 		// when the actor's finished with their turn, move them down the queue
-		engine.time->actionQueue->adjustActor(subject);
+//		engine.time->advanceQueue();
 	}
 	// if no one else is waiting in line to update, start a new turn
-	if (engine.time->actionQueue.empty()) {
+	if (engine.time->isQueueEmpty()) {
 		engine.switchMode(&newTurn);
 	}
 }
@@ -79,6 +79,10 @@ void IdleMode::update() {
 		engine.load();
 	} else {
 		// ask the player-actor to update()
+		if (engine.player->update()) {
+			// the player has changed the game state
+			engine.switchMode(&ongoingTurn);
+		}
 	}
 }
 void VictoryMode::update() {
@@ -126,8 +130,9 @@ void Engine::init() {
 		"Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
 	//INIT TIMEKEEPER HERE
 	time = new GameClock(); // create a world clock and set up AP tracking
-	gameStatus = STARTUP;
-	LOGMSG("gameStatus: " << gameStatus);
+	engine.switchMode(&startupTurn);
+//	gameStatus = STARTUP;
+//	LOGMSG("gameStatus: " << gameStatus);
 }
 void Engine::term() {
 	actors.clearAndDelete(); // delete all actors

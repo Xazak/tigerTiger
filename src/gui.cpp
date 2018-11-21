@@ -33,8 +33,8 @@ Gui::Gui() {
 	// the upper left corner, and then decide how to arrange the others
 	// right now, we lay out the viewport first and the other panels around it
 	viewport = new TCODConsole(
-		(engine.screenWidth - (engine.screenWidth / 4) - 1),
-		engine.screenHeight - 6 - 1);
+			(engine.screenWidth - (engine.screenWidth / 4) - 1),
+			(engine.screenHeight - 6 - 1));
 	LOGMSG("viewport dimensions: " << viewport->getWidth() << "x" << viewport->getHeight());
 	viewportXOffset = viewport->getWidth() / 2;
 	viewportYOffset = viewport->getHeight() / 2;

@@ -139,7 +139,7 @@ int GameClock::updateQueue() {
 		Actor *actor = *iter;
 		if (actor->sentience) actionQueue.push(actor);
 	}
-	return actionQueue->size();
+	return actionQueue.size();
 }
 void GameClock::refresh() {
 	// goes through actionQueue and grants AP to actors by their refresh rates
@@ -151,12 +151,25 @@ void GameClock::refresh() {
 void GameClock::sort() {
 	// sorts the actionQueue by individual AP levels
 }
-void GameClock::updateActor() {
+/*void GameClock::updateActor() {
 	// asks the actor on the top of the actionQueue to update
-	actionQueue.begin()->update();
+	actionQueue.begin().update();
+}*/
+void GameClock::insertActor() {
+	// inserts a new actor into the queue by their remaining AP
 }
 Actor * GameClock::getNextActor() {
-	// returns a pointer to the actor on the top of actionQueue
+	// returns a pointer to the next actor in line in the actionQueue
+	return actionQueue.pop();
+}
+void GameClock::advanceQueue() {
+	actionQueue.pop();
+}
+int GameClock::getQueueLength() {
+	return actionQueue.size();
+}
+bool GameClock::isQueueEmpty() {
+	return (getQueueLength() == 0);
 }
 // *** ACTOR CLOCK: individual AP pools and assoc. tools
 ActorClock::ActorClock(int newAPRate): currentAP(0), refreshRate(newAPRate) {
