@@ -6,15 +6,14 @@
 #include "libtcod.hpp"
 class Actor; // this is a 'forward declaration'
 // other implementation files go here
-#include "sentience.hpp"
-#include "vitality.hpp"
-#include "mortality.hpp"
-#include "chrono.hpp"
-#include "portable.hpp"
-#include "container.hpp"
-#include "actor.hpp"
-#include "gui.hpp"
-#include "map.hpp"
+//include "sentience.hpp"
+//include "vitality.hpp"
+//include "mortality.hpp"
+//include "portable.hpp"
+//include "container.hpp"
+//include "actor.hpp"
+//include "gui.hpp"
+//include "map.hpp"
 #include "engine.hpp"
 #include <iostream>
 #include <assert.h>
