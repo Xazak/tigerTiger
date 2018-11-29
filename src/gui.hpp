@@ -14,7 +14,7 @@ class Menu {
 		};
 		TCODList<MenuItem *> menuListItems; // pointer to list of menu items
 };
-class Gui {
+class GameGUI {
 	public:
 		bool updateView = false; // if true, invoke render()
 		Menu menu;
@@ -27,14 +27,14 @@ class Gui {
 		// the viewport's x,y origin within the map array
 		int viewportXOrigin;
 		int viewportYOrigin;
-		// these hold the x,y positions within the terminal itself
+		// x, y positions relative to viewport w/in entire GUI space
 		int statPanelXPos;
 		int statPanelYPos;
 		int msgPanelXPos;
 		int msgPanelYPos;
 
-		Gui();
-		~Gui();
+		GameGUI();
+		~GameGUI();
 		void blitToScreen(); // draw all GUI panels on the root console
 		void render(); // draw the GUI on the screen
 		void renderTile(int inputx, int inputy, int newSigil,

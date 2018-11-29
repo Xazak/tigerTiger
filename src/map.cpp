@@ -9,13 +9,13 @@ static const int MAX_ROOM_MONSTERS = 3;
 /* Most of this is code that specifically generates Nethack-style dungeons
  * using the BSP toolkit from libtcod; it will need to be rewritten later...
  */
-class BspListener : public ITCODBspCallback {
+/*class BspListener : public ITCODBspCallback {
 	private:
-		Map &map; // a room to dig
+		GameMap &map; // a room to dig
 		int roomNum; // room number
 		int lastx, lasty; // center of the last room
 	public:
-		BspListener(Map &map) : map(map), roomNum(0) {}
+		BspListener(GameMap &map) : map(map), roomNum(0) {}
 		bool visitNode(TCODBsp *node, void *userData) {
 			if (node->isLeaf()) {
 				int x, y, w, h;
@@ -37,20 +37,20 @@ class BspListener : public ITCODBspCallback {
 			}
 			return true;
 		}
-};
+};*/
 // The following code is definitely necessary for the map itself
 Tile::Tile(): glyph(43), foreColor(25, 25, 25), backColor(127, 127, 127),
 	explored(false), occupant(NULL) { }
 //Tile::~Tile() { }
-Map::Map(int inputWidth, int inputHeight) : width(inputWidth), height(inputHeight) {
+GameMap::GameMap(int inputWidth, int inputHeight) : width(inputWidth), height(inputHeight) {
 	// pick a random seed between 0 and (a big number)
-	seed = TCODRandom::getInstance()->getInt(0, 0x7FFFFFFF);
+//	seed = TCODRandom::getInstance()->getInt(0, 0x7FFFFFFF);
 }
-Map::~Map() {
+GameMap::~GameMap() {
 	delete [] tiles;
 	delete visionMap;
 }
-void Map::computeFOV() {
+void GameMap::computeFOV() {
 	visionMap->computeFov(engine.player->xpos, engine.player->ypos, engine.fovRadius);
 }
 /*	*** MAP::RENDER METHOD
@@ -82,7 +82,7 @@ void Map::computeFOV() {
 		2) iterate across all viewportY
 			3) draw (mapXIndex, mapYIndex) on (viewportX, viewportY)
 */
-void Map::render() const {
+void GameMap::render() const {
 	// draw the map onto the viewport console
 	static const float beyondFOVMod = 0.5f; // color coefficient
 	Tile *target = &tiles[0]; // index pointer, starts at beginning
@@ -112,9 +112,9 @@ void Map::render() const {
 		mapX++;
 	}
 }
-void Map::init(bool withActors) {
+void GameMap::init(bool withActors) {
 	// create the map objects
-	rng = new TCODRandom(seed, TCOD_RNG_CMWC);
+//	rng = new TCODRandom(seed, TCOD_RNG_CMWC);
 	tiles = new Tile[width * height]; // use x + y * width to locate a tile
 	visionMap = new TCODMap(width, height); // invokes the TCOD FOV map object
 	// invoke the BSP tree tools to generate a dungeon graph
@@ -125,13 +125,13 @@ void Map::init(bool withActors) {
 	// invoke our custom mapgen code instead
 	generateTerrain(true, width, height); // this is my function
 }
-/*void Map::save(TCODZip &zip) {
+/*void GameMap::save(TCODZip &zip) {
 	zip.putInt(seed);
 	for (int i = 0; i < width*height; i++) {
 		zip.putInt(tiles[i].explored);
 	}
 }
-void Map::load(TCODZip &zip) {
+void GameMap::load(TCODZip &zip) {
 	seed = zip.getInt();
 	init(false);
 	for (int i = 0; i < width*height; i++) {
@@ -139,14 +139,14 @@ void Map::load(TCODZip &zip) {
 	}
 }*/
 // should these be overloaded to use Tile pointers as well?
-bool Map::isWall(int x, int y) const {
+bool GameMap::isWall(int x, int y) const {
 	return !visionMap->isWalkable(x, y);
 }
-bool Map::isOccupied(int x, int y) const {
+bool GameMap::isOccupied(int x, int y) const {
 	// returns true if the target tile contains an actor
 	return tiles[x + y * width].occupant;
 }
-bool Map::isObstructed(int x, int y) const {
+bool GameMap::isObstructed(int x, int y) const {
 	// returns true if the target cell contains an obstructing object
 	Tile *target = &tiles[x + y * width];
 	if (isOccupied(x, y)) {
@@ -154,7 +154,7 @@ bool Map::isObstructed(int x, int y) const {
 	}
 	return false;
 }
-bool Map::isVisible(int x, int y) const {
+bool GameMap::isVisible(int x, int y) const {
 	if (x < 0 || x >= width || y < 0 || y >= height) {
 		return false;
 	}
@@ -164,11 +164,11 @@ bool Map::isVisible(int x, int y) const {
 	}
 	return false;
 }
-bool Map::isExplored(int x, int y) const {
+bool GameMap::isExplored(int x, int y) const {
 //	LOGMSG("Checking location (" << x << ", " << y << ") at [" << (x + y * width) << "]");
 	return tiles[x + y * width].explored;
 }
-bool Map::isHolding(int x, int y) const {
+bool GameMap::isHolding(int x, int y) const {
 //	return tiles[x + y * width].itemList;
 	return false;
 }
@@ -176,20 +176,20 @@ bool Map::isHolding(int x, int y) const {
 Actor *getOccupant (int x, int y) {
 	return NULL;
 }
-// Map Generation
-void Map::generateTerrain(bool isNew, int width, int height) {
+// GameMap Generation
+void GameMap::generateTerrain(bool isNew, int width, int height) {
 	// isNew controls whether the map is being made from scratch or not
 	// currently all maps are new, and we ARE using the tutorial fxns
 	this->createRoom(true, 3, 3, width - 3, height - 3, true);
 //	this->dig(engine.player->xpos - 3, engine.player->ypos, engine.player->xpos + 3, engine.player->ypos);
 }
-void Map::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActors) {
+void GameMap::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActors) {
 	dig(x1, y1, x2, y2);
 	if (!withActors) {
 		return;
 	}
 }
-void Map::dig (int x1, int y1, int x2, int y2) {
+void GameMap::dig (int x1, int y1, int x2, int y2) {
 	// this would be the appropriate place to set a tile's biome and terrain
 	// types, but obviously will need to wait until more complex logic is here
 	if (x2 < x1) {
@@ -213,19 +213,19 @@ void Map::dig (int x1, int y1, int x2, int y2) {
 		}
 	}
 }
-void Map::addAnimal(int x, int y) {
+void GameMap::addAnimal(int x, int y) {
 	// spawns an animal at the specified x,y coords
 	Actor *monkey = new Actor(x, y, 'm', TCODColor::sepia, "monkey");
 	monkey->sentience = new AnimalSentience();
 	monkey->mortality = new NPCMortality(5, 0, "monkey corpse");
 	monkey->container = new Container(1);
-	monkey->tempo = new ActorClock(100);
-	engine.actors.push(monkey);
+//	monkey->tempo = new ActorClock(100);
+	engine.allActors.push(monkey);
 //	LOGMSG("New animal created at " << x << ", " << y);
 }
 // from the tutorial
 // these are used for BSP dungeon generation
-/*void Map::addMonster(int x, int y) {
+/*void GameMap::addMonster(int x, int y) {
 	TCODRandom *rng = TCODRandom::getInstance();
 	if (rng->getInt(0, 100) < 80) {
 		// create an orc
@@ -243,7 +243,7 @@ void Map::addAnimal(int x, int y) {
 		engine.actors.push(troll);
 	}
 }
-void Map::addItem(int x, int y) {
+void GameMap::addItem(int x, int y) {
 	TCODRandom *rng = TCODRandom::getInstance();
 	int dice = rng->getInt(0, 100);
 	if (dice < 70) {

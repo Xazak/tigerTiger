@@ -28,7 +28,7 @@
 static const TCODColor GUI_FORE = TCODColor::silver;
 static const TCODColor GUI_BACK = TCODColor::black;
 
-Gui::Gui() {
+GameGUI::GameGUI() {
 	// later, we might include code here to determine which panel should get
 	// the upper left corner, and then decide how to arrange the others
 	// right now, we lay out the viewport first and the other panels around it
@@ -46,13 +46,13 @@ Gui::Gui() {
 	msgPanelYPos = viewport->getHeight();
 	logSize = (msgPanel->getHeight() - 1); // number of visible log lines
 }
-Gui::~Gui() {
+GameGUI::~GameGUI() {
 	delete viewport;
 	delete statPanel;
 	delete msgPanel;
 	clear();
 }
-void Gui::blitToScreen() {
+void GameGUI::blitToScreen() {
 //	LOGMSG(" has been called\n");
 	TCODConsole::blit( viewport, 0, 0,
 		viewport->getWidth(), viewport->getHeight(),
@@ -64,7 +64,7 @@ void Gui::blitToScreen() {
 		msgPanel->getWidth(), msgPanel->getHeight(),
 		TCODConsole::root, msgPanelXPos, msgPanelYPos);
 }
-void Gui::render() {
+void GameGUI::render() {
 	// NOTE: clear() uses the Default_color settings defined above!
 	// Blank the viewport in prep for the upcoming render() calls
 	viewport->setDefaultBackground(GUI_BACK);
@@ -100,7 +100,7 @@ void Gui::render() {
 	}
 	// --msg log print functions go here
 }
-void Gui::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreColor,
+void GameGUI::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreColor,
 	const TCODColor backColor) {
 	// Pretty sure this is supposed to render individual tiles for single
 	// updates, but it needs to be rewritten for viewport console
@@ -110,7 +110,7 @@ void Gui::renderTile(int inputx, int inputy, int newSigil, const TCODColor foreC
 //		viewport->xpos, viewport->ypos);
 }
 // *** VIEWPORT
-void Gui::refreshViewport() {
+void GameGUI::refreshViewport() {
 	// these origin values lack any sanity checking wrt map bounds!
 	viewportXOrigin = engine.player->xpos - viewportXOffset;
 	viewportYOrigin = engine.player->ypos - viewportYOffset;
@@ -127,7 +127,7 @@ void Gui::refreshViewport() {
 	}
 }
 // *** GUI OBJECTS
-/*void Gui::renderBar(int x, int y, int width, const char *name, float curValue,
+/*void GameGUI::renderBar(int x, int y, int width, const char *name, float curValue,
 	float maxValue, const TCODColor &foreColor, const TCODColor &backColor) {
 	// draw the background
 	guiCon->setDefaultBackground(backColor);
@@ -144,7 +144,7 @@ void Gui::refreshViewport() {
 	guiCon->printf((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
 		"%s : %g/%g", name, curValue, maxValue);
 }*/
-void Gui::debugStats() {
+void GameGUI::debugStats() {
 	// show some hard info about the game state
 	int debugX = 1;
 	int debugY = statPanel->getHeight() - 20;
@@ -152,10 +152,10 @@ void Gui::debugStats() {
 	statPanel->rect(1, 0, 20, 20, false, TCOD_BKGND_SET); // portrait block
 	statPanel->printf(debugX, debugY, "   *** DEBUG ***");
 	statPanel->printf(debugX, debugY+1, "POS: %d, %d", engine.player->xpos, engine.player->ypos);
-	statPanel->printf(debugX, debugY+2, " AP: %d", engine.player->tempo->getCurrentAP());
+//	statPanel->printf(debugX, debugY+2, " AP: %d", engine.player->tempo->getCurrentAP());
 }
 // *** MESSAGES
-void Gui::message(const TCODColor &color, const char *msgText, ...) {
+void GameGUI::message(const TCODColor &color, const char *msgText, ...) {
 	// this fxn needs better annotation!
 	va_list ap; //?
 	char buffer[128];
@@ -166,7 +166,7 @@ void Gui::message(const TCODColor &color, const char *msgText, ...) {
 	char *lineEnd;
 	do {
 		// make room for the new message
-		if (log.size() == Gui::logSize) { // are we near full?
+		if (log.size() == GameGUI::logSize) { // are we near full?
 			Message *targetLine = log.get(0); // get the oldest line
 			log.remove(targetLine); // remove from the log
 			delete targetLine; // delete the message from memory
@@ -183,12 +183,12 @@ void Gui::message(const TCODColor &color, const char *msgText, ...) {
 		lineBegin = lineEnd + 1;
 	} while (lineEnd);
 }
-void Gui::clear() {
+void GameGUI::clear() {
 	log.clearAndDelete(); // wipe the message log
 }
-Gui::Message::Message(const char *inputText, const TCODColor &color):
+GameGUI::Message::Message(const char *inputText, const TCODColor &color):
 	msgText(strdup(inputText)), color(color) { }
-Gui::Message::~Message() { free(msgText); }
+GameGUI::Message::~Message() { free(msgText); }
 // *** MENU
 Menu::~Menu() {
 	clear();

@@ -12,7 +12,7 @@ Actor::~Actor() {
 }
 bool Actor::update() {
 	bool stateChange = false;
-	this->tempo->setMinimumAPCost(this->sentience->getCheapestActionCost());
+//	this->tempo->setMinimumAPCost(this->sentience->getCheapestActionCost());
 	if (sentience) {
 		stateChange = sentience->update(this);
 //		stateChange = true;

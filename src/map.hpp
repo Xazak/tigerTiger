@@ -21,7 +21,7 @@ struct Tile {
 	Tile();
 //	~Tile();
 };
-class Map {
+class GameMap {
 public:
 	int width, height;
 	enum ObstructionType {
@@ -31,8 +31,8 @@ public:
 		CREATURE
 	};
 //	SYSTEM FXNS
-	Map(int width, int height);
-	~Map();
+	GameMap(int width, int height);
+	~GameMap();
 	void computeFOV(); // redraw FOV on map
 	void render() const;
 	void init(bool withActors); // initialize the map; false = no spawns
@@ -54,8 +54,6 @@ public:
 protected:
 	Tile *tiles; // pointer to tile array
 	TCODMap *visionMap; // pointer to master map object
-	TCODRandom *rng; // pointer to RNG engine
-	long seed; // RNG seed (stored for reuse)
 	void generateTerrain(bool isNew, int width, int height);
 
 	friend class BspListener; // dungeon-generator tool

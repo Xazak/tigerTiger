@@ -57,7 +57,7 @@ bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
 			<< "]");
 	*/
-	subject->tempo->deductAP(100);
+//	subject->tempo->deductAP(100);
 	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
 }
@@ -282,7 +282,7 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	*/
 	subject->xpos += xdiff;
 	subject->ypos += ydiff;
-	subject->tempo->deductAP(100);
+//	subject->tempo->deductAP(100);
 	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
 }

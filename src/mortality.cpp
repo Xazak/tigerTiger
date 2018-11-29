@@ -45,7 +45,6 @@ PlayerMortality::PlayerMortality (float newMaxHP, float newDefense,
 void PlayerMortality::embraceDeath(Actor *subject) {
 	engine.gui->message(TCODColor::red, "You died!\n");
 	Mortality::embraceDeath(subject);
-	engine.gameStatus = Engine::DEFEAT;
 }
 // NPC
 NPCMortality::NPCMortality (float newMaxHP, float newDefense, const char *cadaverTitle):
