@@ -1,6 +1,8 @@
-/*FILE: vitality.cpp
-  This file implements the functions and routines for basic creature stats.
-  */
+/*	 vitality.cpp
+DATE Nov 09 2018
+AUTH xazak
+DESC This file implements the baseline statistics carried by every creature.
+ */
 
 #include <math.h>
 #include "main.hpp"

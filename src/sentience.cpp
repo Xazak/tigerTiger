@@ -1,3 +1,8 @@
+/*	 sentience.cpp
+DATE Oct 24 2018
+AUTH xazak
+DESC Contains action packages that provide decision-making tools for Actors.
+ */
 #include <stdio.h>
 #include <math.h>
 #include "main.hpp"

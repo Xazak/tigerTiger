@@ -1,3 +1,8 @@
+/*	 actor.cpp
+DATE Oct 08 2018
+AUTH xazak
+DESC Implementation of Actor class and associated subclasses
+ */
 #include <math.h> // sqrtf()
 #include "main.hpp"
 

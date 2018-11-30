@@ -1,3 +1,8 @@
+/*	 map.cpp
+DATE Oct 08 2018
+AUTH xazak
+DESC Implementations of Map and Tile classes, incl render methods
+ */
 #include <math.h>
 #include "main.hpp"
 

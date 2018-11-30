@@ -1,6 +1,8 @@
-/*FILE: mortality.hpp
-  Contains definitions of functions related to hit point adjustment and death.
-  */
+/*	 mortality.hpp
+DATE Oct 25 2018
+AUTH xazak
+DESC Definitions of functions related to hit point adjustment and death.
+ */
 class Mortality {
 	public:
 		const char *cadaverTitle;

@@ -1,23 +1,19 @@
+/*	 engine.hpp
+DATE Oct 08 2018
+AUTH xazak
+DESC Defintions of the game engine, which handles update and render calls.
+ */
 class GameEngine {
 	public:
-		struct EngineState {
-			virtual void update() {};
+		enum EngineState {
+			STARTUP,	//0
+			IDLE,		//1
+			ONGOING,	//2
+			NEWTURN,	//3
+			VICTORY,	//4
+			DEFEAT		//5
 		};
-		struct Startup: public EngineState {
-			void update();
-		} static startup;
-		struct NewTurn: public EngineState {
-			void update();
-		} static newTurn;
-		struct Ongoing: public EngineState {
-			void update();
-		} static ongoing;
-		struct Idle: public EngineState {
-			void update();
-		} static idle;
-		void switchMode(EngineState *newMode);
-		EngineState *currMode = NULL;
-		EngineState *prevMode = NULL;
+		void switchMode(EngineState newMode);
 
 		GameGUI *gui; // points to master GUI object
 		int screenWidth = 0;
@@ -53,6 +49,8 @@ class GameEngine {
 		TCODRandom *rng; // pointer to RNG engine
 
 	private:
+		EngineState currMode;
+		EngineState prevMode;
 		long seed; // RNG seed (stored for reuse)
 };
 extern GameEngine engine; // 'extern' tells the compiler to look elsewhere for the actual declaration

@@ -1,6 +1,8 @@
-/*FILE: sentience.hpp
-  Contains action packages that provide decision-making tools for Actors.
-  */
+/*	 sentience.hpp
+DATE Oct 24 2018
+AUTH xazak
+DESC Contains action packages that provide decision-making tools for Actors.
+ */
 class Sentience {
 	public:
 		virtual bool update(Actor *subject) = 0;

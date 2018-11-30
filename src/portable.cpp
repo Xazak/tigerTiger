@@ -1,3 +1,9 @@
+/*	 portable.cpp
+DATE Oct 25 2018
+AUTH xazak
+DESC Implements fxns to allow Actor objects to be picked up and carried,
+	 as well as behavior for specific items.
+ */
 #include "main.hpp"
 
 bool Portable::take (Actor *subject, Actor *object) {

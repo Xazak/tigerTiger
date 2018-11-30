@@ -1,7 +1,8 @@
-/*FILE: vitality.hpp
-  This file implements the baseline statistics carried by every Creature.
-  */
-
+/*	 vitality.hpp
+DATE Nov 09 2018
+AUTH xazak
+DESC Definitions of the baseline statistics carried by every creature.
+ */
 class Vitality {
 	public:
 

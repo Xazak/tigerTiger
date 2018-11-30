@@ -1,6 +1,8 @@
-/*	FILE: map.hpp
-CONTENTS: Declarations for Map and Tile classes
-	*/
+/*	 map.hpp
+DATE Oct 08 2018
+AUTH xazak
+DESC Declarations for Map and Tile classes
+ */
 struct Tile {
 	enum ProtoType { FLOOR, WALL, TRANSITION } protoType;
 	enum BiomeType { MOUNTAIN, GRASSLAND, RAINFOREST, MANGROVE, FARMLAND, CAVE } biomeType;

@@ -1,3 +1,8 @@
+/*	 container.cpp
+DATE Oct 13 2018
+AUTH xazak
+DESC Implementation of containers of Actor objects.
+ */
 #include "main.hpp"
 
 Container::Container (int size): size(size) { }

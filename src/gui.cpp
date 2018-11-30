@@ -1,8 +1,9 @@
-/*FILE: gui.cpp
-  Implements the methods and routines for drawing and communicating with the
-  game interface, as well as the viewport logic and organization.
-  Keyboard bindings are currently located in sentience.cpp::handleActionInput().
-  */
+/*	 gui.hpp
+DATE Oct 12 2018
+AUTH xazak
+DESC Implements the methods and routines for drawing and communicating with the
+	 game interface, as well as the viewport logic and organization.
+ */
 /*METHOD
   The entire screen shall be broken up into three panels:
   1) the viewport (ie camera) onto the terrain map

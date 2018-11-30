@@ -1,3 +1,8 @@
+/*	 actor.hpp
+DATE Oct 08 2018
+AUTH xazak
+DESC Definitions of Actor class, the prototype for all game objects, and assoc.
+ */
 class Actor {
 	public:
 		int xpos, ypos; // position on map

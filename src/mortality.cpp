@@ -1,3 +1,8 @@
+/*	 mortality.hpp
+DATE Oct 25 2018
+AUTH xazak
+DESC Definitions of functions related to hit point adjustment and death.
+ */
 #include <stdio.h> //?
 #include "main.hpp"
 

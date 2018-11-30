@@ -1,3 +1,8 @@
+/*	 engine.cpp
+DATE Oct 08 2018
+AUTH xazak
+DESC Implementation of the game engine, which handles update and render calls.
+ */
 #include "main.hpp"
 
 static const int MAP_HEIGHT = 1000;
@@ -7,13 +12,7 @@ static const int MAP_WIDTH = 1000;
 static const int PLAYER_START_X = 965;
 static const int PLAYER_START_Y = 965;
 
-// *** ENGINE STATES
-GameEngine::Startup GameEngine::startup;
-GameEngine::NewTurn GameEngine::newTurn;
-GameEngine::Ongoing GameEngine::ongoing;
-GameEngine::Idle GameEngine::idle;
-
-void GameEngine::Startup::update() {
+/*void GameEngine::Startup::update() {
 	// perform any start-of-game bookkeeping, then start a new turn
 	// force an FOV update to ensure that the map appears on the first turn
 	map->computeFOV();
@@ -49,9 +48,9 @@ void GameEngine::Ongoing::update() {
 //		engine.time->advanceQueue();
 	}
 	// if no one else is waiting in line to update, start a new turn
-/*	if (engine.time->isQueueEmpty()) {
+	if (engine.time->isQueueEmpty()) {
 		engine.switchMode(&newTurn);
-	}*/
+	}
 }
 void GameEngine::Idle::update() {
 	// perform player input processing until they change the game state
@@ -68,7 +67,6 @@ void GameEngine::Idle::update() {
 		}
 	}
 }
-/*
 void VictoryMode::update() {
 	// perform victory bookkeeping
 	LOGMSG("*** Victory mode engaged");
@@ -214,10 +212,31 @@ void GameEngine::load() {
 //		switchMode(&startup);
 	}
 }
-void GameEngine::switchMode(EngineState *newMode) {
+void GameEngine::switchMode(EngineState newMode) {
 	prevMode = currMode;
 	currMode = newMode;
-	LOGMSG("mode switch: " << currMode);
+	switch (currMode) {
+		case STARTUP:
+		LOGMSG("mode switch: " << currMode << ": STARTUP");
+		break;
+		case IDLE:
+		LOGMSG("mode switch: " << currMode << ": IDLE");
+		break;
+		case ONGOING:
+		LOGMSG("mode switch: " << currMode << ": ONGOING");
+		break;
+		case NEWTURN:
+		LOGMSG("mode switch: " << currMode << ": NEWTURN");
+		break;
+		case VICTORY:
+		LOGMSG("mode switch: " << currMode << ": VICTORY");
+		break;
+		case DEFEAT:
+		LOGMSG("mode switch: " << currMode << ": DEFEAT");
+		break;
+		default:
+		break;
+	}
 }
 // *** MINOR FUNCTIONS
 void GameEngine::sendToBack(Actor *actor) {

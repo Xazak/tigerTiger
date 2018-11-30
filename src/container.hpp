@@ -1,6 +1,8 @@
-/*FILE: container.hpp
-  Contains definitions for containers of Actor objects.
-  */
+/*	 container.hpp
+DATE Oct 13 2018
+AUTH xazak
+DESC Contains definitions for containers of Actor objects.
+ */
 class Container {
 	public:
 		int size; // maximum quantity of stored objects, where 0 = unlimited

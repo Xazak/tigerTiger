@@ -1,3 +1,8 @@
+/*	 gui.hpp
+DATE Oct 12 2018
+AUTH xazak
+DESC Definitions of Gui and Menu classes
+ */
 class Menu {
 	public:
 		enum MenuItemCode { // contents of main menu
