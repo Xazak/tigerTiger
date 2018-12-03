@@ -118,7 +118,50 @@ void GameEngine::term() {
 	gui->clear(); // wipe the GUI
 }
 void GameEngine::update() {
-//	currMode->update();
+	switch(currMode) {
+		case STARTUP:
+			map->computeFOV();
+			switchMode(NEWTURN);
+			break;
+		case IDLE:
+			// TO GET HERE: Engine is IDLE, player has changed worldstate
+			// take the player's command input and tell their actor to update
+			switchMode(ONGOING);
+			break;
+		case ONGOING:
+			// process one actor in the action queue:
+			// if no one's waiting (queue empty or not enough AP) -> NEWTURN
+			if (actionQueue.size() == 0) {
+				switchMode(NEWTURN);
+				break;
+			}
+			// look at the next actor in line to update
+			currActor = actionQueue.pop();
+			// if the actor's the player -> IDLE
+			if (currActor == player) {
+				switchMode(IDLE);
+			} else { // if not, ask the actor to update
+				currActor.update();
+			}
+			break;
+		case NEWTURN:
+			// re-populate the action queue
+			updateActionQueue();
+			// distribute AP
+			refreshAP();
+			// sort the entire queue
+			switchMode(ONGOING);
+			break;
+		case VICTORY:
+			LOGMSG("WARNING: no state defn for VICTORY");
+			break;
+		case DEFEAT:
+			LOGMSG("WARNING: no state defn for DEFEAT");
+			break;
+		default:
+			ERRMSG("WARNING: Engine is in undefined state!");
+			break;
+	}
 }
 void GameEngine::render() {
 /* SCREEN DISPLAY LAYER MODEL
@@ -301,4 +344,18 @@ Actor *GameEngine::getActor(int x, int y) const {
 		}
 	}
 	return NULL;
+}
+void GameEngine::updateActionQueue() {
+	// this could be much better if it sorted AND inserted at the same time...
+	actionQueue.clear();
+	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
+		Actor *subject = *iter;
+		actionQueue.push(subject);
+	}
+}
+void GameEngine::refreshAP() {
+	for (Actor **iter = actionQueue.begin(); iter != actionQueue.end(); iter++) {
+		Actor *subject = *iter;
+//		subject->tempo->refreshAP();
+	}
 }

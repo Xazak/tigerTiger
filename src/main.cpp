@@ -7,13 +7,14 @@ DESC Implementation of main game loop and assoc. functions
 
 typedef unsigned int uint;
 
-GameEngine engine(80, 50); // init game engine with window size
 CmdInterpreter parser; // create a command parser
+GameEngine engine(80, 50); // init game engine with window size
 
 int main() {
-	engine.load(); // invoke game engine such that we can load a saved game
-	// first game loop: runs until window is closed by player
-	while (!TCODConsole::isWindowClosed()) {
+	// starts the game engine: brings up main menu and checks for saves
+	// RNG, map, time, etc. objects are NOT GUARANTEED until the loop starts!
+	engine.load();
+	while (!TCODConsole::isWindowClosed()) { // main game loop
 		TCODConsole::flush(); // this needs to happen before gathering input
 		// wait until player hits a key, and get the input context with it
 		parser.lastEvent = TCODSystem::waitForEvent(TCOD_EVENT_KEY_PRESS,

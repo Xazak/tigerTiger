@@ -14,6 +14,8 @@ class GameEngine {
 			DEFEAT		//5
 		};
 		void switchMode(EngineState newMode);
+		EngineState currMode;
+		EngineState prevMode;
 
 		GameGUI *gui; // points to master GUI object
 		int screenWidth = 0;
@@ -23,6 +25,7 @@ class GameEngine {
 
 		TCODList<Actor *> allActors; // contains ALL ACTORS
 		TCODList<Actor *> actionQueue; // contains only LOCAL and SENTIENT actors
+		Actor *currActor; // points to the actor that is currently updating
 		Actor *player; // always points to player actor
 		TCOD_key_t lastKey; // contains last key pressed by player
 	//	TCOD_mouse_t mouse;
@@ -46,11 +49,11 @@ class GameEngine {
 		Actor *getClosestMonster(int x, int y, float range) const;
 		bool pickATile(int *x, int *y, float maxRange = 0.0f);
 		Actor *getActor(int x, int y) const;
+		void updateActionQueue();
+		void refreshAP();
 		TCODRandom *rng; // pointer to RNG engine
 
 	private:
-		EngineState currMode;
-		EngineState prevMode;
 		long seed; // RNG seed (stored for reuse)
 };
 extern GameEngine engine; // 'extern' tells the compiler to look elsewhere for the actual declaration

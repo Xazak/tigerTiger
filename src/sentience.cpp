@@ -9,36 +9,18 @@ DESC Contains action packages that provide decision-making tools for Actors.
 
 // Player Sentience -- command interpreter, context handlers, etc
 bool PlayerSentience::update(Actor *subject) {
+	// by the time this function is invoked, we should know:
+	// 1) Exactly what action is to be performed
+	// 2) Any other details required for that action to be completed
 //	LOGMSG(" called ");
 	// if the player's dead, don't even try to update
 	bool stateChange = false;
 	if (subject->mortality && subject->mortality->isDead()) {
 		ERRMSG(": Player is dead!");
-		return stateChange;
+		return false;
 	}
-	int xdiff = 0; // target x-coord
-	int ydiff = 0; // target y-coord
-	// check the TCOD keyboard bindings first
-	// if it's not a special key, pass it to the action handler
-	switch (engine.lastKey.vk) {
-		case TCODK_UP:		ydiff =- 1; break;
-		case TCODK_DOWN:	ydiff =  1; break;
-		case TCODK_LEFT:	xdiff =- 1; break;
-		case TCODK_RIGHT:	xdiff =  1; break;
-		case TCODK_CHAR:
-			stateChange = handleActionInput(subject, engine.lastKey.c);
-			break;
-		default: break;
-	}
-	// update if we've changed position
-	if (xdiff != 0 || ydiff != 0) {
-//		engine.gameStatus=Engine::NEW_TURN;
-		if (decideMoveAttack(subject, subject->xpos + xdiff, subject->ypos + ydiff)) {
-			engine.map->computeFOV();
-			stateChange = true;
-		}
-	}
-	return stateChange;
+
+	return true;
 }
 bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// returns false if the player did not move
