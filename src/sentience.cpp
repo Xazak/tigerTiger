@@ -19,8 +19,8 @@ bool PlayerSentience::update(Actor *subject) {
 		ERRMSG(": Player is dead!");
 		return false;
 	}
-
-	return true;
+	
+	return stateChange;
 }
 bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// returns false if the player did not move

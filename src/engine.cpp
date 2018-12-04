@@ -141,7 +141,7 @@ void GameEngine::update() {
 			if (currActor == player) {
 				switchMode(IDLE);
 			} else { // if not, ask the actor to update
-				currActor.update();
+//				currActor.update();
 			}
 			break;
 		case NEWTURN:
