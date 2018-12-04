@@ -8,6 +8,9 @@ DESC Contains action packages that provide decision-making tools for Actors.
 #include "main.hpp"
 
 // Player Sentience -- command interpreter, context handlers, etc
+bool PlayerSentience::update(ActionContext context) {
+	return false;
+}
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
@@ -19,35 +22,12 @@ bool PlayerSentience::update(Actor *subject) {
 		ERRMSG(": Player is dead!");
 		return false;
 	}
-	
+	// ask the parser what action the player will perform
+	// depending on the action, get additional info from parser
+	// when everything is accounted for, invoke the correct action
 	return stateChange;
 }
-bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
-	// returns false if the player did not move
-	// is there something in the way?
-//	LOGMSG("TRY: Move player to (" << targetx << ", " << targety << ")");
-	if (engine.map->isWall(targetx, targety)) {
-		// there's a wall
-		engine.gui->message(TCODColor::white, "You bump your nose.");
-		return false;
-	} else if (engine.map->isOccupied(targetx, targety)) {
-		// there's something or someone
-		engine.gui->message(TCODColor::white, "There's someone in the way.");
-		return false;
-	}
-	// there's nothing in the way, so move the player
-	subject->xpos = targetx;
-	subject->ypos = targety;
-//	LOGMSG("Player position: " << targetx << ", " << targety);
-/*	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
-			<< (engine.map->isWall(targetx, targety) ? "wall" : "open") \
-			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
-			<< "]");
-	*/
-//	subject->tempo->deductAP(100);
-	LOGMSG(subject->name << " deducted 100 AP");
-	return true;
-}
+/* PREVIOUS PLAYER FUNCTIONS
 bool PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	// handles all player keystroke event translation
 	int xdiff, ydiff = 0;
@@ -99,7 +79,7 @@ bool PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 			break;
 		}
 		case 'g': { //GET item
-/*			bool found = false;
+			bool found = false;
 			for (Actor **iter = engine.actors.begin(); iter != engine.actors.end(); iter++) {
 				Actor *object = *iter;
 				// is the object get-able AND
@@ -117,7 +97,7 @@ bool PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 			}
 			if (!found) {
 				engine.gui->message(TCODColor::lightGrey, "There is nothing here to pick up.");
-			}*/
+			}
 			// Check the ground under the player's feet for things to GET
 			// is there actually anything on this tile?
 //			if (engine.map->tiles[subject->xpos + subject->ypos * engine.map->width]->itemList) { }
@@ -157,6 +137,31 @@ bool PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
 	}
 	return stateChange;
 }
+bool PlayerSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
+	// returns false if the player did not move
+	// is there something in the way?
+//	LOGMSG("TRY: Move player to (" << targetx << ", " << targety << ")");
+	if (engine.map->isWall(targetx, targety)) {
+		// there's a wall
+		engine.gui->message(TCODColor::white, "You bump your nose.");
+		return false;
+	} else if (engine.map->isOccupied(targetx, targety)) {
+		// there's something or someone
+		engine.gui->message(TCODColor::white, "There's someone in the way.");
+		return false;
+	}
+	// there's nothing in the way, so move the player
+	subject->xpos = targetx;
+	subject->ypos = targety;
+//	LOGMSG("Player position: " << targetx << ", " << targety);
+	LOGMSG("MOVE-TO: " << targetx << ", " << targety << " [" \
+			<< (engine.map->isWall(targetx, targety) ? "wall" : "open") \
+			<< ", " << (engine.map->isOccupied(targetx, targety) ? "actor" : "empty" ) \
+			<< "]");
+//	subject->tempo->deductAP(100);
+	LOGMSG(subject->name << " deducted 100 AP");
+	return true;
+}
 Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	// set up the inventory selection menu
 	static const int INVENTORY_WIDTH = 50;
@@ -192,6 +197,7 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	}
 	return NULL;
 }
+*/
 int PlayerSentience::getCheapestActionCost() {
 	return 100;
 }
@@ -275,4 +281,9 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 }
 int AnimalSentience::getCheapestActionCost() {
 	return 100;
+}
+void ActionContext::clear() {
+	action = Sentience::Action::IDLE;
+	target = NULL;
+	echs = whye = zhee = 0;
 }

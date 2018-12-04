@@ -24,7 +24,7 @@ int main() {
 		// check if the game state should be iterated
 		if (parser.stateChange == true) {
 			engine.update();
-			parser.changeAction(CmdInterpreter::Action::IDLE);
+			parser.changeAction(Sentience::Action::IDLE);
 		}
 		engine.render();
 	}

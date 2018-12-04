@@ -317,9 +317,8 @@ bool GameEngine::pickATile(int *x, int *y, float maxRange) {
 				}
 			}
 		}
-		// mouse and ??? handling
-/*		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS|TCOD_EVENT_MOUSE, &lastKey, &mouse);
-		if (map->isInFOV(mouse.cx, mouse.cy) && 
+		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS|TCOD_EVENT_MOUSE, &lastKey, &mouse);
+		if (map->isVisible(mouse.cx, mouse.cy) && 
 				(maxRange == 0 || player->getDistance(mouse.cx, mouse.cy) <= maxRange)) {
 			TCODConsole::root->setCharBackground(mouse.cx, mouse.cy, TCODColor::white);
 			if (mouse.lbutton_pressed) {
@@ -330,7 +329,7 @@ bool GameEngine::pickATile(int *x, int *y, float maxRange) {
 		}
 		if (mouse.rbutton_pressed || lastKey.vk != TCODK_NONE) {
 			return false;
-		}*/
+		}
 		TCODConsole::flush();
 	}
 	return false;
@@ -355,7 +354,7 @@ void GameEngine::updateActionQueue() {
 }
 void GameEngine::refreshAP() {
 	for (Actor **iter = actionQueue.begin(); iter != actionQueue.end(); iter++) {
-		Actor *subject = *iter;
+//		Actor *subject = *iter;
 //		subject->tempo->refreshAP();
 	}
 }

@@ -28,7 +28,7 @@ class GameEngine {
 		Actor *currActor; // points to the actor that is currently updating
 		Actor *player; // always points to player actor
 		TCOD_key_t lastKey; // contains last key pressed by player
-	//	TCOD_mouse_t mouse;
+		TCOD_mouse_t mouse;
 		int fovRadius;
 
 		GameMap *map; // points to master map object
