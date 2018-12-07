@@ -7,15 +7,40 @@ DESC Contains action packages that provide decision-making tools for Actors.
 #include <math.h>
 #include "main.hpp"
 
+// General Sentience -- actions available to all living creatures
+//void Sentience::wait(Actor *subject, int numOfTurns = 1) {
+void Sentience::moveRel(Actor *subject, int targetx, int targety) { // RELATIVE COORDS
+	// move to the RELATIVE LOC specified by traveling on foot 'normally'
+	// presumably we've already checked for a valid target location?
+	subject->xpos += targetx;
+	subject->ypos += targety;
+}
+void Sentience::moveAbs(Actor *subject, int targetx, int targety) { // ABSOLUTE COORDS
+	// move to the ABSOLUTE LOC specified by traveling on foot 'normally'
+	// presumably we've already checked for a valid target location?
+	subject->xpos = targetx;
+	subject->ypos = targety;
+}
+//void Sentience::drop(Actor *subject, Actor *target);
+//void Sentience::consume(Actor *subject, Actor *target); // change to only allow consumable actors?
+//void Sentience::grab(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
+//void Sentience::toggleSit(Actor *subject);
+//void Sentience::rubOn(Actor *subject, Actor *target); // includes all general scent deposit verbs
+//void Sentience::groom(Actor *subject, Actor *target); // social interaction, also allows self
+
 // Player Sentience -- command interpreter, context handlers, etc
 bool PlayerSentience::update(ActionContext context) {
+	// this is probably a mapping resolution call
+	// between the parser's reported action and the available sentience calls
+	LOGMSG(" called by ActionContext context");
 	return false;
 }
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
-	// 2) Any other details required for that action to be completed
-//	LOGMSG(" called ");
+	// 2) That the action is allowed to happen, eg moving into an empty tile
+	// 3) Any other details required for that action to be completed
+	LOGMSG(" called by Actor *subject");
 	// if the player's dead, don't even try to update
 	bool stateChange = false;
 	if (subject->mortality && subject->mortality->isDead()) {
@@ -25,6 +50,17 @@ bool PlayerSentience::update(Actor *subject) {
 	// ask the parser what action the player will perform
 	// depending on the action, get additional info from parser
 	// when everything is accounted for, invoke the correct action
+	switch(parser.getCurrAction()) {
+		case Action::WAIT: // player will wait N = 1 turns
+			break;
+		case Action::MOVE:
+			subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
+			break;
+		case Action::IDLE: // always last!
+			break;
+		default:
+			break;
+	}
 	return stateChange;
 }
 /* PREVIOUS PLAYER FUNCTIONS
@@ -282,8 +318,14 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 int AnimalSentience::getCheapestActionCost() {
 	return 100;
 }
+// ActionContext -- general container for action context resolution
+ActionContext::ActionContext():
+	action(Sentience::Action::IDLE),
+	target(nullptr),
+	echs(0), whye(0), zhee(0)
+	{	}
 void ActionContext::clear() {
 	action = Sentience::Action::IDLE;
-	target = NULL;
+	target = nullptr;
 	echs = whye = zhee = 0;
 }

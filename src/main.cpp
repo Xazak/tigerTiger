@@ -15,18 +15,23 @@ int main() {
 	// RNG, map, time, etc. objects are NOT GUARANTEED until the loop starts!
 	engine.load();
 	while (!TCODConsole::isWindowClosed()) { // main game loop
+		engine.render();
 		TCODConsole::flush(); // this needs to happen before gathering input
 		// wait until player hits a key, and get the input context with it
-		parser.lastEvent = TCODSystem::waitForEvent(TCOD_EVENT_KEY_PRESS,
-				&parser.lastKey, NULL, true);
+//		parser.lastEvent = TCODSystem::waitForEvent(TCOD_EVENT_KEY_PRESS,
+//				&parser.lastKey, NULL, true);
+		parser.lastEvent = TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS,
+				&parser.lastKey, NULL);
 		// perform input interpretation and change parser state to match
-		parser.translate();
+		if (parser.lastEvent != TCOD_EVENT_NONE) {
+			parser.translate();
+		}
 		// check if the game state should be iterated
-		if (parser.stateChange == true) {
+/*		if (parser.stateChange == true) {
 			engine.update();
 			parser.changeAction(Sentience::Action::IDLE);
-		}
-		engine.render();
+		}*/
+		engine.update();
 	}
 	engine.save();
 	return 0; // NOTE: does this need to return exception codes?

@@ -32,6 +32,9 @@ class GameGUI {
 		// the viewport's x,y origin within the map array
 		int viewportXOrigin;
 		int viewportYOrigin;
+		// the far edges of the map, where we should not scroll the viewport
+		int farHorizEdge; // bottom side of screen
+		int farVertEdge; // right side of screen
 		// x, y positions relative to viewport w/in entire GUI space
 		int statPanelXPos;
 		int statPanelYPos;
@@ -49,6 +52,7 @@ class GameGUI {
 		void message(const TCODColor &color, const char *text, ...);
 		void clear(); // wipe the message log
 //		void renderMouseLook();
+		void refreshScrollingEdges();
 		// need load and save fxns
 	protected:
 		// draw a two-color bar on the screen (ie a health bar)

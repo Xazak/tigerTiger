@@ -76,6 +76,7 @@ class CmdInterpreter {
 		// lastKey.vk = TCOD keycode (as enum), lastKey.c = printable char
 		TCOD_mouse_t mouse; // contains mouse input
 		bool stateChange = false;
+		ActionContext context; // contains action details
 
 		CmdInterpreter();
 //		~CmdInterpreter();
@@ -87,7 +88,6 @@ class CmdInterpreter {
 	private:
 		Sentience::Action currAction;
 		Sentience::Action prevAction;
-		ActionContext context; // contains action details
 
 };
 extern CmdInterpreter parser;

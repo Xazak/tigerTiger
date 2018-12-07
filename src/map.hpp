@@ -25,7 +25,8 @@ struct Tile {
 };
 class GameMap {
 public:
-	int width, height;
+	int width;
+	int height;
 	enum ObstructionType {
 		NOTHING,
 		WALL,

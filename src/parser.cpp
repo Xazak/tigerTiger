@@ -55,9 +55,39 @@ void CmdInterpreter::translate() {
 			context.echs = 1; // later we can mod this to allow multiturn waits
 			break;
 		case Sentience::Action::MOVE:
-			// CHECK HERE FOR CONV TO RUN/SNEAK
-			context.echs = 0; // target xpos
-			context.whye = 0; // target ypos
+			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
+			switch(lastKey.c) {
+				case 'h': // move left
+					context.echs = -1;
+					break;
+				case 'j': // move down
+					context.whye = 1;
+					break; // move up
+				case 'k':
+					context.whye = -1;
+					break;
+				case 'l': // move right
+					context.echs = 1;
+					break;
+				case 'y': // move up-left
+					context.echs = -1;
+					context.whye = -1;
+					break;
+				case 'u': // move up-right
+					context.echs = 1;
+					context.whye = -1;
+					break;
+				case 'n': // move down-left
+					context.echs = -1;
+					context.whye = 1;
+					break;
+				case 'm': // move down-right
+					context.echs = 1;
+					context.whye = 1;
+					break;
+				default:
+					break;
+			}
 			break;
 		case Sentience::Action::RUN:
 			// as MOVE, but uses less AP
@@ -90,7 +120,6 @@ void CmdInterpreter::translate() {
 			break;
 		case Sentience::Action::LOOK:
 			// always prompt for target tile
-			
 			break;
 		case Sentience::Action::GRAB:
 			// CHECK: target is... at feet, nearby

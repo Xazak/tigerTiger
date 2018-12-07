@@ -116,16 +116,21 @@ void GameGUI::refreshViewport() {
 	viewportXOrigin = engine.player->xpos - viewportXOffset;
 	viewportYOrigin = engine.player->ypos - viewportYOffset;
 	// lock the viewport's origin at one side of the map or the other
+	refreshScrollingEdges();
 	if (viewportXOrigin < 0) {
 		viewportXOrigin = 0;
-	} else if (viewportXOrigin > (engine.map->width - viewport->getWidth())) {
-		viewportXOrigin = (engine.map->width - viewport->getWidth());
+	} else if (viewportXOrigin > farHorizEdge) {
+		viewportXOrigin = farHorizEdge;
 	}
 	if (viewportYOrigin < 0) {
 		viewportYOrigin = 0;
-	} else if (viewportYOrigin > (engine.map->height - viewport->getHeight())) {
-		viewportYOrigin = (engine.map->height - viewport->getHeight());
+	} else if (viewportYOrigin > farVertEdge) {
+		viewportYOrigin = farVertEdge;
 	}
+}
+void GameGUI::refreshScrollingEdges() {
+	farHorizEdge = engine.map->width - viewport->getWidth();
+	farVertEdge = engine.map->height - viewport->getHeight();
 }
 // *** GUI OBJECTS
 /*void GameGUI::renderBar(int x, int y, int width, const char *name, float curValue,

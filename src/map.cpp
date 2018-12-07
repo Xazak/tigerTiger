@@ -221,7 +221,7 @@ void GameMap::dig (int x1, int y1, int x2, int y2) {
 void GameMap::addAnimal(int x, int y) {
 	// spawns an animal at the specified x,y coords
 	Actor *monkey = new Actor(x, y, 'm', TCODColor::sepia, "monkey");
-	monkey->sentience = new AnimalSentience();
+//	monkey->sentience = new AnimalSentience();
 	monkey->mortality = new NPCMortality(5, 0, "monkey corpse");
 	monkey->container = new Container(1);
 //	monkey->tempo = new ActorClock(100);

@@ -124,8 +124,11 @@ void GameEngine::update() {
 			switchMode(NEWTURN);
 			break;
 		case IDLE:
-			// TO GET HERE: Engine is IDLE, player has changed worldstate
-			// take the player's command input and tell their actor to update
+			// the engine is trying to obtain an update from the player
+			// the engine doesn't care about metagame operations
+			if (parser.stateChange == false) break;
+			engine.player->update();
+			parser.context.clear();
 			switchMode(ONGOING);
 			break;
 		case ONGOING:
@@ -177,7 +180,9 @@ void GameEngine::render() {
 	We will draw them on the screen in order from the bottom, so that each new
 	layer overwrites the previous with more important detail and context.
  */
+//	LOGMSG(" called");
 	gui->render(); // draw the GUI
+	map->computeFOV(); // refresh the FOV map
 	map->render(); // draw the map
 	// draw all visible actors
 	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {

@@ -51,14 +51,15 @@ class Sentience {
 		virtual bool update(ActionContext context) = 0;
 		virtual int getCheapestActionCost() = 0;
 		// GENERAL ACTIONS
-		void wait(int numOfTurns = 1);
-		void move(int targetx, int targety); // ABSOLUTE COORDS
-		void drop(Actor *target);
-		void consume(Actor *target); // change to only allow consumable actors?
-		void grab(int targetx, int targety); // ABSOLUTE COORDS
-		void toggleSit();
-		void rubOn(Actor *target); // includes all general scent deposit verbs
-		void groom(Actor *target); // social interaction, also allows self
+		void wait(Actor *subject, int numOfTurns = 1);
+		void moveRel(Actor *subject, int targetx, int targety); // RELATIVE COORDS
+		void moveAbs(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
+		void drop(Actor *subject, Actor *target);
+		void consume(Actor *subject, Actor *target); // change to only allow consumable actors?
+		void grab(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
+		void toggleSit(Actor *subject);
+		void rubOn(Actor *subject, Actor *target); // includes all general scent deposit verbs
+		void groom(Actor *subject, Actor *target); // social interaction, also allows self
 		// NOT IMPLEMENTED:
 		// open, close, force, cast, use, dip, pray, wear, wield, inventory
 	protected:
@@ -92,7 +93,7 @@ class TigerAI: public Sentience {
 		void slash(Actor *target);
 };
 struct ActionContext {
-	// the actor performing the action is the actor who owns this object
+	ActionContext();
 	Sentience::Action action;	// the action to be performed
 	Actor *target;	// the actor upon which the action will be performed
 	int echs, whye, zhee;	// generic number containers
