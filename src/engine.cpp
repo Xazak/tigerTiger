@@ -144,7 +144,7 @@ void GameEngine::update() {
 			if (currActor == player) {
 				switchMode(IDLE);
 			} else { // if not, ask the actor to update
-//				currActor.update();
+				currActor->update();
 			}
 			break;
 		case NEWTURN:
@@ -263,7 +263,7 @@ void GameEngine::load() {
 void GameEngine::switchMode(EngineState newMode) {
 	prevMode = currMode;
 	currMode = newMode;
-	switch (currMode) {
+/*	switch (currMode) {
 		case STARTUP:
 		LOGMSG("mode switch: " << currMode << ": STARTUP");
 		break;
@@ -284,7 +284,7 @@ void GameEngine::switchMode(EngineState newMode) {
 		break;
 		default:
 		break;
-	}
+	}*/
 }
 // *** MINOR FUNCTIONS
 void GameEngine::sendToBack(Actor *actor) {

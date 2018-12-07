@@ -40,7 +40,7 @@ bool PlayerSentience::update(Actor *subject) {
 	// 1) Exactly what action is to be performed
 	// 2) That the action is allowed to happen, eg moving into an empty tile
 	// 3) Any other details required for that action to be completed
-	LOGMSG(" called by Actor *subject");
+//	LOGMSG(subject->name << " updating");
 	// if the player's dead, don't even try to update
 	bool stateChange = false;
 	if (subject->mortality && subject->mortality->isDead()) {
@@ -53,9 +53,11 @@ bool PlayerSentience::update(Actor *subject) {
 	switch(parser.getCurrAction()) {
 		case Action::WAIT: // player will wait N = 1 turns
 			break;
-		case Action::MOVE:
+		case Action::MOVE: // player will move to a new tile by relative coords
 			subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
 			break;
+
+		// ***************
 		case Action::IDLE: // always last!
 			break;
 		default:
@@ -238,9 +240,16 @@ int PlayerSentience::getCheapestActionCost() {
 	return 100;
 }
 // NPC Sentience -- AI routines, context handlers, etc
+bool AnimalSentience::update(ActionContext context) {
+	// this is probably a mapping resolution call
+	// between the parser's reported action and the available sentience calls
+	LOGMSG(" called by ActionContext context");
+	return false;
+}
 bool AnimalSentience::update(Actor *subject) {
 	// This is the core decision-making function: it will call any other
 	// functions needed for an NPC to decide what to do on their turn
+//	LOGMSG(subject->name << " updating");
 	bool stateChange = false;
 	// if the subject is dead, don't even try (quietly)
 	if (subject->mortality && subject->mortality->isDead()) {
@@ -248,7 +257,7 @@ bool AnimalSentience::update(Actor *subject) {
 		return stateChange;
 	}
 	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
-		// the player is visible, let's get closer
+		// the player is visible, time to get close and start dancing
 		if (subject->getDistance(engine.player->xpos, engine.player->ypos) <= 3) {
 			engine.gui->message(TCODColor::white, "%s dances and hoots!", subject->name);
 			stateChange = true;
@@ -302,17 +311,19 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 	} else if (engine.map->isOccupied(targetx, targety)) {
 		// there's something or someone
 		engine.gui->message(TCODColor::white, "The %s can't get past.", subject->name);
-		return true;;
+		return true;
+	} else {
+		subject->sentience->moveAbs(subject, targetx, targety);
 	}
 /*	LOGMSG(subject->name \
 			<< "\n abs(" << subject->xpos << "," << subject->ypos << ")\n" \
 			<< " tgt(" << targetx << "," << targety << ")\n" \
 			<< "diff(" << xdiff << "," << ydiff << ")");
 	*/
-	subject->xpos += xdiff;
-	subject->ypos += ydiff;
+//	subject->xpos += xdiff;
+//	subject->ypos += ydiff;
 //	subject->tempo->deductAP(100);
-	LOGMSG(subject->name << " deducted 100 AP");
+//	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
 }
 int AnimalSentience::getCheapestActionCost() {

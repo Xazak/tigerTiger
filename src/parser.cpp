@@ -11,6 +11,14 @@ CmdInterpreter::CmdInterpreter() {
 //~CmdInterpreter::CmdInterpreter() { }
 void CmdInterpreter::translate() {
 	// reads input data from lastEvent/lastKey and sets the parser's state
+	// debug commands will be trapped here; don't expect them to be normal...
+	switch (lastKey.c) {
+		case 'm':	// spawn a monkey
+			engine.map->addAnimal((engine.player->xpos - 5), (engine.player->ypos - 5));
+			break;
+		default:
+			break;
+	}
 	changeAction(keycodeLookup[lastKey.c]); // what action did the player input?
 	// action conversion routines should go here
 	/* ACTION CONVERSIONS AND CONTEXT
@@ -56,14 +64,22 @@ void CmdInterpreter::translate() {
 			break;
 		case Sentience::Action::MOVE:
 			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
+			// +=========...
+			// |(0,0)
+			// |
+			// | [y][k][u]
+			// | [h][z][l]
+			// | [b][j][n]
+			// |
+			// 	        (m,n)
 			switch(lastKey.c) {
 				case 'h': // move left
 					context.echs = -1;
 					break;
 				case 'j': // move down
 					context.whye = 1;
-					break; // move up
-				case 'k':
+					break;
+				case 'k': // move up
 					context.whye = -1;
 					break;
 				case 'l': // move right
@@ -77,11 +93,11 @@ void CmdInterpreter::translate() {
 					context.echs = 1;
 					context.whye = -1;
 					break;
-				case 'n': // move down-left
+				case 'b': // move down-left
 					context.echs = -1;
 					context.whye = 1;
 					break;
-				case 'm': // move down-right
+				case 'n': // move down-right
 					context.echs = 1;
 					context.whye = 1;
 					break;

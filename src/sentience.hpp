@@ -81,6 +81,7 @@ class PlayerSentience: public Sentience {
 class AnimalSentience: public Sentience {
 	public:
 		bool update(Actor *subject);
+		bool update(ActionContext context);
 		int getCheapestActionCost();
 	protected:
 		bool decideMoveAttack(Actor *subject, int targetx, int targety);
