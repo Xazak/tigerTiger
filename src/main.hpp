@@ -9,6 +9,7 @@ DESC This file is a 'master' header; it will contain all of the individual
 class Actor; // this is a forward declaration
 // other implementation files go here
 #include "sentience.hpp"
+#include "chrono.hpp"
 #include "vitality.hpp"
 #include "mortality.hpp"
 #include "portable.hpp"

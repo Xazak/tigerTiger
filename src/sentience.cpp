@@ -50,18 +50,22 @@ bool PlayerSentience::update(Actor *subject) {
 	// ask the parser what action the player will perform
 	// depending on the action, get additional info from parser
 	// when everything is accounted for, invoke the correct action
-	switch(parser.getCurrAction()) {
-		case Action::WAIT: // player will wait N = 1 turns
-			break;
-		case Action::MOVE: // player will move to a new tile by relative coords
-			subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
-			break;
+	if (subject->tempo->isCharging) {
 
-		// ***************
-		case Action::IDLE: // always last!
-			break;
-		default:
-			break;
+	} else {
+		switch(parser.getCurrAction()) {
+			case Action::WAIT: // player will wait N = 1 turns
+				break;
+			case Action::MOVE: // player will move to a new tile by relative coords
+				subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
+				break;
+
+			// ***************
+			case Action::IDLE: // always last!
+				break;
+			default:
+				break;
+		}
 	}
 	return stateChange;
 }
