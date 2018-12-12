@@ -96,7 +96,7 @@ void GameEngine::init() {
 //	LOGMSG("sentience OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
 //	LOGMSG("mortality OK");
-//	player->tempo = new ActorClock(100);
+	player->tempo = new ActorClock(100);
 //	LOGMSG("temporality OK");
 	player->container = new Container(26);
 //	LOGMSG("inventory OK");
@@ -359,7 +359,7 @@ void GameEngine::updateActionQueue() {
 }
 void GameEngine::refreshAP() {
 	for (Actor **iter = actionQueue.begin(); iter != actionQueue.end(); iter++) {
-//		Actor *subject = *iter;
-//		subject->tempo->refreshAP();
+		Actor *subject = *iter;
+		subject->tempo->refreshAP();
 	}
 }

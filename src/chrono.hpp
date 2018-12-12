@@ -49,20 +49,34 @@ class ActorClock {
 			{Sentience::Action::WEAR, 100},
 			{Sentience::Action::WIELD, 100},
 		};
+		enum ClockState {
+			NO_ACTION,
+			CHARGING,
+			READY
+		};
+
+		ActorClock(int newRefreshRate);
+
+		void changeState(ClockState newState);
 		void changeAction(Sentience::Action newAction);
-		Sentience::Action getCurrentAction() { return currAction; }
-		int getActionCost() { return actionCost; }
-		void setActionCost(int newValue) { actionCost = newValue; }
-		int getBankedAP() { return bankedAP; }
-		void storeAP(int apValue) { bankedAP += apValue; }
-		int getRefreshRate() { return refreshRate; }
-		void setRefreshRate(int newValue) { refreshRate = newValue; }
-		int getCurrentAP() { return currentAP; }
-		void setCurrentAP(int newValue) { currentAP = newValue; }
+		ClockState chargeAction();
 		void refreshAP() { currentAP = refreshRate; }
+		void resetAction();
+
+		ClockState getCurrState() { return currState; }
+		Sentience::Action getCurrAction() { return currAction; }
+		int getActionCost() { return actionCost; }
+		int getBankedAP() { return bankedAP; }
+		int getRefreshRate() { return refreshRate; }
+		int getCurrAP() { return currentAP; }
+
+		void setActionCost(int newValue) { actionCost = newValue; }
+		void setRefreshRate(int newValue) { refreshRate = newValue; }
+		void setCurrAP(int newValue) { currentAP = newValue; }
 
 	private:
 		Sentience::Action currAction; // the action being banked towards
+		ClockState currState; // to check if charging an action, etc
 		int actionCost; // the total AP needed to perform the current action
 		int bankedAP; // the AP currently saved up towards the current action
 		int refreshRate; // the amt of AP granted by the engine every turn

@@ -15,7 +15,7 @@ class Actor {
 		//Attack
 		Sentience *sentience; // ptr to AI subroutines
 		Mortality *mortality; // ptr to HP & death subroutines
-//		ActorClock *tempo; // ptr to AP system
+		ActorClock *tempo; // ptr to AP system
 		Container *container; // ptr to actor's inventory
 		Portable *portable; // ptr to allow this actor to be picked up
 

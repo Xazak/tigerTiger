@@ -49,8 +49,9 @@ class Sentience {
 		};
 		virtual bool update(Actor *subject) = 0;
 		virtual bool update(ActionContext context) = 0;
-		virtual int getCheapestActionCost() = 0;
+//		virtual int getCheapestActionCost() = 0;
 		// GENERAL ACTIONS
+		void performAction(ActionContext context);
 		void wait(Actor *subject, int numOfTurns = 1);
 		void moveRel(Actor *subject, int targetx, int targety); // RELATIVE COORDS
 		void moveAbs(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
@@ -71,7 +72,6 @@ class PlayerSentience: public Sentience {
 	public:
 		bool update(Actor *subject);
 		bool update(ActionContext context);
-		int getCheapestActionCost();
 	protected:
 		void farlook(int targetx, int targety); // ABSOLUTE COORDS
 //		bool handleActionInput(Actor *subject, int inputKeystroke);
@@ -80,9 +80,10 @@ class PlayerSentience: public Sentience {
 };
 class AnimalSentience: public Sentience {
 	public:
+		AnimalSentience();
 		bool update(Actor *subject);
 		bool update(ActionContext context);
-		int getCheapestActionCost();
+		ActionContext *currContext;
 	protected:
 		bool decideMoveAttack(Actor *subject, int targetx, int targety);
 };

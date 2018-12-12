@@ -26,23 +26,24 @@ void Sentience::moveAbs(Actor *subject, int targetx, int targety) { // ABSOLUTE 
 //void Sentience::grab(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
 //void Sentience::toggleSit(Actor *subject);
 //void Sentience::rubOn(Actor *subject, Actor *target); // includes all general scent deposit verbs
-//void Sentience::groom(Actor *subject, Actor *target); // social interaction, also allows self
-
-// Player Sentience -- command interpreter, context handlers, etc
-bool PlayerSentience::update(ActionContext context) {
-	// this is probably a mapping resolution call
-	// between the parser's reported action and the available sentience calls
-	LOGMSG(" called by ActionContext context");
-	return false;
+void Sentience::groom(Actor *subject, Actor *target) {
+	// social interaction, also allows self
+	engine.gui->message(TCODColor::lightGrey, "%s reaches out and tugs on %s's tail!",
+			subject->name,
+			target->name );
 }
+void Sentience::performAction(ActionContext context) {
+	// takes in a context and interprets it into an associated function call
+//	switch();
+}
+// Player Sentience -- command interpreter, context handlers, etc
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
 	// 2) That the action is allowed to happen, eg moving into an empty tile
 	// 3) Any other details required for that action to be completed
-//	LOGMSG(subject->name << " updating");
+	LOGMSG(subject->name << " updating");
 	// if the player's dead, don't even try to update
-	bool stateChange = false;
 	if (subject->mortality && subject->mortality->isDead()) {
 		ERRMSG(": Player is dead!");
 		return false;
@@ -50,24 +51,61 @@ bool PlayerSentience::update(Actor *subject) {
 	// ask the parser what action the player will perform
 	// depending on the action, get additional info from parser
 	// when everything is accounted for, invoke the correct action
-	if (subject->tempo->isCharging) {
-
-	} else {
-		switch(parser.getCurrAction()) {
-			case Action::WAIT: // player will wait N = 1 turns
-				break;
-			case Action::MOVE: // player will move to a new tile by relative coords
-				subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
-				break;
-
-			// ***************
-			case Action::IDLE: // always last!
-				break;
-			default:
-				break;
+	// are we already charging some action?
+	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
+		// if newAction matches currentAction, or if the player is using WAIT
+		// to charge the action, charge it and finish
+		if (parser.getCurrAction() == subject->tempo->getCurrAction() ||
+				parser.getCurrAction() == Action::WAIT) {
+			subject->tempo->chargeAction();
+			return true;
 		}
 	}
-	return stateChange;
+	// we are not charging something, therefore we are performing a new action
+	// that is, the ClockState is NO_ACTION || READY (!)
+	// be sure that an action NEVER leaves this function while still READY!
+	subject->tempo->changeAction(parser.getCurrAction());
+	subject->tempo->chargeAction(); // this should make an action READY if it is
+	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
+		engine.gui->message(TCODColor::lightGrey, "You charge your action.");
+		return true;
+	}
+	// else tempo->currState == READY
+	// this line is here to assert against idiotic things later
+//	assert(subject->tempo->getCurrState() != ActorClock::ClockState::NO_ACTION);
+	// we were able to charge the action during this turn, so perform it
+	switch(parser.getCurrAction()) {
+		case Action::WAIT: // player will wait N = 1 turns
+			// does nothing yet, not even pass time...
+			break;
+		case Action::MOVE: // player will move to a new tile by relative coords
+			subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
+			break;
+		case Action::GROOM:
+			if (parser.context.target) {
+				subject->sentience->groom(subject, parser.context.target);
+			} else {
+				subject->sentience->groom(subject, subject);
+			}
+			break;
+		// ***************
+		case Action::IDLE: // always last!
+			break;
+		default:
+			break;
+	}
+	// the action has been consumed, so reset the AP tracker
+	if (subject->tempo->getCurrState() == ActorClock::ClockState::READY) {
+		subject->tempo->resetAction();
+	}
+	// subject->tempo->currState == NO_ACTION || CHARGING
+	return true;
+}
+bool PlayerSentience::update(ActionContext context) {
+	// this is probably a mapping resolution call
+	// between the parser's reported action and the available sentience calls
+	LOGMSG(" called by ActionContext context");
+	return false;
 }
 /* PREVIOUS PLAYER FUNCTIONS
 bool PlayerSentience::handleActionInput(Actor *subject, int inputKeystroke) {
@@ -240,43 +278,122 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	return NULL;
 }
 */
-int PlayerSentience::getCheapestActionCost() {
-	return 100;
-}
 // NPC Sentience -- AI routines, context handlers, etc
-bool AnimalSentience::update(ActionContext context) {
-	// this is probably a mapping resolution call
-	// between the parser's reported action and the available sentience calls
-	LOGMSG(" called by ActionContext context");
-	return false;
+AnimalSentience::AnimalSentience() {
+	currContext = new ActionContext;
 }
 bool AnimalSentience::update(Actor *subject) {
 	// This is the core decision-making function: it will call any other
 	// functions needed for an NPC to decide what to do on their turn
 //	LOGMSG(subject->name << " updating");
-	bool stateChange = false;
 	// if the subject is dead, don't even try (quietly)
 	if (subject->mortality && subject->mortality->isDead()) {
 		// might need to add logic that removes dead actors from engine queue
-		return stateChange;
+		return false;
 	}
+	// this is some really rough ad-hoc stuff for testing simple AI features
+	// all of it should be replaced with generalized behavior systems
+	// DECIDE ON AN ACTION:
+	// can the animal see the player?
 	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
-		// the player is visible, time to get close and start dancing
-		if (subject->getDistance(engine.player->xpos, engine.player->ypos) <= 3) {
-			engine.gui->message(TCODColor::white, "%s dances and hoots!", subject->name);
-			stateChange = true;
+		// the player is visible, time to get close and try to pet them
+		// are we adjacent to the player?
+		if (subject->getDistance(engine.player->xpos, engine.player->ypos) > 1) {
+			// no, let's get closer
+			// populate context with direction
+			int targetx = engine.player->xpos - subject->xpos;
+			int targety = engine.player->ypos - subject->ypos;
+			float distance = sqrtf(targetx * targetx + targety * targety);
+			if (distance >= 1) { // how far away is the target tile?
+				// if it's more than a single step away, move in that direction
+				// do not allow the actor to take more than 1 step in any direction
+				targetx = (int)(round(targetx / distance));
+				targety = (int)(round(targety / distance));
+				if (targetx > 1) {
+					targetx = targetx / targetx;
+				} else if (targetx < -1) {
+					targetx = targetx / -(targetx);
+				}
+				if (targety > 1) {
+					targety = targety / targety;
+				} else if (targety < -1) {
+					targety = targety / -(targety);
+				}
+			}
+//			targetx = subject->xpos + xdiff;
+//			targety = subject->ypos + ydiff;
+			// find x, y components
+/*			int targetx = subject->xpos - engine.player->xpos;
+			int targety = subject->ypos - engine.player->ypos;
+			// normalize
+			if (targetx > 1) {
+				targetx = 1;
+			} else if (targetx < -1) {
+				targetx = -1;
+			}
+			if (targety > 1) {
+				targety = 1;
+			} else if (targety < -1) {
+				targety = -1;
+			}*/
+			// store the calculated movement
+			currContext->echs = targetx;
+			currContext->whye = targety;
+			subject->tempo->changeAction(Action::MOVE);
 		} else {
-			stateChange = decideMoveAttack(subject, engine.player->xpos, engine.player->ypos);
+			// yes, we're close, time to pet the kitty!!
+			// populate context with target
+			currContext->target = engine.player;
+			subject->tempo->changeAction(Action::GROOM);
 		}
 	} else {
 		// the player's not visible, let's just pick a random wander
-		TCODRandom *rng = TCODRandom::getInstance();
-		int targetx = subject->xpos + rng->getInt(-1, 1);
-		int targety = subject->ypos + rng->getInt(-1, 1);
-		decideMoveAttack(subject, targetx, targety);
-		stateChange = true;
+//		TCODRandom *rng = TCODRandom::getInstance();
+//		int targetx = subject->xpos + rng->getInt(-1, 1);
+//		int targety = subject->ypos + rng->getInt(-1, 1);
+//		decideMoveAttack(subject, targetx, targety);
 	}
-	return stateChange;
+	// TRY TO PERFORM THE ACTION
+	subject->tempo->chargeAction();
+	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
+		// the actor is still charging up their action
+//		LOGMSG(subject->name << " is charging their action :" << subject->tempo->getCurrAction());
+	} else {
+		// this line is here to assert against idiotic things later
+//		assert(subject->tempo->getCurrState() == ActorClock::ClockState::NO_ACTION);
+		// the actor's action is READY
+		switch(subject->tempo->getCurrAction()) {
+			case Action::WAIT:
+				break;
+			case Action::MOVE:
+				subject->sentience->moveRel(subject, currContext->echs, currContext->whye);
+				LOGMSG(subject->name << " moved to " << subject->xpos << ", " << subject->ypos);
+				break;
+			case Action::GROOM:
+				if (currContext->target) {
+					subject->sentience->groom(subject, currContext->target);
+				} else {
+					subject->sentience->groom(subject, subject);
+				}
+				break;
+			// ***************
+			case Action::IDLE:
+				// fall through
+			default:
+				break;
+		}
+	}
+	if (subject->tempo->getCurrState() == ActorClock::ClockState::READY) {
+		subject->tempo->resetAction();
+	}
+	// subject->tempo->currState == NO_ACTION || CHARGING
+	return true;	// the action has been consumed, so reset the AP tracker
+}
+bool AnimalSentience::update(ActionContext context) {
+	// this is probably a mapping resolution call
+	// between the parser's reported action and the available sentience calls
+	LOGMSG(" called by ActionContext context");
+	return false;
 }
 bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// FIX: the movement code does NOT prevent actors from occupying the same
@@ -329,9 +446,6 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 //	subject->tempo->deductAP(100);
 //	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
-}
-int AnimalSentience::getCheapestActionCost() {
-	return 100;
 }
 // ActionContext -- general container for action context resolution
 ActionContext::ActionContext():

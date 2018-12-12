@@ -5,8 +5,52 @@ DESC Definitions of the timekeeping systems, including world time and actor AP
  */
 #include "main.hpp"
 
+ActorClock::ActorClock(int newRefreshRate):
+	currAction(Sentience::Action::IDLE),
+	currState(NO_ACTION),
+	actionCost(0),
+	bankedAP(0),
+	refreshRate(newRefreshRate),
+	currentAP(0)
+	{ }
+// the sentience module will consume the readied action and change the state
+/*
+AP METHOD
+1	Actor decides to take an action
+2	Actor asks: Do I have enough AP? (currState?)
+3	IF actor.currAP < actionCost
+3.2		bankedAP += actor.currAP;
+3.4		actor.currAP = 0;
+4	ELSE [[ actor.currAP >= actionCost ]]
+4.2		actor.currAP -= actionCost;
+*/
+void ActorClock::resetAction() {
+	currAction = Sentience::Action::IDLE;
+	changeState(NO_ACTION);
+	actionCost = 0;
+	bankedAP = 0;
+}
 void ActorClock::changeAction(Sentience::Action newAction) {
 	currAction = newAction;
 	actionCost = APCostLookup[currAction];
-	bankedAP = 0; // can change later to allow carryover
+	changeState(CHARGING);
+}
+void ActorClock::changeState(ClockState newState) {
+	currState = newState;
+//	LOGMSG("tempo state: " << currState);
+}
+ActorClock::ClockState ActorClock::chargeAction() {
+	// does the action cost more than the player has?
+	// if so, bank the AP towards the future action
+	if (currentAP < actionCost) {
+		bankedAP += currentAP;
+		currentAP = 0;
+	} else { // the player can pay for the action immediately (currAP >= cost)
+		currentAP -= actionCost;
+		changeState(READY);
+	}
+	if (bankedAP > actionCost) {
+		changeState(READY);
+	}
+	return currState;
 }

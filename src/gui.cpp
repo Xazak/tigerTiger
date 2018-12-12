@@ -156,9 +156,18 @@ void GameGUI::debugStats() {
 	int debugY = statPanel->getHeight() - 20;
 	statPanel->setDefaultForeground(TCODColor::white); // set text color
 	statPanel->rect(1, 0, 20, 20, false, TCOD_BKGND_SET); // portrait block
+	// HEADER
 	statPanel->printf(debugX, debugY, "   *** DEBUG ***");
-	statPanel->printf(debugX, debugY+1, "POS: %d, %d", engine.player->xpos, engine.player->ypos);
-//	statPanel->printf(debugX, debugY+2, " AP: %d", engine.player->tempo->getCurrentAP());
+	// POSITION
+	statPanel->printf(debugX, debugY+1, "POS: %d, %d",
+			engine.player->xpos,
+			engine.player->ypos);
+	// AP STATE
+	statPanel->printf(debugX, debugY+2, "AXN: %d - %d/%d [%d]",
+			engine.player->tempo->getCurrAction(),
+			engine.player->tempo->getCurrAP(),
+			engine.player->tempo->getActionCost(),
+			engine.player->tempo->getCurrState() );
 }
 // *** MESSAGES
 void GameGUI::message(const TCODColor &color, const char *msgText, ...) {
