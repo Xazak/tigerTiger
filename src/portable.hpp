@@ -7,7 +7,7 @@ DESC Contains definitions to allow Actor objects to be picked up and carried,
 class Portable {
 	public:
 		bool take(Actor *subject, Actor *object);
-		virtual bool use(Actor *subject, Actor *object);
+		virtual bool consume(Actor *subject, Actor *object);
 		void drop(Actor *subject, Actor *object);
 	protected:
 		enum PortableType { ANIMAL, VEGETABLE, MINERAL };

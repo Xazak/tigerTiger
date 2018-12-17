@@ -21,11 +21,26 @@ class Menu {
 };
 class GameGUI {
 	public:
+		GameGUI();
+		~GameGUI();
+		void blitToScreen(); // draw all GUI panels on the root console
+		void render(); // draw the GUI on the screen
+		// for drawing a single tile? need to check...
+		void renderTile(int inputx, int inputy, int newSigil,
+			const TCODColor foreColor, const TCODColor backColor);
+		void refreshViewport(); // updates the viewport edge/offset coordinates
+		void refreshScrollingEdges(); // updates the far viewport boundaries
+		// print a message to the log
+		void message(const TCODColor &color, const char *text, ...);
+		void clear(); // wipe the message log
+//		void renderMouseLook();
+		// need load and save fxns
+
 		bool updateView = false; // if true, invoke render()
-		Menu menu;
-		TCODConsole *viewport;
-		TCODConsole *statPanel;
-		TCODConsole *msgPanel;
+		Menu menu; // basic menu object
+		TCODConsole *viewport; // viewport console
+		TCODConsole *statPanel; // statpanel console
+		TCODConsole *msgPanel; // message log console
 		// the half-sizes of the viewport's width and height
 		int viewportXOffset;
 		int viewportYOffset;
@@ -41,27 +56,14 @@ class GameGUI {
 		int msgPanelXPos;
 		int msgPanelYPos;
 
-		GameGUI();
-		~GameGUI();
-		void blitToScreen(); // draw all GUI panels on the root console
-		void render(); // draw the GUI on the screen
-		void renderTile(int inputx, int inputy, int newSigil,
-			const TCODColor foreColor, const TCODColor backColor); // updates viewport to match maps
-		void refreshViewport();
-		// print a message to the log
-		void message(const TCODColor &color, const char *text, ...);
-		void clear(); // wipe the message log
-//		void renderMouseLook();
-		void refreshScrollingEdges();
-		// need load and save fxns
 	protected:
+		int logSize; // length of message log in (wrapped) lines
 		// draw a two-color bar on the screen (ie a health bar)
-		int logSize;
 		void renderBar(int x, int y, int width, const char *name,
 			float value, float maxValue, const TCODColor &barColor,
 			const TCODColor &backColor);
 		void debugStats(); // draws a stat panel with debug info
-		// simple object for use with the message log
+		// simple object that populates the message log
 		struct Message {
 			char *msgText;
 			TCODColor color;

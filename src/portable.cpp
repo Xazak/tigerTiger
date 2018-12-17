@@ -15,8 +15,9 @@ bool Portable::take (Actor *subject, Actor *object) {
 	}
 	return false;
 }
-bool Portable::use (Actor *subject, Actor *object) {
-	// this assumes all items are single-use; is there a way to prevent this?
+bool Portable::consume (Actor *subject, Actor *object) {
+	// removes an object from the inventory AND game world
+	// returns false if the object was not found in the subject's container
 	if (subject->container) {
 		subject->container->remove(object);
 		delete object;
@@ -25,6 +26,7 @@ bool Portable::use (Actor *subject, Actor *object) {
 	return false;
 }
 void Portable::drop (Actor *subject, Actor *object) {
+	// moves an object from the subject's container to the world map
 	if (subject->container) {
 		subject->container->remove(object);
 		engine.allActors.push(object);

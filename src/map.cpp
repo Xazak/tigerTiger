@@ -11,42 +11,11 @@ static const int ROOM_MIN_SIZE = 6;
 static const int MAX_ROOM_ITEMS = 2;
 static const int MAX_ROOM_MONSTERS = 3;
 
-/* Most of this is code that specifically generates Nethack-style dungeons
- * using the BSP toolkit from libtcod; it will need to be rewritten later...
- */
-/*class BspListener : public ITCODBspCallback {
-	private:
-		GameMap &map; // a room to dig
-		int roomNum; // room number
-		int lastx, lasty; // center of the last room
-	public:
-		BspListener(GameMap &map) : map(map), roomNum(0) {}
-		bool visitNode(TCODBsp *node, void *userData) {
-			if (node->isLeaf()) {
-				int x, y, w, h;
-				bool withActors = (bool)userData;
-				// dig a room
-				w = map.rng->getInt(ROOM_MIN_SIZE, node->w-2);
-				h = map.rng->getInt(ROOM_MIN_SIZE, node->h-2);
-				x = map.rng->getInt(node->x+1, node->x + node->w - w - 1);
-				y = map.rng->getInt(node->y+1, node->y + node->h - h - 1);
-				map.createRoom(roomNum == 0, x, y, x+w-1, y+h-1, withActors);
-				if (roomNum != 0) {
-					// dig a corridor from last room
-					map.dig(lastx, lasty, x+w/2, lasty);
-					map.dig(x+w/2, lasty, x+w/2, y+h/2);
-				}
-				lastx = x+w/2;
-				lasty = y+h/2;
-				roomNum++;
-			}
-			return true;
-		}
-};*/
-// The following code is definitely necessary for the map itself
+// **** TILE
 Tile::Tile(): glyph(43), foreColor(25, 25, 25), backColor(127, 127, 127),
 	explored(false), occupant(NULL) { }
 //Tile::~Tile() { }
+// **** MAP
 GameMap::GameMap(int inputWidth, int inputHeight) : width(inputWidth), height(inputHeight) {
 	// pick a random seed between 0 and (a big number)
 //	seed = TCODRandom::getInstance()->getInt(0, 0x7FFFFFFF);
@@ -144,6 +113,7 @@ void GameMap::load(TCODZip &zip) {
 	}
 }*/
 // should these be overloaded to use Tile pointers as well?
+// **** MAP QUERIES
 bool GameMap::isWall(int x, int y) const {
 	return !visionMap->isWalkable(x, y);
 }
@@ -177,16 +147,24 @@ bool GameMap::isHolding(int x, int y) const {
 //	return tiles[x + y * width].itemList;
 	return false;
 }
-// TOOLS
 Actor *getOccupant (int x, int y) {
 	return NULL;
 }
-// GameMap Generation
+// **** GameMap Generation
+void GameMap::addAnimal(int x, int y) {
+	// spawns an animal at the specified x,y coords
+	Actor *monkey = new Actor(x, y, 'm', TCODColor::sepia, "monkey");
+	monkey->sentience = new AnimalSentience();
+	monkey->mortality = new NPCMortality(5, 0, "monkey corpse");
+	monkey->container = new Container(1);
+	monkey->tempo = new ActorClock(100);
+	engine.allActors.push(monkey);
+//	LOGMSG("New animal created at " << x << ", " << y);
+}
 void GameMap::generateTerrain(bool isNew, int width, int height) {
 	// isNew controls whether the map is being made from scratch or not
 	// currently all maps are new, and we ARE using the tutorial fxns
 	this->createRoom(true, 3, 3, width - 3, height - 3, true);
-//	this->dig(engine.player->xpos - 3, engine.player->ypos, engine.player->xpos + 3, engine.player->ypos);
 }
 void GameMap::createRoom (bool first, int x1, int y1, int x2, int y2, bool withActors) {
 	dig(x1, y1, x2, y2);
@@ -218,62 +196,3 @@ void GameMap::dig (int x1, int y1, int x2, int y2) {
 		}
 	}
 }
-void GameMap::addAnimal(int x, int y) {
-	// spawns an animal at the specified x,y coords
-	Actor *monkey = new Actor(x, y, 'm', TCODColor::sepia, "monkey");
-	monkey->sentience = new AnimalSentience();
-	monkey->mortality = new NPCMortality(5, 0, "monkey corpse");
-	monkey->container = new Container(1);
-	monkey->tempo = new ActorClock(100);
-	engine.allActors.push(monkey);
-//	LOGMSG("New animal created at " << x << ", " << y);
-}
-// from the tutorial
-// these are used for BSP dungeon generation
-/*void GameMap::addMonster(int x, int y) {
-	TCODRandom *rng = TCODRandom::getInstance();
-	if (rng->getInt(0, 100) < 80) {
-		// create an orc
-		Actor *orc = new Actor (x, y, 'o', TCODColor::desaturatedGreen, "orc");
-//		orc->destructible = new MonsterDestructible(10, 0, "dead orc");
-//		orc->attacker = new Attacker(3);
-//		orc->ai = new MonsterAi();
-		engine.actors.push(orc);
-	} else {
-		// create a troll
-		Actor *troll = new Actor(x, y, 'T', TCODColor::darkerGreen, "troll");
-//		troll->destructible = new MonsterDestructible(16, 1, "troll carcass");
-//		troll->attacker = new Attacker(4);
-//		troll->ai = new MonsterAi();
-		engine.actors.push(troll);
-	}
-}
-void GameMap::addItem(int x, int y) {
-	TCODRandom *rng = TCODRandom::getInstance();
-	int dice = rng->getInt(0, 100);
-	if (dice < 70) {
-		// create a health potion
-		Actor *healthPotion = new Actor(x, y, '!', TCODColor::violet, "health potion");
-//		healthPotion->blocks = false;
-//		healthPotion->pickable = new Healer(4);
-		engine.actors.push(healthPotion);
-	} else if (dice < 80) {
-		// create a scroll of lightning bolt
-		Actor *scrollOfLightningBolt = new Actor(x, y, '?', TCODColor::lightYellow, "scroll of lightning bolt");
-//		scrollOfLightningBolt->blocks = false;
-//		scrollOfLightningBolt->pickable = new LightningBolt(5, 20);
-		engine.actors.push(scrollOfLightningBolt);
-	} else if (dice < 90) {
-		// create a scroll of fireball
-		Actor *scrollOfFireball = new Actor(x, y, '?', TCODColor::orange, "scroll of fireball");
-//		scrollOfFireball->blocks = false;
-//		scrollOfFireball->pickable = new Fireball(3, 12);
-		engine.actors.push(scrollOfFireball);
-	} else {
-		// create a scroll of confusion
-		Actor *scrollOfConfusion = new Actor(x, y, '?', TCODColor::lightGreen, "scroll of confusion");
-//		scrollOfConfusion->blocks = false;
-//		scrollOfConfusion->pickable = new Confuser(10, 8);
-		engine.actors.push(scrollOfConfusion);
-	}
-}*/

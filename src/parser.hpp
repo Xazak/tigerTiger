@@ -71,19 +71,19 @@ class CmdInterpreter {
 			{Sentience::Action::WIELD, true},
 			{Sentience::Action::INVENTORY, false}
 		};
-		TCOD_event_t lastEvent; // contains last input event from player
-		TCOD_key_t lastKey; // contains last key pressed by player
-		// lastKey.vk = TCOD keycode (as enum), lastKey.c = printable char
-		TCOD_mouse_t mouse; // contains mouse input
-		bool stateChange = false;
-		ActionContext context; // contains action details
-
-		CmdInterpreter();
+//		CmdInterpreter();
 //		~CmdInterpreter();
 		void translate();
 		void changeAction(Sentience::Action newAction);
 		Sentience::Action getCurrAction() { return currAction; };
 		Sentience::Action getPrevAction() { return prevAction; };
+
+		TCOD_event_t lastEvent; // contains last input event from player
+		TCOD_key_t lastKey; // contains last key pressed by player
+		// lastKey.vk = TCOD keycode (as enum), lastKey.c = printable char
+		TCOD_mouse_t mouse; // contains mouse input
+		bool stateChange = false; // indicates meta context of player's input
+		ActionContext context; // contains action details
 
 	private:
 		Sentience::Action currAction;

@@ -57,10 +57,10 @@ class ActorClock {
 
 		ActorClock(int newRefreshRate);
 
+		void refreshAP() { currentAP = refreshRate; }
 		void changeState(ClockState newState);
 		void changeAction(Sentience::Action newAction);
 		ClockState chargeAction();
-		void refreshAP() { currentAP = refreshRate; }
 		void resetAction();
 
 		ClockState getCurrState() { return currState; }

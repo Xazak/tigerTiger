@@ -5,21 +5,24 @@ DESC Definitions of functions related to hit point adjustment and death.
  */
 class Mortality {
 	public:
-		const char *cadaverTitle;
-
 		Mortality(float newMaxHP, float newDefense, const char *cadaverTitle);
 		virtual ~Mortality();
+		virtual void embraceDeath(Actor *subject); // corpse generation
+		float adjustHP(Actor *subject, float hpAdjustment); // HP changes
+		// **** QUERIES
 		inline bool isDead() { return currentHP <= 0; }
-		virtual void embraceDeath(Actor *subject);
-		float adjustHP(Actor *subject, float hpAdjustment);
-		// simple sets/gets
-		void setMaximumHP(float newMaxHP);
-		float getMaximumHP();
-		void setCurrentHP(float hpChange);
-		float getCurrentHP();
-		void setDefenseRating(float newRating);
-		float getDefenseRating();
+		// **** TOOLS
+		// these may need clarification, ie "this->maximumHP = newValue;"
+		void setMaximumHP(float newValue) { maximumHP = newValue; }
+		float getMaximumHP() { return maximumHP; }
+		void setCurrentHP(float newValue) { currentHP = newValue; }
+		float getCurrentHP() { return currentHP; }
+		void setDefenseRating(float newValue) { defense = newValue; }
+		float getDefenseRating() { return defense; }
 		//fxns for load, save, and data-block creation will go here
+
+		const char *cadaverTitle;
+
 	protected:
 		float maximumHP;
 		float currentHP;

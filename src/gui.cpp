@@ -29,6 +29,62 @@ DESC Implements the methods and routines for drawing and communicating with the
 static const TCODColor GUI_FORE = TCODColor::silver;
 static const TCODColor GUI_BACK = TCODColor::black;
 
+// *** MENU
+Menu::~Menu() {
+	clear();
+}
+void Menu::clear() {
+	menuListItems.clearAndDelete();
+}
+void Menu::addItem(MenuItemCode code, const char *label) {
+	MenuItem *item = new MenuItem();
+	item->code = code;
+	item->label = label;
+	menuListItems.push(item);
+}
+Menu::MenuItemCode Menu::pick() {
+//	static TCODImage img("menu_background1.png"); // main menu background image
+	int selectedItem = 0;
+	while (!TCODConsole::isWindowClosed()) {
+//		img.blit2x(TCODConsole::root, 0, 0); // blit the bkgrnd img on screen
+		int currentItem = 0;
+		// we're going to let the menu blit to the root console for now
+		for (MenuItem **iter = menuListItems.begin();
+				iter != menuListItems.end(); iter++) {
+			// recolor menu text to act as cursor
+			if (currentItem == selectedItem) {
+//				engine.gui->viewport->setDefaultForeground(TCODColor::lighterOrange);
+				TCODConsole::root->setDefaultForeground(TCODColor::lighterOrange);
+			} else {
+//				engine.gui->viewport->setDefaultForeground(TCODColor::lightGrey);
+				TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
+			}
+			TCODConsole::root->printf(10, 10 + currentItem * 3, (*iter)->label);
+			currentItem++;
+		}
+		TCODConsole::flush(); //?
+		// handle menu selection keypresses
+		TCOD_key_t key;
+		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &key, NULL);
+		switch (key.vk) {
+			case TCODK_UP:
+				selectedItem--;
+				if (selectedItem < 0) {
+					selectedItem = menuListItems.size() - 1;
+				}
+				break;
+			case TCODK_DOWN:
+				selectedItem = (selectedItem + 1) % menuListItems.size();
+				break;
+			case TCODK_ENTER:
+				return menuListItems.get(selectedItem)->code;
+			default:
+				break;
+		}
+	}
+	return NONE;
+}
+// *** GUI
 GameGUI::GameGUI() {
 	// later, we might include code here to determine which panel should get
 	// the upper left corner, and then decide how to arrange the others
@@ -110,7 +166,7 @@ void GameGUI::renderTile(int inputx, int inputy, int newSigil, const TCODColor f
 //	TCODConsole::blit(viewport->con, 0, 0, 0, 0, TCODConsole::root,
 //		viewport->xpos, viewport->ypos);
 }
-// *** VIEWPORT
+// 	*** VIEWPORT
 void GameGUI::refreshViewport() {
 	// these origin values lack any sanity checking wrt map bounds!
 	viewportXOrigin = engine.player->xpos - viewportXOffset;
@@ -132,7 +188,7 @@ void GameGUI::refreshScrollingEdges() {
 	farHorizEdge = engine.map->width - viewport->getWidth();
 	farVertEdge = engine.map->height - viewport->getHeight();
 }
-// *** GUI OBJECTS
+// 	*** GUI OBJECTS
 /*void GameGUI::renderBar(int x, int y, int width, const char *name, float curValue,
 	float maxValue, const TCODColor &foreColor, const TCODColor &backColor) {
 	// draw the background
@@ -169,7 +225,7 @@ void GameGUI::debugStats() {
 			engine.player->tempo->getActionCost(),
 			engine.player->tempo->getCurrState() );
 }
-// *** MESSAGES
+// 	*** MESSAGES
 void GameGUI::message(const TCODColor &color, const char *msgText, ...) {
 	// this fxn needs better annotation!
 	va_list ap; //?
@@ -204,58 +260,3 @@ void GameGUI::clear() {
 GameGUI::Message::Message(const char *inputText, const TCODColor &color):
 	msgText(strdup(inputText)), color(color) { }
 GameGUI::Message::~Message() { free(msgText); }
-// *** MENU
-Menu::~Menu() {
-	clear();
-}
-void Menu::clear() {
-	menuListItems.clearAndDelete();
-}
-void Menu::addItem(MenuItemCode code, const char *label) {
-	MenuItem *item = new MenuItem();
-	item->code = code;
-	item->label = label;
-	menuListItems.push(item);
-}
-Menu::MenuItemCode Menu::pick() {
-//	static TCODImage img("menu_background1.png"); // main menu background image
-	int selectedItem = 0;
-	while (!TCODConsole::isWindowClosed()) {
-//		img.blit2x(TCODConsole::root, 0, 0); // blit the bkgrnd img on screen
-		int currentItem = 0;
-		// we're going to let the menu blit to the root console for now
-		for (MenuItem **iter = menuListItems.begin();
-				iter != menuListItems.end(); iter++) {
-			// recolor menu text to act as cursor
-			if (currentItem == selectedItem) {
-//				engine.gui->viewport->setDefaultForeground(TCODColor::lighterOrange);
-				TCODConsole::root->setDefaultForeground(TCODColor::lighterOrange);
-			} else {
-//				engine.gui->viewport->setDefaultForeground(TCODColor::lightGrey);
-				TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
-			}
-			TCODConsole::root->printf(10, 10 + currentItem * 3, (*iter)->label);
-			currentItem++;
-		}
-		TCODConsole::flush(); //?
-		// handle menu selection keypresses
-		TCOD_key_t key;
-		TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS, &key, NULL);
-		switch (key.vk) {
-			case TCODK_UP:
-				selectedItem--;
-				if (selectedItem < 0) {
-					selectedItem = menuListItems.size() - 1;
-				}
-				break;
-			case TCODK_DOWN:
-				selectedItem = (selectedItem + 1) % menuListItems.size();
-				break;
-			case TCODK_ENTER:
-				return menuListItems.get(selectedItem)->code;
-			default:
-				break;
-		}
-	}
-	return NONE;
-}

@@ -6,11 +6,21 @@ DESC Implementation of the parser module.
 
 #include "main.hpp"
 
-CmdInterpreter::CmdInterpreter() {
-}
+// SCREEN COORDINATE POSITIONS
+// +=========...
+// |(0,0)
+// |
+// | [y][k][u]
+// | [h][z][l]
+// | [b][j][n]
+// |
+// 	        (m,n)
+
+//CmdInterpreter::CmdInterpreter() { }
 //~CmdInterpreter::CmdInterpreter() { }
 void CmdInterpreter::translate() {
-	// reads input data from lastEvent/lastKey and sets the parser's state
+	// Reads input data from lastEvent/lastKey and sets the parser's state
+	// **** DEBUG
 	// debug commands will be trapped here; don't expect them to be normal...
 	switch (lastKey.c) {
 		case 'm':	// spawn a monkey
@@ -64,14 +74,6 @@ void CmdInterpreter::translate() {
 			break;
 		case Sentience::Action::MOVE:
 			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
-			// +=========...
-			// |(0,0)
-			// |
-			// | [y][k][u]
-			// | [h][z][l]
-			// | [b][j][n]
-			// |
-			// 	        (m,n)
 			switch(lastKey.c) {
 				case 'h': // move left
 					context.echs = -1;

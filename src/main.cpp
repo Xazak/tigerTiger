@@ -17,9 +17,10 @@ int main() {
 	while (!TCODConsole::isWindowClosed()) { // main game loop
 		engine.render();
 		TCODConsole::flush(); // this needs to happen before gathering input
-		// wait until player hits a key, and get the input context with it
+		// WAIT until player hits a key, and get the input context with it
 //		parser.lastEvent = TCODSystem::waitForEvent(TCOD_EVENT_KEY_PRESS,
 //				&parser.lastKey, NULL, true);
+		// CHECK to see if a player hit a key, then gather its context
 		parser.lastEvent = TCODSystem::checkForEvent(TCOD_EVENT_KEY_PRESS,
 				&parser.lastKey, NULL);
 		// perform input interpretation and change parser state to match

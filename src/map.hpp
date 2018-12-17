@@ -24,43 +24,39 @@ struct Tile {
 //	~Tile();
 };
 class GameMap {
-public:
-	int width;
-	int height;
-	enum ObstructionType {
-		NOTHING,
-		WALL,
-		OBJECT,
-		CREATURE
-	};
-//	SYSTEM FXNS
-	GameMap(int width, int height);
-	~GameMap();
-	void computeFOV(); // redraw FOV on map
-	void render() const;
-	void init(bool withActors); // initialize the map; false = no spawns
-//	void load(TCODZip &zip);
-//	void save(TCODZip &zip);
-//	QUERIES
-	bool isWall(int x, int y) const; // is there a wall here?
-	bool isOccupied(int x, int y) const; // is the tile occupied by someone?
-	bool isObstructed(int x, int y) const; // is the tile blocked by an actor?
-	bool isVisible(int x, int y) const; // is the tile visible?
-	bool isExplored(int x, int y) const; // has the tile been explored?
-	bool isHolding(int x, int y) const; // are there items on the tile?
-//	TOOLS
-	Actor *getOccupant(int x, int y); // get a pointer to the actor standing on the target tile
-	void addAnimal(int x, int y); // spawn an animal on the map
-//	void addMonster(int x, int y); // add a monster to the map
-//	void addItem(int x, int y); // add an item to the map
+	public:
+		int width;
+		int height;
+		enum ObstructionType {
+			NOTHING,
+			WALL,
+			OBJECT,
+			CREATURE
+		};
+		// **** SYSTEM FXNS
+		GameMap(int width, int height);
+		~GameMap();
+		void computeFOV(); // redraw FOV on map
+		void render() const;
+		void init(bool withActors); // initialize the map; false = no spawns
+//		void load(TCODZip &zip);
+//		void save(TCODZip &zip);
+		// **** QUERIES
+		bool isWall(int x, int y) const; // is there a wall here?
+		bool isOccupied(int x, int y) const; // is the tile occupied by someone?
+		bool isObstructed(int x, int y) const; // is the tile blocked by an actor?
+		bool isVisible(int x, int y) const; // is the tile visible?
+		bool isExplored(int x, int y) const; // has the tile been explored?
+		bool isHolding(int x, int y) const; // are there items on the tile?
+		Actor *getOccupant(int x, int y); // get a pointer to the actor standing on the target tile
+		// **** TOOLS
+		void addAnimal(int x, int y); // spawn an animal on the map
 
-protected:
-	Tile *tiles; // pointer to tile array
-	TCODMap *visionMap; // pointer to master map object
-	void generateTerrain(bool isNew, int width, int height);
-
-	friend class BspListener; // dungeon-generator tool
-	void dig(int x1, int y1, int x2, int y2); // creates a space for a room
-	// fills in an open space with room furniture, monster spawns, etc
-	void createRoom(bool first, int x1, int y1, int x2, int y2, bool withActors);
+	protected:
+		Tile *tiles; // pointer to tile array
+		TCODMap *visionMap; // pointer to master map object
+		void generateTerrain(bool isNew, int width, int height);
+		void dig(int x1, int y1, int x2, int y2); // creates a space for a room
+		// fills in an open space with room furniture, monster spawns, etc
+		void createRoom(bool first, int x1, int y1, int x2, int y2, bool withActors);
 };

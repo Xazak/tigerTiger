@@ -24,20 +24,14 @@ AP METHOD
 4	ELSE [[ actor.currAP >= actionCost ]]
 4.2		actor.currAP -= actionCost;
 */
-void ActorClock::resetAction() {
-	currAction = Sentience::Action::IDLE;
-	changeState(NO_ACTION);
-	actionCost = 0;
-	bankedAP = 0;
+void ActorClock::changeState(ClockState newState) {
+	currState = newState;
+//	LOGMSG("tempo state: " << currState);
 }
 void ActorClock::changeAction(Sentience::Action newAction) {
 	currAction = newAction;
 	actionCost = APCostLookup[currAction];
 	changeState(CHARGING);
-}
-void ActorClock::changeState(ClockState newState) {
-	currState = newState;
-//	LOGMSG("tempo state: " << currState);
 }
 ActorClock::ClockState ActorClock::chargeAction() {
 	// does the action cost more than the player has?
@@ -53,4 +47,10 @@ ActorClock::ClockState ActorClock::chargeAction() {
 		changeState(READY);
 	}
 	return currState;
+}
+void ActorClock::resetAction() {
+	currAction = Sentience::Action::IDLE;
+	changeState(NO_ACTION);
+	actionCost = 0;
+	bankedAP = 0;
 }
