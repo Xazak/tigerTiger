@@ -57,6 +57,7 @@ class GameEngine {
 		int fovRadius; // player-actor's sight radius (move to Actor?)
 
 	private:
+//		FileInterface scribe; // handles save/load requests
 		long seed; // RNG seed (stored for reuse)
 };
 extern GameEngine engine; // 'extern' tells the compiler to look elsewhere for the actual declaration

@@ -118,9 +118,10 @@ void GameEngine::term() {
 	gui->clear(); // wipe the GUI
 }
 void GameEngine::save() {
-	/*if (player->destructible->isDead()) {
-		TCODSystem::deleteFile("game.sav");
-	} else {
+/*	OLD METHOD
+//	if (player->destructible->isDead()) {
+//		TCODSystem::deleteFile("game.sav");
+//	} else {
 		TCODZip zip;
 		//save the map first
 		zip.putInt(map->width);
@@ -138,7 +139,10 @@ void GameEngine::save() {
 		// then the message log
 		gui->save(zip);
 		zip.saveToFile("game.sav");
-	}*/
+//	}
+		*/
+	// NEW METHOD
+	// invoke the scribe
 }
 void GameEngine::load() {
 	engine.gui->menu.clear(); // wipe the menu to ensure no artifacts
@@ -150,14 +154,27 @@ void GameEngine::load() {
 	engine.gui->menu.addItem(Menu::EXIT, "Exit");
 	// handle menu choice input
 	Menu::MenuItemCode menuItem = engine.gui->menu.pick();
-	if (menuItem == Menu::EXIT || menuItem == Menu::NONE) {
-		// Exit or user closed window
-		exit(0);
-	} else if (menuItem == Menu::NEW_GAME) {
-		// New game
-		engine.term();
-		engine.init();
-	} else {
+	switch (menuItem) {
+		case Menu::EXIT:
+			// fall through
+		case Menu::NONE:
+			exit(0);
+			break;
+		case Menu::NEW_GAME:
+			engine.term();
+			engine.init();
+			break;
+		case Menu::SAVE:
+			// save the game to an external file
+			break;
+		case Menu::CONTINUE:
+			// load the game from an external file
+			break;
+		default:
+			ERRMSG("Invalid menu option encountered!");
+			break;
+	}
+		// PREVIOUS ::CONTINUE CODE
 		/*TCODZip zip;
 		// Continue a saved game
 		engine.term();
@@ -180,12 +197,12 @@ void GameEngine::load() {
 		gui->load(zip);*/
 		// force FOV computation
 //		switchMode(&startup);
-	}
 }
 void GameEngine::update() {
 	switch(currMode) {
 		case STARTUP:
-			map->computeFOV();
+			map->computeFOV(); // force the viewport to update
+			engine.gui->menu.addItem(Menu::SAVE, "Save Game"); // enable saving
 			switchMode(NEWTURN);
 			break;
 		case IDLE:

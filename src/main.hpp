@@ -18,6 +18,7 @@ class Actor; // this is a forward declaration
 #include "gui.hpp"
 #include "map.hpp"
 #include "parser.hpp"
+#include "saveload.hpp"
 #include "engine.hpp"
 #include <iostream>
 #include <assert.h>

@@ -15,22 +15,6 @@ DESC Implementation of the parser module.
 // | [b][j][n]
 // |
 // 	        (m,n)
-
-//CmdInterpreter::CmdInterpreter() { }
-//~CmdInterpreter::CmdInterpreter() { }
-void CmdInterpreter::translate() {
-	// Reads input data from lastEvent/lastKey and sets the parser's state
-	// **** DEBUG
-	// debug commands will be trapped here; don't expect them to be normal...
-	switch (lastKey.c) {
-		case 'm':	// spawn a monkey
-			engine.map->addAnimal((engine.player->xpos - 5), (engine.player->ypos - 5));
-			break;
-		default:
-			break;
-	}
-	changeAction(keycodeLookup[lastKey.c]); // what action did the player input?
-	// action conversion routines should go here
 	/* ACTION CONVERSIONS AND CONTEXT
 	KEY ACTION  CONTEXT
 		IDLE    (unused by player, indicates parser awaiting input, ie between actions)
@@ -65,7 +49,31 @@ void CmdInterpreter::translate() {
 		WIELD   a carried [or nearby] wieldable object
 		INVEN.  show the player's list of carried objects
 	*/
+
+//CmdInterpreter::CmdInterpreter() { }
+//~CmdInterpreter::CmdInterpreter() { }
+void CmdInterpreter::translate() {
+	// Reads input data from lastEvent/lastKey and sets the parser's state
+	changeAction(keycodeLookup[lastKey.c]); // what action did the player input?
+	// **** DEBUG
+	// debug commands will be trapped here; don't expect them to be normal...
+	switch (lastKey.c) {
+		case 'm':	// spawn a monkey
+			engine.map->addAnimal((engine.player->xpos - 5), (engine.player->ypos - 5));
+			break;
+		default:
+			break;
+	}
 	// gather more context depending on the action being taken
+	// check for certain metagame inputs: the escape menu, for example
+	switch (lastKey.vk) {
+		case TCODK_ESCAPE:
+//			Menu::MenuItemCode menuItem = engine.gui->menu.pick();
+			LOGMSG("Escape pressed");
+			break;
+		default:
+			break;
+	}
 	context.action = currAction;
 	switch(currAction) {
 		case Sentience::Action::WAIT:
