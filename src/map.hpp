@@ -4,14 +4,15 @@ AUTH xazak
 DESC Declarations for Map and Tile classes
  */
 struct Tile {
-	enum ProtoType { FLOOR, WALL, TRANSITION } protoType;
-	enum BiomeType { MOUNTAIN, GRASSLAND, RAINFOREST, MANGROVE, FARMLAND, CAVE } biomeType;
-	enum TerrainType { GRASS, MUD, GRAVEL, WATER, ROCK, TREE, BUILDING } terrain;
+	enum ProtoType { FLOOR, WALL, TRANSITION } proto;
+	enum BiomeType { MOUNTAIN, GRASSLAND, RAINFOREST, MANGROVE, FARMLAND, CAVE } biome;
+	enum TerraType { GRASS, MUD, GRAVEL, WATER, ROCK, TREE, BUILDING } terrain;
 	int  glyph;		// contains the ASCII code for the symbol to allow addressing of extended chars
 	TCODColor foreColor;
 	TCODColor backColor;
 	/* Obstruction and Obfuscation are handled by the isWalkable() and
-	 * isTransparent() functions provided under TCODMap
+	 * isTransparent() functions provided under TCODMap:
+	 *    TCODMap::
 	 * these properties can be changed by calling
 	 *    TCODMap::setProperties
 	 *    (int x, int y, bool isTransparent, bool isWalkable)
@@ -39,8 +40,8 @@ class GameMap {
 		void computeFOV(); // redraw FOV on map
 		void render() const;
 		void init(bool withActors); // initialize the map; false = no spawns
-//		void load(TCODZip &zip);
-//		void save(TCODZip &zip);
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 		// **** QUERIES
 		bool isWall(int x, int y) const; // is there a wall here?
 		bool isOccupied(int x, int y) const; // is the tile occupied by someone?

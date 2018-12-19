@@ -6,7 +6,7 @@ DESC Definitions of Gui and Menu classes
 class Menu {
 	public:
 		enum MenuItemCode { // contents of main menu
-			NONE, NEW_GAME, CONTINUE, SAVE, EXIT
+			NONE, NEW_GAME, CONTINUE, SAVE, QUIT
 		};
 		~Menu();
 		void clear(); // clear the menu

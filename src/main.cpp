@@ -13,7 +13,8 @@ GameEngine engine(80, 50); // init game engine with window size
 int main() {
 	// starts the game engine: brings up main menu and checks for saves
 	// RNG, map, time, etc. objects are NOT GUARANTEED until the loop starts!
-	engine.load();
+	engine.mainMenu();
+//	engine.load();
 	while (!TCODConsole::isWindowClosed()) { // main game loop
 		engine.render();
 		TCODConsole::flush(); // this needs to happen before gathering input

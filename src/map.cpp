@@ -99,19 +99,37 @@ void GameMap::init(bool withActors) {
 	// invoke our custom mapgen code instead
 	generateTerrain(true, width, height); // this is my function
 }
-/*void GameMap::save(TCODZip &zip) {
-	zip.putInt(seed);
-	for (int i = 0; i < width*height; i++) {
-		zip.putInt(tiles[i].explored);
+void GameMap::save(TCODZip &fileBuffer) {
+	// save the map dimensions
+	fileBuffer.putInt(width);
+	fileBuffer.putInt(height);
+	// save the tile map info
+	for (int index = 0; index < width * height; index++) {
+		fileBuffer.putInt(tiles[index].proto);
+		fileBuffer.putInt(tiles[index].biome);
+		fileBuffer.putInt(tiles[index].terrain);
+		fileBuffer.putInt(tiles[index].glyph);
+		fileBuffer.putColor(&tiles[index].foreColor);
+		fileBuffer.putColor(&tiles[index].backColor);
+		fileBuffer.putInt(tiles[index].explored);
+		// scent data
+		// tile contents
+	}
+	// save the vision map info
+	for (int echs = 0; echs < width; echs++) {
+		for (int whye = 0; whye < height; whye++) {
+			fileBuffer.putInt(visionMap->isWalkable(echs, whye));
+			fileBuffer.putInt(visionMap->isTransparent(echs, whye));
+		}
 	}
 }
-void GameMap::load(TCODZip &zip) {
-	seed = zip.getInt();
-	init(false);
+void GameMap::load(TCODZip &fileBuffer) {
+//	seed = fileBuffer.getInt();
+//	init(false);
 	for (int i = 0; i < width*height; i++) {
-		tiles[i].explored = zip.getInt();
+		tiles[i].explored = fileBuffer.getInt();
 	}
-}*/
+}
 // should these be overloaded to use Tile pointers as well?
 // **** MAP QUERIES
 bool GameMap::isWall(int x, int y) const {

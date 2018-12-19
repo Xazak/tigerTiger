@@ -65,3 +65,29 @@ float Actor::getDistance(int targetX, int targetY) const {
 	int diffY = ypos - targetY;
 	return sqrtf(diffX * diffX + diffY * diffY);
 }
+void Actor::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	fileBuffer.putInt(xpos);
+	fileBuffer.putInt(ypos);
+	fileBuffer.putInt(sigil);
+	fileBuffer.putColor(&color);
+	fileBuffer.putString(name);
+	fileBuffer.putInt(obstructs);
+	// these are booleans that confirm whether this actor has these components
+//	fileBuffer.putInt(attacker != NULL);
+	fileBuffer.putInt(sentience != NULL);
+	fileBuffer.putInt(mortality != NULL);
+	fileBuffer.putInt(tempo != NULL);
+	fileBuffer.putInt(container != NULL);
+	fileBuffer.putInt(portable != NULL);
+	// if the actor has these components, save their data as well
+//	if (attacker) attacker->save(fileBuffer);
+	if (sentience) sentience->save(fileBuffer);
+//	if (mortality) mortality->save(fileBuffer);
+//	if (tempo) tempo->save(fileBuffer);
+//	if (container) container->save(fileBuffer);
+//	if (portable) portable->save(fileBuffer);
+}
+void Actor::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+}

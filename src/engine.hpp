@@ -23,6 +23,10 @@ class GameEngine {
 		void update(); // processes game state updates
 		void render(); // invokes lower-level render requests
 		// *** MINOR FXNS
+		void mainMenu();
+		void saveToFile();
+		void loadFromFile();
+		void exitGame();
 		// pushes the *actor to the rear-most screen layer so that other sigils
 		// can be drawn on top of it, ie for non-blocking actors
 		void sendToBack(Actor *actor); // causes other actors to draw above it

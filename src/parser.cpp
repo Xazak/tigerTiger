@@ -50,8 +50,21 @@ DESC Implementation of the parser module.
 		INVEN.  show the player's list of carried objects
 	*/
 
-//CmdInterpreter::CmdInterpreter() { }
-//~CmdInterpreter::CmdInterpreter() { }
+CmdInterpreter::CmdInterpreter():
+	currAction(Sentience::Action::IDLE),
+	prevAction(Sentience::Action::IDLE)
+{	context = new ActionContext();
+}
+CmdInterpreter::~CmdInterpreter() {
+	delete context;
+}
+void CmdInterpreter::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+
+}
+void CmdInterpreter::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+}
 void CmdInterpreter::translate() {
 	// Reads input data from lastEvent/lastKey and sets the parser's state
 	changeAction(keycodeLookup[lastKey.c]); // what action did the player input?
@@ -66,50 +79,51 @@ void CmdInterpreter::translate() {
 	}
 	// gather more context depending on the action being taken
 	// check for certain metagame inputs: the escape menu, for example
+//	Menu::MenuItemCode menuItem = Menu::MenuItemCode::NONE;
 	switch (lastKey.vk) {
 		case TCODK_ESCAPE:
-//			Menu::MenuItemCode menuItem = engine.gui->menu.pick();
 			LOGMSG("Escape pressed");
+			engine.mainMenu();
 			break;
 		default:
 			break;
 	}
-	context.action = currAction;
+	engine.player->sentience->currContext->action = currAction;
 	switch(currAction) {
 		case Sentience::Action::WAIT:
 			// player is doing nothing for a full turn
-			context.echs = 1; // later we can mod this to allow multiturn waits
+			engine.player->sentience->currContext->echs = 1; // later we can mod this to allow multiturn waits
 			break;
 		case Sentience::Action::MOVE:
 			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
 			switch(lastKey.c) {
 				case 'h': // move left
-					context.echs = -1;
+					context->echs = -1;
 					break;
 				case 'j': // move down
-					context.whye = 1;
+					context->whye = 1;
 					break;
 				case 'k': // move up
-					context.whye = -1;
+					context->whye = -1;
 					break;
 				case 'l': // move right
-					context.echs = 1;
+					context->echs = 1;
 					break;
 				case 'y': // move up-left
-					context.echs = -1;
-					context.whye = -1;
+					context->echs = -1;
+					context->whye = -1;
 					break;
 				case 'u': // move up-right
-					context.echs = 1;
-					context.whye = -1;
+					context->echs = 1;
+					context->whye = -1;
 					break;
 				case 'b': // move down-left
-					context.echs = -1;
-					context.whye = 1;
+					context->echs = -1;
+					context->whye = 1;
 					break;
 				case 'n': // move down-right
-					context.echs = 1;
-					context.whye = 1;
+					context->echs = 1;
+					context->whye = 1;
 					break;
 				default:
 					break;

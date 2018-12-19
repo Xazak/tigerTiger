@@ -7,6 +7,16 @@ DESC Contains action packages that provide decision-making tools for Actors.
 #include <math.h>
 #include "main.hpp"
 
+Sentience::Sentience() {
+	currContext = new ActionContext();
+}
+void Sentience::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+}
+void Sentience::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+
+}
 // General Sentience -- actions available to all living creatures
 //void Sentience::wait(Actor *subject, int numOfTurns = 1) {
 void Sentience::moveRel(Actor *subject, int targetx, int targety) { // RELATIVE COORDS
@@ -37,6 +47,9 @@ void Sentience::performAction(ActionContext context) {
 //	switch();
 }
 // Player Sentience -- command interpreter, context handlers, etc
+PlayerSentience::PlayerSentience() {
+//	currContext = new ActionContext();
+}
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
@@ -79,11 +92,11 @@ bool PlayerSentience::update(Actor *subject) {
 			// does nothing yet, not even pass time...
 			break;
 		case Action::MOVE: // player will move to a new tile by relative coords
-			subject->sentience->moveRel(subject, parser.context.echs, parser.context.whye);
+			subject->sentience->moveRel(subject, currContext->echs, currContext->whye);
 			break;
 		case Action::GROOM:
-			if (parser.context.target) {
-				subject->sentience->groom(subject, parser.context.target);
+			if (currContext->target) {
+				subject->sentience->groom(subject, currContext->target);
 			} else {
 				subject->sentience->groom(subject, subject);
 			}
@@ -280,7 +293,7 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 */
 // NPC Sentience -- AI routines, context handlers, etc
 AnimalSentience::AnimalSentience() {
-	currContext = new ActionContext;
+//	currContext = new ActionContext();
 }
 bool AnimalSentience::update(Actor *subject) {
 	// This is the core decision-making function: it will call any other
@@ -453,6 +466,18 @@ ActionContext::ActionContext():
 	target(nullptr),
 	echs(0), whye(0), zhee(0)
 	{	}
+void ActionContext::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	fileBuffer.putInt((int)action); // casting to int lets us refer by index
+	fileBuffer.putInt(target != nullptr);
+//	if (target) fileBuffer.putInt(???); // i need a permanent identifier!
+	fileBuffer.putInt(echs);
+	fileBuffer.putInt(whye);
+	fileBuffer.putInt(zhee);
+}
+void ActionContext::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+}
 void ActionContext::clear() {
 	action = Sentience::Action::IDLE;
 	target = nullptr;

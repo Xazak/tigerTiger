@@ -71,8 +71,10 @@ class CmdInterpreter {
 			{Sentience::Action::WIELD, true},
 			{Sentience::Action::INVENTORY, false}
 		};
-//		CmdInterpreter();
-//		~CmdInterpreter();
+		CmdInterpreter();
+		~CmdInterpreter();
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 		void translate();
 		void changeAction(Sentience::Action newAction);
 		Sentience::Action getCurrAction() { return currAction; };
@@ -83,11 +85,11 @@ class CmdInterpreter {
 		// lastKey.vk = TCOD keycode (as enum), lastKey.c = printable char
 		TCOD_mouse_t mouse; // contains mouse input
 		bool stateChange = false; // indicates meta context of player's input
-		ActionContext context; // contains action details
 
 	private:
 		Sentience::Action currAction;
 		Sentience::Action prevAction;
+		ActionContext *context;
 
 };
 extern CmdInterpreter parser;

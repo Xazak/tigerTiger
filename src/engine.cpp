@@ -145,7 +145,7 @@ void GameEngine::save() {
 	// invoke the scribe
 }
 void GameEngine::load() {
-	engine.gui->menu.clear(); // wipe the menu to ensure no artifacts
+/*	engine.gui->menu.clear(); // wipe the menu to ensure no artifacts
 	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
 	// add "Continue" if there's a save game to continue with
 	if (TCODSystem::fileExists("game.sav")) {
@@ -156,24 +156,30 @@ void GameEngine::load() {
 	Menu::MenuItemCode menuItem = engine.gui->menu.pick();
 	switch (menuItem) {
 		case Menu::EXIT:
+			LOGMSG(" EXIT ");
 			// fall through
 		case Menu::NONE:
+			LOGMSG(" NONE ");
 			exit(0);
 			break;
 		case Menu::NEW_GAME:
+			LOGMSG(" NEW GAME ");
 			engine.term();
 			engine.init();
 			break;
 		case Menu::SAVE:
 			// save the game to an external file
+			LOGMSG(" SAVE ");
 			break;
 		case Menu::CONTINUE:
 			// load the game from an external file
+			LOGMSG(" LOAD ");
 			break;
 		default:
 			ERRMSG("Invalid menu option encountered!");
 			break;
 	}
+	*/
 		// PREVIOUS ::CONTINUE CODE
 		/*TCODZip zip;
 		// Continue a saved game
@@ -195,8 +201,6 @@ void GameEngine::load() {
 		}
 		// the message log
 		gui->load(zip);*/
-		// force FOV computation
-//		switchMode(&startup);
 }
 void GameEngine::update() {
 	switch(currMode) {
@@ -210,7 +214,7 @@ void GameEngine::update() {
 			// the engine doesn't care about metagame operations
 			if (parser.stateChange == false) break;
 			engine.player->update();
-			parser.context.clear();
+			engine.player->sentience->currContext->clear();
 			switchMode(ONGOING);
 			break;
 		case ONGOING:
@@ -278,6 +282,76 @@ void GameEngine::render() {
 	gui->blitToScreen();
 }
 // *** MINOR FUNCTIONS
+void GameEngine::mainMenu() {
+	engine.gui->menu.clear(); // wipe the menu prior to rebuilding it
+	if (currMode != STARTUP) {
+		engine.gui->menu.addItem(Menu::NONE, "Return to Game");
+	}
+	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
+	// add "Continue" if the game just started up AND there's a game to load
+	if (currMode == STARTUP && TCODSystem::fileExists("game.sav") ) {
+		engine.gui->menu.addItem(Menu::CONTINUE, "Continue");
+	}
+	// allow saving the game if the game's running and the player's alive
+	if (currMode != STARTUP && !(engine.player->mortality->isDead()) ) {
+		engine.gui->menu.addItem(Menu::SAVE, "Save Game");
+	}
+	engine.gui->menu.addItem(Menu::QUIT, "Quit to Desktop");
+	// handle menu choice input
+	Menu::MenuItemCode menuItem = engine.gui->menu.pick();
+	switch (menuItem) {
+		case Menu::NEW_GAME:
+//			LOGMSG(" NEW GAME ");
+			engine.term();
+			engine.init();
+			break;
+		case Menu::CONTINUE:
+			// load the game from an external file
+//			LOGMSG(" LOAD ");
+			engine.loadFromFile();
+			break;
+		case Menu::SAVE:
+			// save the game to an external file
+//			LOGMSG(" SAVE ");
+			engine.saveToFile();
+			break;
+		case Menu::QUIT:
+//			LOGMSG(" QUIT ");
+			exit(0);
+			break;
+		case Menu::NONE:
+//			LOGMSG(" NONE ");
+			// fall through
+		default:
+//			LOGMSG(" DEFAULT (return to game) ");
+			break;
+	}
+}
+void GameEngine::saveToFile() {
+	LOGMSG("called");
+	// if the player's dead, don't even try to save the game
+	if (player->mortality->isDead()) return;
+	TCODZip fileBuffer; // create the compression buffer
+	fileBuffer.putInt(seed); // RNG seed
+	fileBuffer.putInt(fovRadius); // player's FOV radius
+//	chrono.save(fileBuffer); // world clock state
+	map->save(fileBuffer);   // state of world tiles
+	player->save(fileBuffer);// player's state
+//	parser.save(fileBuffer); // saves any context info in the parser
+//	fileBuffer.putInt(allActors.save() - 1); // quantity of non-player actors
+//	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
+		// if the actor is NOT the player, ask them to save their data
+//		if (*iter != player) (*iter)->save(fileBuffer);
+//	}
+//	gui->save(fileBuffer);   // message log
+	fileBuffer.saveToFile("game.sav");
+}
+void GameEngine::loadFromFile() {
+	LOGMSG("called");
+}
+void GameEngine::exitGame() {
+}
+
 void GameEngine::sendToBack(Actor *actor) {
 	allActors.remove(actor);
 	allActors.insertBefore(actor, 0);
@@ -357,7 +431,7 @@ void GameEngine::refreshAP() {
 void GameEngine::switchMode(EngineState newMode) {
 	prevMode = currMode;
 	currMode = newMode;
-/*	switch (currMode) {
+	switch (currMode) {
 		case STARTUP:
 		LOGMSG("mode switch: " << currMode << ": STARTUP");
 		break;
@@ -378,5 +452,5 @@ void GameEngine::switchMode(EngineState newMode) {
 		break;
 		default:
 		break;
-	}*/
+	}
 }
