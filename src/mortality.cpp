@@ -10,8 +10,26 @@ Mortality::Mortality(float newMaxHP, float newDefense, const char *cadaverTitle)
 	maximumHP(newMaxHP), currentHP(newMaxHP), defense(newDefense) {
 		this->cadaverTitle = strdup(cadaverTitle);
 }
+Mortality::Mortality(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	this->load(fileBuffer);
+}
 Mortality::~Mortality() {
 	free((char *)cadaverTitle);
+}
+void Mortality::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	fileBuffer.putString(cadaverTitle);
+	fileBuffer.putInt(maximumHP);
+	fileBuffer.putInt(currentHP);
+	fileBuffer.putInt(defense);
+}
+void Mortality::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	cadaverTitle = strdup(fileBuffer.getString());
+	maximumHP = fileBuffer.getInt();
+	currentHP = fileBuffer.getInt();
+	defense = fileBuffer.getInt();
 }
 void Mortality::embraceDeath(Actor *subject) {
 	// change the actor's sigil into a corpse

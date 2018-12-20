@@ -35,6 +35,7 @@ int main() {
 		}*/
 		engine.update();
 	}
-	engine.save();
+	// this is disabled for debugging purposes
+//	engine.saveToFile(); // save when the window is closed
 	return 0; // NOTE: does this need to return exception codes?
 }

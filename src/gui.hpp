@@ -23,6 +23,8 @@ class GameGUI {
 	public:
 		GameGUI();
 		~GameGUI();
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 		void blitToScreen(); // draw all GUI panels on the root console
 		void render(); // draw the GUI on the screen
 		// for drawing a single tile? need to check...
@@ -34,7 +36,6 @@ class GameGUI {
 		void message(const TCODColor &color, const char *text, ...);
 		void clear(); // wipe the message log
 //		void renderMouseLook();
-		// need load and save fxns
 
 		bool updateView = false; // if true, invoke render()
 		Menu menu; // basic menu object

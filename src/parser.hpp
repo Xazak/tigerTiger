@@ -73,12 +73,11 @@ class CmdInterpreter {
 		};
 		CmdInterpreter();
 		~CmdInterpreter();
+		void init();
 		void save(TCODZip &fileBuffer);
 		void load(TCODZip &fileBuffer);
 		void translate();
 		void changeAction(Sentience::Action newAction);
-		Sentience::Action getCurrAction() { return currAction; };
-		Sentience::Action getPrevAction() { return prevAction; };
 
 		TCOD_event_t lastEvent; // contains last input event from player
 		TCOD_key_t lastKey; // contains last key pressed by player
@@ -87,9 +86,7 @@ class CmdInterpreter {
 		bool stateChange = false; // indicates meta context of player's input
 
 	private:
-		Sentience::Action currAction;
-		Sentience::Action prevAction;
-		ActionContext *context;
+		ActionContext *playerContext; // points to the player's context object
 
 };
 extern CmdInterpreter parser;

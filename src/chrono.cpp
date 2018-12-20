@@ -13,6 +13,27 @@ ActorClock::ActorClock(int newRefreshRate):
 	refreshRate(newRefreshRate),
 	currentAP(0)
 	{ }
+ActorClock::ActorClock(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	load(fileBuffer);
+}
+void ActorClock::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	// currState has (should have!) already been written to the buffer!
+	fileBuffer.putInt((int)currAction);
+	fileBuffer.putInt(actionCost);
+	fileBuffer.putInt(bankedAP);
+	fileBuffer.putInt(refreshRate);
+	fileBuffer.putInt(currentAP);
+}
+void ActorClock::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	changeAction((Sentience::Action)fileBuffer.getInt()); // CAST TO ENUM
+	actionCost = fileBuffer.getInt();
+	bankedAP = fileBuffer.getInt();
+	refreshRate = fileBuffer.getInt();
+	currentAP = fileBuffer.getInt();
+}
 // the sentience module will consume the readied action and change the state
 /*
 AP METHOD

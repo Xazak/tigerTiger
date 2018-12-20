@@ -7,14 +7,12 @@ DESC Contains action packages that provide decision-making tools for Actors.
 #include <math.h>
 #include "main.hpp"
 
-Sentience::Sentience() {
-	currContext = new ActionContext();
-}
 void Sentience::save(TCODZip &fileBuffer) {
 	LOGMSG("called");
+	context->save(fileBuffer);
 }
 void Sentience::load(TCODZip &fileBuffer) {
-	LOGMSG("called");
+	LOGMSG("called: DOES NOTHING");
 
 }
 // General Sentience -- actions available to all living creatures
@@ -48,14 +46,18 @@ void Sentience::performAction(ActionContext context) {
 }
 // Player Sentience -- command interpreter, context handlers, etc
 PlayerSentience::PlayerSentience() {
-//	currContext = new ActionContext();
+	context = new ActionContext();
+}
+PlayerSentience::PlayerSentience(TCODZip &fileBuffer) {
+	context = new ActionContext();
+	context->load(fileBuffer);
 }
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
 	// 2) That the action is allowed to happen, eg moving into an empty tile
 	// 3) Any other details required for that action to be completed
-	LOGMSG(subject->name << " updating");
+//	LOGMSG(subject->name << " updating");
 	// if the player's dead, don't even try to update
 	if (subject->mortality && subject->mortality->isDead()) {
 		ERRMSG(": Player is dead!");
@@ -68,8 +70,8 @@ bool PlayerSentience::update(Actor *subject) {
 	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
 		// if newAction matches currentAction, or if the player is using WAIT
 		// to charge the action, charge it and finish
-		if (parser.getCurrAction() == subject->tempo->getCurrAction() ||
-				parser.getCurrAction() == Action::WAIT) {
+		if (subject->sentience->context->currAction == subject->tempo->getCurrAction() ||
+				subject->sentience->context->currAction == Action::WAIT) {
 			subject->tempo->chargeAction();
 			return true;
 		}
@@ -77,7 +79,7 @@ bool PlayerSentience::update(Actor *subject) {
 	// we are not charging something, therefore we are performing a new action
 	// that is, the ClockState is NO_ACTION || READY (!)
 	// be sure that an action NEVER leaves this function while still READY!
-	subject->tempo->changeAction(parser.getCurrAction());
+	subject->tempo->changeAction(subject->sentience->context->currAction);
 	subject->tempo->chargeAction(); // this should make an action READY if it is
 	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
 		engine.gui->message(TCODColor::lightGrey, "You charge your action.");
@@ -87,16 +89,16 @@ bool PlayerSentience::update(Actor *subject) {
 	// this line is here to assert against idiotic things later
 //	assert(subject->tempo->getCurrState() != ActorClock::ClockState::NO_ACTION);
 	// we were able to charge the action during this turn, so perform it
-	switch(parser.getCurrAction()) {
+	switch(subject->sentience->context->currAction) {
 		case Action::WAIT: // player will wait N = 1 turns
 			// does nothing yet, not even pass time...
 			break;
 		case Action::MOVE: // player will move to a new tile by relative coords
-			subject->sentience->moveRel(subject, currContext->echs, currContext->whye);
+			subject->sentience->moveRel(subject, context->echs, context->whye);
 			break;
 		case Action::GROOM:
-			if (currContext->target) {
-				subject->sentience->groom(subject, currContext->target);
+			if (context->target) {
+				subject->sentience->groom(subject, context->target);
 			} else {
 				subject->sentience->groom(subject, subject);
 			}
@@ -105,6 +107,7 @@ bool PlayerSentience::update(Actor *subject) {
 		case Action::IDLE: // always last!
 			break;
 		default:
+			ERRMSG("Invalid action returned by parser");
 			break;
 	}
 	// the action has been consumed, so reset the AP tracker
@@ -293,7 +296,11 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 */
 // NPC Sentience -- AI routines, context handlers, etc
 AnimalSentience::AnimalSentience() {
-//	currContext = new ActionContext();
+	context = new ActionContext();
+}
+AnimalSentience::AnimalSentience(TCODZip &fileBuffer) {
+	context = new ActionContext();
+	context->load(fileBuffer);
 }
 bool AnimalSentience::update(Actor *subject) {
 	// This is the core decision-making function: it will call any other
@@ -350,13 +357,13 @@ bool AnimalSentience::update(Actor *subject) {
 				targety = -1;
 			}*/
 			// store the calculated movement
-			currContext->echs = targetx;
-			currContext->whye = targety;
+			context->echs = targetx;
+			context->whye = targety;
 			subject->tempo->changeAction(Action::MOVE);
 		} else {
 			// yes, we're close, time to pet the kitty!!
 			// populate context with target
-			currContext->target = engine.player;
+			context->target = engine.player;
 			subject->tempo->changeAction(Action::GROOM);
 		}
 	} else {
@@ -379,12 +386,12 @@ bool AnimalSentience::update(Actor *subject) {
 			case Action::WAIT:
 				break;
 			case Action::MOVE:
-				subject->sentience->moveRel(subject, currContext->echs, currContext->whye);
-				LOGMSG(subject->name << " moved to " << subject->xpos << ", " << subject->ypos);
+				subject->sentience->moveRel(subject, context->echs, context->whye);
+//				LOGMSG(subject->name << " moved to " << subject->xpos << ", " << subject->ypos);
 				break;
 			case Action::GROOM:
-				if (currContext->target) {
-					subject->sentience->groom(subject, currContext->target);
+				if (context->target) {
+					subject->sentience->groom(subject, context->target);
 				} else {
 					subject->sentience->groom(subject, subject);
 				}
@@ -462,13 +469,15 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 }
 // ActionContext -- general container for action context resolution
 ActionContext::ActionContext():
-	action(Sentience::Action::IDLE),
+	currAction(Sentience::Action::IDLE),
+	prevAction(Sentience::Action::IDLE),
 	target(nullptr),
 	echs(0), whye(0), zhee(0)
 	{	}
 void ActionContext::save(TCODZip &fileBuffer) {
 	LOGMSG("called");
-	fileBuffer.putInt((int)action); // casting to int lets us refer by index
+	fileBuffer.putInt((int)currAction); // casting to int lets us refer by index
+	fileBuffer.putInt((int)prevAction);
 	fileBuffer.putInt(target != nullptr);
 //	if (target) fileBuffer.putInt(???); // i need a permanent identifier!
 	fileBuffer.putInt(echs);
@@ -477,9 +486,20 @@ void ActionContext::save(TCODZip &fileBuffer) {
 }
 void ActionContext::load(TCODZip &fileBuffer) {
 	LOGMSG("called");
+	currAction = ((Sentience::Action)fileBuffer.getInt());
+	prevAction = ((Sentience::Action)fileBuffer.getInt());
+	bool hasTarget = fileBuffer.getInt();
+//	if (hasTarget) target = fileBuffer.XXX;
+	echs = fileBuffer.getInt();
+	whye = fileBuffer.getInt();
+	zhee = fileBuffer.getInt();
 }
 void ActionContext::clear() {
-	action = Sentience::Action::IDLE;
+	// currAction and prevAction are handled by setAction()
 	target = nullptr;
 	echs = whye = zhee = 0;
+}
+void ActionContext::setAction(Sentience::Action newAction) {
+	prevAction = currAction;
+	currAction = newAction;
 }

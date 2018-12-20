@@ -106,6 +106,7 @@ void GameEngine::init() {
 	// initialize the map, show the MOTD
 	map = new GameMap(MAP_WIDTH, MAP_HEIGHT); // init a new map
 	map->init(true);
+	parser.init(); // tell the parser to hook into the player actor
 	engine.gui->refreshViewport(); // force a viewport update
 	gui->message(TCODColor::orange, "Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
 //	chrono = new GameClock(); // create a world clock and set up AP tracking
@@ -143,8 +144,10 @@ void GameEngine::save() {
 		*/
 	// NEW METHOD
 	// invoke the scribe
+	ERRMSG("BAD SAVE() FXN CALLED!");
 }
 void GameEngine::load() {
+	ERRMSG("DEPRECATED LOAD() CALLED");
 /*	engine.gui->menu.clear(); // wipe the menu to ensure no artifacts
 	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
 	// add "Continue" if there's a save game to continue with
@@ -214,7 +217,7 @@ void GameEngine::update() {
 			// the engine doesn't care about metagame operations
 			if (parser.stateChange == false) break;
 			engine.player->update();
-			engine.player->sentience->currContext->clear();
+			engine.player->sentience->context->clear();
 			switchMode(ONGOING);
 			break;
 		case ONGOING:
@@ -328,7 +331,7 @@ void GameEngine::mainMenu() {
 	}
 }
 void GameEngine::saveToFile() {
-	LOGMSG("called");
+	LOGMSG("*** called");
 	// if the player's dead, don't even try to save the game
 	if (player->mortality->isDead()) return;
 	TCODZip fileBuffer; // create the compression buffer
@@ -337,17 +340,42 @@ void GameEngine::saveToFile() {
 //	chrono.save(fileBuffer); // world clock state
 	map->save(fileBuffer);   // state of world tiles
 	player->save(fileBuffer);// player's state
-//	parser.save(fileBuffer); // saves any context info in the parser
-//	fileBuffer.putInt(allActors.save() - 1); // quantity of non-player actors
-//	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
+	fileBuffer.putInt(allActors.size() - 1); // quantity of non-player actors
+	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
 		// if the actor is NOT the player, ask them to save their data
-//		if (*iter != player) (*iter)->save(fileBuffer);
-//	}
-//	gui->save(fileBuffer);   // message log
+		if (*iter != player) (*iter)->save(fileBuffer);
+	}
+	gui->save(fileBuffer);   // message log
+	// the parser and sentience do not implement any persistence
 	fileBuffer.saveToFile("game.sav");
 }
 void GameEngine::loadFromFile() {
-	LOGMSG("called");
+	LOGMSG("*** called");
+	TCODZip fileBuffer; // open an empty file buffer
+	engine.term(); // flush the engine
+	fileBuffer.loadFromFile("game.sav");
+	seed = fileBuffer.getInt();
+	fovRadius = fileBuffer.getInt();
+//	chrono->load(fileBuffer);
+	int newWidth = fileBuffer.getInt();
+	int newHeight = fileBuffer.getInt();
+	map = new GameMap(newWidth, newHeight);
+	LOGMSG("created map of size " << newWidth << "x" << newHeight);
+	map->init(false);
+	map->load(fileBuffer);
+//	player = new Actor(0, 0, 0, TCODColor::white, NULL);
+	player = new Actor(fileBuffer, true);
+	parser.init();
+	int npcQuantity = fileBuffer.getInt();
+	while (npcQuantity > 0) {
+//		Actor *actor = new Actor(0, 0, 0, TCODColor::white, NULL);
+//		actor->load(fileBuffer);
+		Actor *actor = new Actor(fileBuffer, false);
+		allActors.push(actor);
+		npcQuantity--;
+	}
+	gui->load(fileBuffer);
+	engine.gui->refreshViewport();
 }
 void GameEngine::exitGame() {
 }
@@ -431,7 +459,7 @@ void GameEngine::refreshAP() {
 void GameEngine::switchMode(EngineState newMode) {
 	prevMode = currMode;
 	currMode = newMode;
-	switch (currMode) {
+/*	switch (currMode) {
 		case STARTUP:
 		LOGMSG("mode switch: " << currMode << ": STARTUP");
 		break;
@@ -453,4 +481,5 @@ void GameEngine::switchMode(EngineState newMode) {
 		default:
 		break;
 	}
+*/
 }

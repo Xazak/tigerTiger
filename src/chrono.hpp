@@ -56,6 +56,9 @@ class ActorClock {
 		};
 
 		ActorClock(int newRefreshRate);
+		ActorClock(TCODZip &fileBuffer);
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 
 		void refreshAP() { currentAP = refreshRate; }
 		void changeState(ClockState newState);

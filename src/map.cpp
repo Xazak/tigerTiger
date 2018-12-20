@@ -86,18 +86,24 @@ void GameMap::render() const {
 		mapX++;
 	}
 }
-void GameMap::init(bool withActors) {
+void GameMap::init(bool newMap) {
 	// create the map objects
+	LOGMSG("called: " << newMap);
 //	rng = new TCODRandom(seed, TCOD_RNG_CMWC);
 	tiles = new Tile[width * height]; // use x + y * width to locate a tile
+	LOGMSG("new tilemap created");
 	visionMap = new TCODMap(width, height); // invokes the TCOD FOV map object
+	LOGMSG("new visionMap created");
 	// invoke the BSP tree tools to generate a dungeon graph
 //	TCODBsp bsp(0, 0, width, height);
 //	bsp.splitRecursive(rng, 8, ROOM_MAX_SIZE, ROOM_MAX_SIZE, 1.5f, 1.5f);
 //	BspListener listener(*this);
 //	bsp.traverseInvertedLevelOrder(&listener, (void *)withActors);
 	// invoke our custom mapgen code instead
-	generateTerrain(true, width, height); // this is my function
+	if (newMap) {
+		generateTerrain(true, width, height); // this is my function
+		LOGMSG("generating terrain");
+	}
 }
 void GameMap::save(TCODZip &fileBuffer) {
 	// save the map dimensions
@@ -105,9 +111,9 @@ void GameMap::save(TCODZip &fileBuffer) {
 	fileBuffer.putInt(height);
 	// save the tile map info
 	for (int index = 0; index < width * height; index++) {
-		fileBuffer.putInt(tiles[index].proto);
-		fileBuffer.putInt(tiles[index].biome);
-		fileBuffer.putInt(tiles[index].terrain);
+//		fileBuffer.putInt(tiles[index].proto);
+//		fileBuffer.putInt(tiles[index].biome);
+//		fileBuffer.putInt(tiles[index].terrain);
 		fileBuffer.putInt(tiles[index].glyph);
 		fileBuffer.putColor(&tiles[index].foreColor);
 		fileBuffer.putColor(&tiles[index].backColor);
@@ -124,10 +130,29 @@ void GameMap::save(TCODZip &fileBuffer) {
 	}
 }
 void GameMap::load(TCODZip &fileBuffer) {
-//	seed = fileBuffer.getInt();
-//	init(false);
-	for (int i = 0; i < width*height; i++) {
-		tiles[i].explored = fileBuffer.getInt();
+	// this is called on a map that has already been created with dimensions!!
+	LOGMSG("called");
+	// fill the tile map
+	for (int index = 0; index < width * height; index++) {
+//		tiles[index].proto = fileBuffer.getInt(); // CAST TO ENUM
+//		tiles[index].biome = fileBuffer.getInt(); // CAST TO ENUM
+//		tiles[index].terrain = fileBuffer.getInt(); // CAST TO ENUM
+		tiles[index].glyph = fileBuffer.getInt();
+		tiles[index].foreColor = fileBuffer.getColor();
+		tiles[index].backColor = fileBuffer.getColor();
+		tiles[index].explored = fileBuffer.getInt();
+		// scent data
+		// tile contents
+	}
+	// set up the vision map
+	bool walkable = false;
+	bool transparent = false;
+	for (int echs = 0; echs < width; echs++) {
+		for (int whye = 0; whye < height; whye++) {
+			walkable = fileBuffer.getInt();
+			transparent = fileBuffer.getInt();
+			visionMap->setProperties(echs, whye, walkable, transparent);
+		}
 	}
 }
 // should these be overloaded to use Tile pointers as well?

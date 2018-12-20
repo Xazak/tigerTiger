@@ -80,7 +80,7 @@ class Sentience {
 			WIELD,	// player wants to use a weapon for attack purposes
 			INVENTORY // player wants to see what they're carrying
 		};
-		Sentience();
+		
 		void save(TCODZip &fileBuffer); // save actor's context to file
 		void load(TCODZip &fileBuffer); // load actor's context from file
 		virtual bool update(Actor *subject) = 0;
@@ -100,7 +100,7 @@ class Sentience {
 		// NOT IMPLEMENTED:
 		// open, close, force, cast, use, dip, pray, wear, wield, inventory
 
-		ActionContext *currContext; // contains action details
+		ActionContext *context; // contains action details
 	protected:
 		enum SentienceType {
 			PLAYER, PREY, PREDATOR, HUMAN
@@ -109,6 +109,7 @@ class Sentience {
 class PlayerSentience: public Sentience {
 	public:
 		PlayerSentience();
+		PlayerSentience(TCODZip &fileBuffer);
 		bool update(Actor *subject);
 		bool update(ActionContext context);
 	protected:
@@ -120,6 +121,7 @@ class PlayerSentience: public Sentience {
 class AnimalSentience: public Sentience {
 	public:
 		AnimalSentience();
+		AnimalSentience(TCODZip &fileBuffer);
 		bool update(Actor *subject);
 		bool update(ActionContext context);
 	protected:
@@ -137,7 +139,9 @@ struct ActionContext {
 	void save(TCODZip &fileBuffer);
 	void load(TCODZip &fileBuffer);
 	void clear();	// wipe the details in preparation for a new action
-	Sentience::Action action;	// the action to be performed
+	void setAction(Sentience::Action newAction); // sets curr/prevAction
+	Sentience::Action currAction;	// the action to be performed
+	Sentience::Action prevAction;	// the previous action performed
 	Actor *target;	// the actor upon which the action will be performed
 	int echs, whye, zhee;	// generic number containers
 };

@@ -39,7 +39,7 @@ class GameMap {
 		~GameMap();
 		void computeFOV(); // redraw FOV on map
 		void render() const;
-		void init(bool withActors); // initialize the map; false = no spawns
+		void init(bool newMap = true); // initialize the map; false = no spawns
 		void save(TCODZip &fileBuffer);
 		void load(TCODZip &fileBuffer);
 		// **** QUERIES

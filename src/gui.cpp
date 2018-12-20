@@ -92,7 +92,7 @@ GameGUI::GameGUI() {
 	viewport = new TCODConsole(
 			(engine.screenWidth - (engine.screenWidth / 4) - 1),
 			(engine.screenHeight - 6 - 1));
-	LOGMSG("viewport dimensions: " << viewport->getWidth() << "x" << viewport->getHeight());
+//	LOGMSG("viewport dimensions: " << viewport->getWidth() << "x" << viewport->getHeight());
 	viewportXOffset = viewport->getWidth() / 2;
 	viewportYOffset = viewport->getHeight() / 2;
 	statPanel = new TCODConsole((engine.screenWidth / 4), engine.screenHeight);
@@ -108,6 +108,25 @@ GameGUI::~GameGUI() {
 	delete statPanel;
 	delete msgPanel;
 	clear();
+}
+void GameGUI::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	fileBuffer.putInt(log.size()); // number of lines in the log
+	for (Message **iter = log.begin(); iter != log.end(); iter++) {
+		fileBuffer.putString((*iter)->msgText);
+		fileBuffer.putColor(&(*iter)->color);
+	}
+}
+void GameGUI::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	logSize = fileBuffer.getInt();
+	int fileIndex = logSize;
+	while (fileIndex > 0) {
+		const char *text = fileBuffer.getString();
+		TCODColor color = fileBuffer.getColor();
+		message(color, text);
+		fileIndex--;
+	}
 }
 void GameGUI::blitToScreen() {
 //	LOGMSG(" has been called\n");

@@ -6,7 +6,10 @@ DESC Definitions of functions related to hit point adjustment and death.
 class Mortality {
 	public:
 		Mortality(float newMaxHP, float newDefense, const char *cadaverTitle);
+		Mortality(TCODZip &fileBuffer);
 		virtual ~Mortality();
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 		virtual void embraceDeath(Actor *subject); // corpse generation
 		float adjustHP(Actor *subject, float hpAdjustment); // HP changes
 		// **** QUERIES

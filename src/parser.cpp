@@ -14,7 +14,7 @@ DESC Implementation of the parser module.
 // | [h][z][l]
 // | [b][j][n]
 // |
-// 	        (m,n)
+// |        (m,n)
 	/* ACTION CONVERSIONS AND CONTEXT
 	KEY ACTION  CONTEXT
 		IDLE    (unused by player, indicates parser awaiting input, ie between actions)
@@ -51,12 +51,14 @@ DESC Implementation of the parser module.
 	*/
 
 CmdInterpreter::CmdInterpreter():
-	currAction(Sentience::Action::IDLE),
-	prevAction(Sentience::Action::IDLE)
-{	context = new ActionContext();
-}
+	playerContext(nullptr)
+	{ }
 CmdInterpreter::~CmdInterpreter() {
-	delete context;
+//	delete context;
+}
+void CmdInterpreter::init() {
+	// link the parser's context pointer to the player's context object
+	playerContext = engine.player->sentience->context;
 }
 void CmdInterpreter::save(TCODZip &fileBuffer) {
 	LOGMSG("called");
@@ -66,7 +68,8 @@ void CmdInterpreter::load(TCODZip &fileBuffer) {
 	LOGMSG("called");
 }
 void CmdInterpreter::translate() {
-	// Reads input data from lastEvent/lastKey and sets the parser's state
+	// Perform a lookup from a char input to a Sentience::Action, and set the
+	// player's context.curr/prevAction accordingly
 	changeAction(keycodeLookup[lastKey.c]); // what action did the player input?
 	// **** DEBUG
 	// debug commands will be trapped here; don't expect them to be normal...
@@ -79,51 +82,50 @@ void CmdInterpreter::translate() {
 	}
 	// gather more context depending on the action being taken
 	// check for certain metagame inputs: the escape menu, for example
-//	Menu::MenuItemCode menuItem = Menu::MenuItemCode::NONE;
 	switch (lastKey.vk) {
 		case TCODK_ESCAPE:
-			LOGMSG("Escape pressed");
+//			LOGMSG("Escape pressed");
 			engine.mainMenu();
 			break;
 		default:
 			break;
 	}
-	engine.player->sentience->currContext->action = currAction;
-	switch(currAction) {
+	// obtain any additional details to fill out the context
+	switch(playerContext->currAction) {
 		case Sentience::Action::WAIT:
 			// player is doing nothing for a full turn
-			engine.player->sentience->currContext->echs = 1; // later we can mod this to allow multiturn waits
+			playerContext->echs = 1; // later we can mod this to allow multiturn waits
 			break;
 		case Sentience::Action::MOVE:
 			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
 			switch(lastKey.c) {
 				case 'h': // move left
-					context->echs = -1;
+					playerContext->echs = -1;
 					break;
 				case 'j': // move down
-					context->whye = 1;
+					playerContext->whye = 1;
 					break;
 				case 'k': // move up
-					context->whye = -1;
+					playerContext->whye = -1;
 					break;
 				case 'l': // move right
-					context->echs = 1;
+					playerContext->echs = 1;
 					break;
 				case 'y': // move up-left
-					context->echs = -1;
-					context->whye = -1;
+					playerContext->echs = -1;
+					playerContext->whye = -1;
 					break;
 				case 'u': // move up-right
-					context->echs = 1;
-					context->whye = -1;
+					playerContext->echs = 1;
+					playerContext->whye = -1;
 					break;
 				case 'b': // move down-left
-					context->echs = -1;
-					context->whye = 1;
+					playerContext->echs = -1;
+					playerContext->whye = 1;
 					break;
 				case 'n': // move down-right
-					context->echs = 1;
-					context->whye = 1;
+					playerContext->echs = 1;
+					playerContext->whye = 1;
 					break;
 				default:
 					break;
@@ -189,9 +191,8 @@ void CmdInterpreter::translate() {
 		default:
 			break;
 	}
-	stateChange = actionDiegesis[currAction]; // does the action change state?
+	stateChange = actionDiegesis[playerContext->currAction]; // does the action change state?
 }
 void CmdInterpreter::changeAction(Sentience::Action newAction) {
-	prevAction = currAction;
-	currAction = newAction;
+	playerContext->setAction(newAction);
 }
