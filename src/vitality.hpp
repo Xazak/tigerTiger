@@ -7,6 +7,8 @@ class Vitality {
 	public:
 
 		// con/destructors?
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 		// derived statistics
 		uint getLeapDistance();
 		uint getSprintSpeed();

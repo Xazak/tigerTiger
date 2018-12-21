@@ -94,6 +94,8 @@ void GameEngine::init() {
 	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@', TCODColor::orange, "player");
 	player->sentience = new PlayerSentience();
 //	LOGMSG("sentience OK");
+//	player->vitality = new Vitality();
+//	LOGMSG("vitality OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
 //	LOGMSG("mortality OK");
 	player->tempo = new ActorClock(100);
@@ -335,47 +337,47 @@ void GameEngine::saveToFile() {
 	// if the player's dead, don't even try to save the game
 	if (player->mortality->isDead()) return;
 	TCODZip fileBuffer; // create the compression buffer
-	fileBuffer.putInt(seed); // RNG seed
-	fileBuffer.putInt(fovRadius); // player's FOV radius
+//	fileBuffer.putInt(seed); // RNG seed
+//	fileBuffer.putInt(fovRadius); // player's FOV radius
 //	chrono.save(fileBuffer); // world clock state
-	map->save(fileBuffer);   // state of world tiles
+//	map->save(fileBuffer);   // state of world tiles
 	player->save(fileBuffer);// player's state
-	fileBuffer.putInt(allActors.size() - 1); // quantity of non-player actors
-	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
+//	fileBuffer.putInt(allActors.size() - 1); // quantity of non-player actors
+//	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
 		// if the actor is NOT the player, ask them to save their data
-		if (*iter != player) (*iter)->save(fileBuffer);
-	}
-	gui->save(fileBuffer);   // message log
-	// the parser and sentience do not implement any persistence
+//		if (*iter != player) (*iter)->save(fileBuffer);
+//	}
+//	gui->save(fileBuffer);   // message log
 	fileBuffer.saveToFile("game.sav");
 }
 void GameEngine::loadFromFile() {
 	LOGMSG("*** called");
-	TCODZip fileBuffer; // open an empty file buffer
 	engine.term(); // flush the engine
-	fileBuffer.loadFromFile("game.sav");
-	seed = fileBuffer.getInt();
-	fovRadius = fileBuffer.getInt();
+	TCODZip fileBuffer; // open an empty file buffer
+	fileBuffer.loadFromFile("game.sav"); // open the save game file
+//	seed = fileBuffer.getInt();
+//	fovRadius = fileBuffer.getInt();
 //	chrono->load(fileBuffer);
-	int newWidth = fileBuffer.getInt();
-	int newHeight = fileBuffer.getInt();
-	map = new GameMap(newWidth, newHeight);
-	LOGMSG("created map of size " << newWidth << "x" << newHeight);
-	map->init(false);
-	map->load(fileBuffer);
-//	player = new Actor(0, 0, 0, TCODColor::white, NULL);
-	player = new Actor(fileBuffer, true);
-	parser.init();
-	int npcQuantity = fileBuffer.getInt();
-	while (npcQuantity > 0) {
-//		Actor *actor = new Actor(0, 0, 0, TCODColor::white, NULL);
-//		actor->load(fileBuffer);
-		Actor *actor = new Actor(fileBuffer, false);
-		allActors.push(actor);
-		npcQuantity--;
-	}
-	gui->load(fileBuffer);
-	engine.gui->refreshViewport();
+//	int newWidth = fileBuffer.getInt();
+//	int newHeight = fileBuffer.getInt();
+//	map = new GameMap(newWidth, newHeight);
+//	LOGMSG("created map of size " << newWidth << "x" << newHeight);
+//	map->init(false);
+//	map->load(fileBuffer);
+	player = new Actor(0, 0, 0, TCODColor::white, NULL);
+	player->load(fileBuffer, true);
+//	player = new Actor(fileBuffer, true);
+//	parser.init();
+//	int npcQuantity = fileBuffer.getInt();
+//	while (npcQuantity > 0) {
+	//	Actor *actor = new Actor(0, 0, 0, TCODColor::white, NULL);
+	//	actor->load(fileBuffer);
+//		Actor *actor = new Actor(fileBuffer, false);
+//		allActors.push(actor);
+//		npcQuantity--;
+//	}
+//	gui->load(fileBuffer);
+//	engine.gui->refreshViewport();
 }
 void GameEngine::exitGame() {
 }

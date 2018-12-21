@@ -3,14 +3,18 @@ DATE Oct 08 2018
 AUTH xazak
 DESC Implementation of Actor class and associated subclasses
  */
+#include <string.h> // strdup
 #include <math.h> // sqrtf()
 #include "main.hpp"
 
 Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
 	const char *name):
-	xpos(inputX), ypos(inputY), sigil(sigil), color(color), name(name),
-	obstructs(true) {
-//		LOGMSG("Created " << name << " at " << xpos << ", " << ypos);
+	xpos(inputX), ypos(inputY),
+	sigil(sigil), name(name),
+	obstructs(true), color(color),
+	sentience(nullptr), vitality(nullptr), mortality(nullptr), tempo(nullptr),
+	container(nullptr), portable(nullptr)
+	{//		LOGMSG("Created " << name << " at " << xpos << ", " << ypos);	
 	}
 Actor::Actor(TCODZip &fileBuffer, bool isPlayer) {
 	LOGMSG("called");
@@ -114,26 +118,23 @@ void Actor::save(TCODZip &fileBuffer) {
 	fileBuffer.putInt(xpos);
 	fileBuffer.putInt(ypos);
 	fileBuffer.putInt(sigil);
-	fileBuffer.putColor(&color);
 	fileBuffer.putString(name);
 	LOGMSG("saving name: " << name);
 	fileBuffer.putInt(obstructs);
+	fileBuffer.putColor(&color);
 	// these are booleans that confirm whether this actor has these components
 //	fileBuffer.putInt(attacker != NULL);
-	fileBuffer.putInt(sentience != NULL);
-	LOGMSG("saving sentience: " << (sentience != NULL));
-	fileBuffer.putInt(mortality != NULL);
-	LOGMSG("saving mortality: " << (mortality != NULL));
-	fileBuffer.putInt(tempo != NULL);
-	LOGMSG("saving tempo: " << (tempo != NULL));
-	fileBuffer.putInt(container != NULL);
-	LOGMSG("saving container: " << (container != NULL));
-	fileBuffer.putInt(portable != NULL);
-	LOGMSG("saving portable: " << (portable != NULL));
-	// if the actor has these components, save their data as well
-//	if (attacker) attacker->save(fileBuffer);
+	LOGMSG("saving sentience: " << (sentience != nullptr));
+	fileBuffer.putInt(sentience != nullptr);
 	if (sentience) sentience->save(fileBuffer);
+	LOGMSG("saving vitality: " << (vitality != nullptr));
+	fileBuffer.putInt(vitality != nullptr);
+	if (vitality) vitality->save(fileBuffer);
+	LOGMSG("saving mortality: " << (mortality != nullptr));
+	fileBuffer.putInt(mortality != nullptr);
 	if (mortality) mortality->save(fileBuffer);
+	LOGMSG("saving tempo: " << (tempo != nullptr));
+	fileBuffer.putInt(tempo != nullptr);
 	if (tempo) {
 		// are they in the middle of doing something already?
 		fileBuffer.putInt(tempo->getCurrState() == ActorClock::ClockState::CHARGING);
@@ -142,7 +143,14 @@ void Actor::save(TCODZip &fileBuffer) {
 			tempo->save(fileBuffer);
 		}
 	}
+	LOGMSG("saving container: " << (container != nullptr));
+	fileBuffer.putInt(container != nullptr);
 	if (container) container->save(fileBuffer);
+	LOGMSG("saving portable: " << (portable != nullptr));
+	fileBuffer.putInt(portable != nullptr);
+	// if the actor has these components, save their data as well
+//	if (attacker) attacker->save(fileBuffer);
+	
 	// portable does not require persistence
 }
 void Actor::load(TCODZip &fileBuffer, bool isPlayer) {
@@ -153,38 +161,58 @@ void Actor::load(TCODZip &fileBuffer, bool isPlayer) {
 	LOGMSG("ypos: " << ypos);
 	sigil = fileBuffer.getInt();
 	LOGMSG("sigil: " << ((char)sigil));
-	color = fileBuffer.getColor();
-//	LOGMSG("color: " << color);
-	if (!name) LOGMSG("no existing name array on actor!");
+//	if (!name) LOGMSG("no existing name array on actor!");
 	name = strdup(fileBuffer.getString());
 	LOGMSG("name: " << name);
 	obstructs = fileBuffer.getInt();
 	LOGMSG("obstructs: " << obstructs);
+	color = fileBuffer.getColor();
+//	LOGMSG("color: " << color);
 //	bool canAttack = fileBuffer.getInt();
 //	LOGMSG("canAttack: " << canAttack);
-	bool canThink = fileBuffer.getInt();
-	LOGMSG("canThink: " << canThink);
-	bool canDie = fileBuffer.getInt();
-	LOGMSG("canDie: " << canDie);
-	bool canMove = fileBuffer.getInt();
-	LOGMSG("canMove: " << canMove);
-	bool canContain = fileBuffer.getInt();
-	LOGMSG("canContain: " << canContain);
-	bool isPortable = fileBuffer.getInt();
-	LOGMSG("isPortable: " << isPortable);
-	// is there an attacker module?
-//	if (canAttack) attacker = new Attacker(fileBuffer);
-	if (canThink) {
+	bool hasSentience = fileBuffer.getInt();
+	LOGMSG("sentience: " << hasSentience);
+	if (hasSentience) {
 		if (isPlayer) {
-			sentience = new PlayerSentience(fileBuffer);
 			LOGMSG("actor given Player AI");
+//			sentience = new PlayerSentience(fileBuffer);
+			sentience = new PlayerSentience();
+			sentience->load(fileBuffer);
 		} else {
-			sentience = new AnimalSentience(fileBuffer);
 			LOGMSG("actor given Animal AI");
+//			sentience = new AnimalSentience(fileBuffer);
+			sentience = new AnimalSentience();
+			sentience->load(fileBuffer);
 		}
 	}
-	if (canDie) mortality = new Mortality(fileBuffer);
-	if (canMove) tempo = new ActorClock(fileBuffer);
-	if (canContain) container = new Container(fileBuffer);
-	if (isPortable) portable = new Portable();
+	bool hasVitality = fileBuffer.getInt();
+	LOGMSG("vitality: " << hasVitality);
+	if (hasVitality) {
+		vitality = new Vitality();
+		vitality->load(fileBuffer);
+	}
+	bool hasMortality = fileBuffer.getInt();
+	LOGMSG("mortality: " << hasMortality);
+	if (hasMortality) {
+		mortality = new Mortality(0, 0, nullptr);
+		mortality->load(fileBuffer);
+	}
+	bool hasTempo = fileBuffer.getInt();
+	LOGMSG("tempo: " << hasTempo);
+	if (hasTempo) {
+		tempo = new ActorClock(0);
+		tempo->load(fileBuffer);
+	}
+	bool hasContainer = fileBuffer.getInt();
+	LOGMSG("container: " << hasContainer);
+	if (hasContainer) {
+		container = new Container(0);
+		container->load(fileBuffer);
+	}
+	bool hasPortable = fileBuffer.getInt();
+	LOGMSG("portable: " << hasPortable);
+	if (hasPortable) {
+		portable = new Portable();
+		// does not have any data to load
+	}
 }

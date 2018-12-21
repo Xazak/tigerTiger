@@ -7,6 +7,12 @@ DESC This file implements the baseline statistics carried by every creature.
 #include <math.h>
 #include "main.hpp"
 
+void Vitality::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+}
+void Vitality::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+}
 uint Vitality::getLeapDistance() {
 	// returns a leap distance in tiles
 	uint finalDistance = 0;

@@ -21,11 +21,12 @@ class Actor {
 			// can invoke extended symbols in the ASCII standard
 		const char *name; // actor's name
 		bool obstructs; // true = cannot be moved through
+		TCODColor color; // sigil color
 		//Attack
 		Sentience *sentience; // ptr to AI subroutines
+		Vitality *vitality; // ptr to core stats and skill check bonuses
 		Mortality *mortality; // ptr to HP & death subroutines
 		ActorClock *tempo; // ptr to AP system
 		Container *container; // ptr to actor's inventory
 		Portable *portable; // ptr to allow this actor to be picked up
-		TCODColor color; // sigil color
 };
