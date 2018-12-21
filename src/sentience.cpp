@@ -3,9 +3,9 @@ DATE Oct 24 2018
 AUTH xazak
 DESC Contains action packages that provide decision-making tools for Actors.
  */
+#include "main.hpp"
 #include <stdio.h>
 #include <math.h>
-#include "main.hpp"
 
 void Sentience::save(TCODZip &fileBuffer) {
 	LOGMSG("called");

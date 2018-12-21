@@ -8,15 +8,15 @@ DESC This file is a 'master' header; it will contain all of the individual
 #include "libtcod.hpp"
 class Actor; // this is a forward declaration
 // other implementation files go here
-#include "sentience.hpp"
+#include "sentience.hpp"	//?
 #include "chrono.hpp"
-#include "vitality.hpp"
-#include "mortality.hpp"
+#include "vitality.hpp"	//?
+#include "mortality.hpp"	//?
 #include "portable.hpp"
 #include "container.hpp"
-#include "actor.hpp"
+#include "actor.hpp"	//?
 #include "gui.hpp"
-#include "map.hpp"
+#include "map.hpp"	//?
 #include "parser.hpp"
 #include "engine.hpp"
 #include <iostream>

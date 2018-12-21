@@ -3,9 +3,9 @@ DATE Oct 08 2018
 AUTH xazak
 DESC Implementation of Actor class and associated subclasses
  */
+#include "main.hpp"
 #include <string.h> // strdup
 #include <math.h> // sqrtf()
-#include "main.hpp"
 
 Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
 	const char *name):

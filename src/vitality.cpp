@@ -4,8 +4,8 @@ AUTH xazak
 DESC This file implements the baseline statistics carried by every creature.
  */
 
-#include <math.h>
 #include "main.hpp"
+#include <math.h>
 
 void Vitality::save(TCODZip &fileBuffer) {
 	LOGMSG("called");

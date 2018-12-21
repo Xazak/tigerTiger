@@ -23,8 +23,8 @@ DESC Implements the methods and routines for drawing and communicating with the
   These should be built up in such a way that their positions can be rearranged
 
   */
-#include <stdarg.h>
 #include "main.hpp"
+#include <stdarg.h>
 
 static const TCODColor GUI_FORE = TCODColor::silver;
 static const TCODColor GUI_BACK = TCODColor::black;

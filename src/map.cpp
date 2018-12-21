@@ -3,8 +3,8 @@ DATE Oct 08 2018
 AUTH xazak
 DESC Implementations of Map and Tile classes, incl render methods
  */
-#include <math.h>
 #include "main.hpp"
+#include <math.h>
 
 static const int ROOM_MAX_SIZE = 12;
 static const int ROOM_MIN_SIZE = 6;

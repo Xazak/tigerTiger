@@ -3,8 +3,8 @@ DATE Oct 25 2018
 AUTH xazak
 DESC Definitions of functions related to hit point adjustment and death.
  */
-#include <stdio.h> //?
 #include "main.hpp"
+#include <stdio.h> //?
 
 Mortality::Mortality(float newMaxHP, float newDefense, const char *cadaverTitle):
 	maximumHP(newMaxHP), currentHP(newMaxHP), defense(newDefense) {
