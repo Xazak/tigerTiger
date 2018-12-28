@@ -34,10 +34,12 @@ void Container::load(TCODZip &fileBuffer) {
 	LOGMSG("called");
 	size = fileBuffer.getInt();
 	int contents = fileBuffer.getInt();
+	LOGMSG("size: " << size << std::endl << "contents: " << contents);
 	while (contents > 0) {
-		Actor *newItem = new Actor(0, 0, 0, TCODColor::white, NULL);
+		Actor *newItem = new Actor(0, 0, 0, TCODColor::white, nullptr);
 		newItem->load(fileBuffer);
 		inventory.push(newItem);
 		contents--;
+		LOGMSG("newItem: " << newItem);
 	}
 }

@@ -12,8 +12,8 @@ void Sentience::save(TCODZip &fileBuffer) {
 	context->save(fileBuffer);
 }
 void Sentience::load(TCODZip &fileBuffer) {
-	LOGMSG("called: DOES NOTHING");
-
+	LOGMSG("called");
+	context->load(fileBuffer);
 }
 // General Sentience -- actions available to all living creatures
 //void Sentience::wait(Actor *subject, int numOfTurns = 1) {
@@ -493,6 +493,12 @@ void ActionContext::load(TCODZip &fileBuffer) {
 	echs = fileBuffer.getInt();
 	whye = fileBuffer.getInt();
 	zhee = fileBuffer.getInt();
+	LOGMSG("currAction: " << (int)currAction << std::endl\
+			<< "prevAction: " << (int)prevAction << std::endl\
+			<< "hasTarget: " << hasTarget << std::endl\
+			<< "echs: " << echs << std::endl\
+			<< "whye: " << whye << std::endl\
+			<< "zhee: " << zhee);
 }
 void ActionContext::clear() {
 	// currAction and prevAction are handled by setAction()

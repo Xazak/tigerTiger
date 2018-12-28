@@ -90,6 +90,9 @@ GameEngine::~GameEngine() {
 }
 // *** MAJOR FUNCTIONS
 void GameEngine::init() {
+	// initialize the map
+	map = new GameMap(MAP_WIDTH, MAP_HEIGHT); // init a new map
+	map->init(true);
 	// create a player object
 	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@', TCODColor::orange, "player");
 	player->sentience = new PlayerSentience();
@@ -104,15 +107,12 @@ void GameEngine::init() {
 //	LOGMSG("inventory OK");
 	//player-pickable ?
 	//player-attack
-	allActors.push(player);
-	// initialize the map, show the MOTD
-	map = new GameMap(MAP_WIDTH, MAP_HEIGHT); // init a new map
-	map->init(true);
+	allActors.push(player); // register the player with the engine
 	parser.init(); // tell the parser to hook into the player actor
 	engine.gui->refreshViewport(); // force a viewport update
+	// print the MOTD
 	gui->message(TCODColor::orange, "Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
 //	chrono = new GameClock(); // create a world clock and set up AP tracking
-//	engine.switchMode(&startupTurn);
 }
 void GameEngine::term() {
 	allActors.clearAndDelete(); // delete all actors
@@ -307,6 +307,7 @@ void GameEngine::mainMenu() {
 	switch (menuItem) {
 		case Menu::NEW_GAME:
 //			LOGMSG(" NEW GAME ");
+			engine.deleteSavedGame();
 			engine.term();
 			engine.init();
 			break;
@@ -337,49 +338,61 @@ void GameEngine::saveToFile() {
 	// if the player's dead, don't even try to save the game
 	if (player->mortality->isDead()) return;
 	TCODZip fileBuffer; // create the compression buffer
-//	fileBuffer.putInt(seed); // RNG seed
-//	fileBuffer.putInt(fovRadius); // player's FOV radius
+	fileBuffer.putInt(seed); // RNG seed
+	fileBuffer.putInt(fovRadius); // player's FOV radius
 //	chrono.save(fileBuffer); // world clock state
-//	map->save(fileBuffer);   // state of world tiles
+	map->save(fileBuffer);   // state of world tiles
 	player->save(fileBuffer);// player's state
-//	fileBuffer.putInt(allActors.size() - 1); // quantity of non-player actors
-//	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
+	fileBuffer.putInt(allActors.size() - 1); // quantity of non-player actors
+	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
 		// if the actor is NOT the player, ask them to save their data
-//		if (*iter != player) (*iter)->save(fileBuffer);
-//	}
-//	gui->save(fileBuffer);   // message log
+		if (*iter != player) (*iter)->save(fileBuffer);
+	}
+	gui->save(fileBuffer);   // message log
 	fileBuffer.saveToFile("game.sav");
 }
 void GameEngine::loadFromFile() {
 	LOGMSG("*** called");
-	engine.term(); // flush the engine
 	TCODZip fileBuffer; // open an empty file buffer
+	engine.term(); // flush the engine
 	fileBuffer.loadFromFile("game.sav"); // open the save game file
-//	seed = fileBuffer.getInt();
-//	fovRadius = fileBuffer.getInt();
+	// begin retrieving various game state data
+	seed = fileBuffer.getInt();
+	fovRadius = fileBuffer.getInt();
 //	chrono->load(fileBuffer);
-//	int newWidth = fileBuffer.getInt();
-//	int newHeight = fileBuffer.getInt();
-//	map = new GameMap(newWidth, newHeight);
-//	LOGMSG("created map of size " << newWidth << "x" << newHeight);
-//	map->init(false);
-//	map->load(fileBuffer);
-	player = new Actor(0, 0, 0, TCODColor::white, NULL);
+	int newWidth = fileBuffer.getInt();
+	int newHeight = fileBuffer.getInt();
+	map = new GameMap(newWidth, newHeight);
+	LOGMSG("created map of size " << newWidth << "x" << newHeight);
+	map->init(false);
+	map->load(fileBuffer);
+	player = new Actor(0, 0, 0, TCODColor::white, nullptr);
 	player->load(fileBuffer, true);
-//	player = new Actor(fileBuffer, true);
-//	parser.init();
-//	int npcQuantity = fileBuffer.getInt();
-//	while (npcQuantity > 0) {
-	//	Actor *actor = new Actor(0, 0, 0, TCODColor::white, NULL);
-	//	actor->load(fileBuffer);
-//		Actor *actor = new Actor(fileBuffer, false);
-//		allActors.push(actor);
-//		npcQuantity--;
-//	}
-//	gui->load(fileBuffer);
-//	engine.gui->refreshViewport();
+	allActors.push(player);
+	parser.init();
+	int npcQuantity = fileBuffer.getInt();
+	LOGMSG("npcQuantity: " << npcQuantity);
+	while (npcQuantity > 0) {
+		Actor *actor = new Actor(0, 0, 0, TCODColor::white, nullptr);
+		actor->load(fileBuffer, false);
+		allActors.push(actor);
+		npcQuantity--;
+	}
+	gui->load(fileBuffer);
+	switchMode(IDLE); // cannot originally trigger a save from any other state
+	engine.gui->refreshViewport();
 }
 void GameEngine::exitGame() {
+}
+void GameEngine::deleteSavedGame() {
+	LOGMSG("called");
+	bool successFlag = false;
+	successFlag = TCODSystem::deleteFile("game.sav");
+	if (successFlag) {
+		LOGMSG("File deleted");
+	} else {
+		LOGMSG("Could not delete file!");
+	}
 }
 
 void GameEngine::sendToBack(Actor *actor) {
@@ -387,7 +400,7 @@ void GameEngine::sendToBack(Actor *actor) {
 	allActors.insertBefore(actor, 0);
 }
 Actor *GameEngine::getClosestMonster(int x, int y, float range) const {
-	Actor *closestMonster = NULL;
+	Actor *closestMonster = nullptr;
 	float bestDistance = 1E6f; //1E6 == 1000000; how far away are we allowed to select?
 	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
 		Actor *actor = *iter;
@@ -442,7 +455,7 @@ Actor *GameEngine::getActor(int x, int y) const {
 			return actor;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 void GameEngine::updateActionQueue() {
 	// this could be much better if it sorted AND inserted at the same time...
@@ -461,7 +474,7 @@ void GameEngine::refreshAP() {
 void GameEngine::switchMode(EngineState newMode) {
 	prevMode = currMode;
 	currMode = newMode;
-/*	switch (currMode) {
+	switch (currMode) {
 		case STARTUP:
 		LOGMSG("mode switch: " << currMode << ": STARTUP");
 		break;
@@ -483,5 +496,4 @@ void GameEngine::switchMode(EngineState newMode) {
 		default:
 		break;
 	}
-*/
 }

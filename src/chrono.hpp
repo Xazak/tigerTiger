@@ -49,7 +49,7 @@ class ActorClock {
 			{Sentience::Action::WEAR, 100},
 			{Sentience::Action::WIELD, 100},
 		};
-		enum ClockState {
+		enum class ClockState : uint {
 			NO_ACTION,
 			CHARGING,
 			READY

@@ -239,10 +239,10 @@ void GameGUI::debugStats() {
 			engine.player->ypos);
 	// AP STATE
 	statPanel->printf(debugX, debugY+2, "AXN: %d - %d/%d [%d]",
-			engine.player->tempo->getCurrAction(),
+			(uint)engine.player->tempo->getCurrAction(),
 			engine.player->tempo->getCurrAP(),
 			engine.player->tempo->getActionCost(),
-			engine.player->tempo->getCurrState() );
+			(uint)engine.player->tempo->getCurrState() );
 }
 // 	*** MESSAGES
 void GameGUI::message(const TCODColor &color, const char *msgText, ...) {

@@ -27,6 +27,7 @@ class GameEngine {
 		void saveToFile();
 		void loadFromFile();
 		void exitGame();
+		void deleteSavedGame();
 		// pushes the *actor to the rear-most screen layer so that other sigils
 		// can be drawn on top of it, ie for non-blocking actors
 		void sendToBack(Actor *actor); // causes other actors to draw above it

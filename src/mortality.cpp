@@ -6,9 +6,15 @@ DESC Definitions of functions related to hit point adjustment and death.
 #include "main.hpp"
 #include <stdio.h> //?
 
-Mortality::Mortality(float newMaxHP, float newDefense, const char *cadaverTitle):
-	maximumHP(newMaxHP), currentHP(newMaxHP), defense(newDefense) {
-		this->cadaverTitle = strdup(cadaverTitle);
+Mortality::Mortality(float newMaxHP, float newDefense, const char *newName):
+	maximumHP(newMaxHP),
+	currentHP(newMaxHP),
+	defense(newDefense) {
+	if (newName == nullptr) {
+		this->cadaverTitle = "nobody's corpse";
+	} else {
+		this->cadaverTitle = strdup(newName);
+	}
 }
 Mortality::Mortality(TCODZip &fileBuffer) {
 	LOGMSG("called");
@@ -30,6 +36,10 @@ void Mortality::load(TCODZip &fileBuffer) {
 	maximumHP = fileBuffer.getInt();
 	currentHP = fileBuffer.getInt();
 	defense = fileBuffer.getInt();
+	LOGMSG("corpse name: " << cadaverTitle << std::endl\
+			<< "max HP: " << maximumHP << std::endl\
+			<< "current HP: " << currentHP << std::endl\
+			<< "defense: " << defense);
 }
 void Mortality::embraceDeath(Actor *subject) {
 	// change the actor's sigil into a corpse

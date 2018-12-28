@@ -1,13 +1,13 @@
-/*	 chrono.hpp
+/*	 chrono.cpp
 DATE Dec 10 2018
 AUTH xazak
-DESC Definitions of the timekeeping systems, including world time and actor AP
+DESC Implementations of the timekeeping systems, including world time and actor AP
  */
 #include "main.hpp"
 
 ActorClock::ActorClock(int newRefreshRate):
 	currAction(Sentience::Action::IDLE),
-	currState(NO_ACTION),
+	currState(ClockState::NO_ACTION),
 	actionCost(0),
 	bankedAP(0),
 	refreshRate(newRefreshRate),
@@ -19,8 +19,8 @@ ActorClock::ActorClock(TCODZip &fileBuffer) {
 }
 void ActorClock::save(TCODZip &fileBuffer) {
 	LOGMSG("called");
-	// currState has (should have!) already been written to the buffer!
-	fileBuffer.putInt((int)currAction);
+	fileBuffer.putInt((uint)currState);
+	fileBuffer.putInt((uint)currAction);
 	fileBuffer.putInt(actionCost);
 	fileBuffer.putInt(bankedAP);
 	fileBuffer.putInt(refreshRate);
@@ -28,11 +28,20 @@ void ActorClock::save(TCODZip &fileBuffer) {
 }
 void ActorClock::load(TCODZip &fileBuffer) {
 	LOGMSG("called");
-	changeAction((Sentience::Action)fileBuffer.getInt()); // CAST TO ENUM
+	// currState should be either ClockState::CHARGING or ClockState::READY if invoking this!
+	// currState should have been set before invoking this!
+	changeState((ActorClock::ClockState)fileBuffer.getInt());
+	changeAction((Sentience::Action)fileBuffer.getInt());
 	actionCost = fileBuffer.getInt();
 	bankedAP = fileBuffer.getInt();
 	refreshRate = fileBuffer.getInt();
 	currentAP = fileBuffer.getInt();
+	LOGMSG("currState: " << (int)currState << std::endl\
+			<< "currAction: " << (int)currAction << std::endl\
+			<< "actionCost: " << actionCost << std::endl\
+			<< "bankedAP: " << bankedAP << std::endl\
+			<< "refreshRate: " << refreshRate << std::endl\
+			<< "currentAP: " << currentAP);
 }
 // the sentience module will consume the readied action and change the state
 /*
@@ -52,7 +61,7 @@ void ActorClock::changeState(ClockState newState) {
 void ActorClock::changeAction(Sentience::Action newAction) {
 	currAction = newAction;
 	actionCost = APCostLookup[currAction];
-	changeState(CHARGING);
+	changeState(ClockState::CHARGING);
 }
 ActorClock::ClockState ActorClock::chargeAction() {
 	// does the action cost more than the player has?
@@ -62,16 +71,16 @@ ActorClock::ClockState ActorClock::chargeAction() {
 		currentAP = 0;
 	} else { // the player can pay for the action immediately (currAP >= cost)
 		currentAP -= actionCost;
-		changeState(READY);
+		changeState(ClockState::READY);
 	}
 	if (bankedAP > actionCost) {
-		changeState(READY);
+		changeState(ClockState::READY);
 	}
 	return currState;
 }
 void ActorClock::resetAction() {
 	currAction = Sentience::Action::IDLE;
-	changeState(NO_ACTION);
+	changeState(ClockState::NO_ACTION);
 	actionCost = 0;
 	bankedAP = 0;
 }

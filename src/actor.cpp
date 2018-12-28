@@ -8,13 +8,18 @@ DESC Implementation of Actor class and associated subclasses
 #include <math.h> // sqrtf()
 
 Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
-	const char *name):
+	const char *newName):
 	xpos(inputX), ypos(inputY),
-	sigil(sigil), name(name),
+	sigil(sigil),
 	obstructs(true), color(color),
 	sentience(nullptr), vitality(nullptr), mortality(nullptr), tempo(nullptr),
 	container(nullptr), portable(nullptr)
 	{//		LOGMSG("Created " << name << " at " << xpos << ", " << ypos);	
+		if (newName == nullptr) {
+			name = "nobody";
+		} else {
+			name = strdup(newName);
+		}
 	}
 Actor::Actor(TCODZip &fileBuffer, bool isPlayer) {
 	LOGMSG("called");
@@ -119,53 +124,52 @@ void Actor::save(TCODZip &fileBuffer) {
 	fileBuffer.putInt(ypos);
 	fileBuffer.putInt(sigil);
 	fileBuffer.putString(name);
-	LOGMSG("saving name: " << name);
 	fileBuffer.putInt(obstructs);
 	fileBuffer.putColor(&color);
 	// these are booleans that confirm whether this actor has these components
-//	fileBuffer.putInt(attacker != NULL);
+	// if the actor has these components, save their data as well
+
 	LOGMSG("saving sentience: " << (sentience != nullptr));
 	fileBuffer.putInt(sentience != nullptr);
 	if (sentience) sentience->save(fileBuffer);
+
 	LOGMSG("saving vitality: " << (vitality != nullptr));
 	fileBuffer.putInt(vitality != nullptr);
 	if (vitality) vitality->save(fileBuffer);
+
 	LOGMSG("saving mortality: " << (mortality != nullptr));
 	fileBuffer.putInt(mortality != nullptr);
 	if (mortality) mortality->save(fileBuffer);
+
 	LOGMSG("saving tempo: " << (tempo != nullptr));
 	fileBuffer.putInt(tempo != nullptr);
-	if (tempo) {
-		// are they in the middle of doing something already?
-		fileBuffer.putInt(tempo->getCurrState() == ActorClock::ClockState::CHARGING);
-		// we only need to save this data if we're charging an action
-		if (tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
-			tempo->save(fileBuffer);
-		}
-	}
+	if (tempo) tempo->save(fileBuffer);
+
 	LOGMSG("saving container: " << (container != nullptr));
 	fileBuffer.putInt(container != nullptr);
 	if (container) container->save(fileBuffer);
+
 	LOGMSG("saving portable: " << (portable != nullptr));
 	fileBuffer.putInt(portable != nullptr);
-	// if the actor has these components, save their data as well
-//	if (attacker) attacker->save(fileBuffer);
-	
 	// portable does not require persistence
+	
+//	LOGMSG("saving attacker: " << (attacker != nullptr));
+//	fileBuffer.putInt(attacker != NULL);
+//	if (attacker) attacker->save(fileBuffer);
 }
 void Actor::load(TCODZip &fileBuffer, bool isPlayer) {
-	LOGMSG("called");
+//	LOGMSG("called");
 	xpos = fileBuffer.getInt();
-	LOGMSG("xpos: " << xpos);
+//	LOGMSG("xpos: " << xpos);
 	ypos = fileBuffer.getInt();
-	LOGMSG("ypos: " << ypos);
+//	LOGMSG("ypos: " << ypos);
 	sigil = fileBuffer.getInt();
-	LOGMSG("sigil: " << ((char)sigil));
+//	LOGMSG("sigil: " << ((char)sigil));
 //	if (!name) LOGMSG("no existing name array on actor!");
 	name = strdup(fileBuffer.getString());
-	LOGMSG("name: " << name);
+//	LOGMSG("name: " << name);
 	obstructs = fileBuffer.getInt();
-	LOGMSG("obstructs: " << obstructs);
+//	LOGMSG("obstructs: " << obstructs);
 	color = fileBuffer.getColor();
 //	LOGMSG("color: " << color);
 //	bool canAttack = fileBuffer.getInt();
