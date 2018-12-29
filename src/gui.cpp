@@ -243,6 +243,17 @@ void GameGUI::debugStats() {
 			engine.player->tempo->getCurrAP(),
 			engine.player->tempo->getActionCost(),
 			(uint)engine.player->tempo->getCurrState() );
+	// CURRENT TIME
+	statPanel->printf(debugX, debugY+3, "CLK: %d:%d.%d [%d]",
+			engine.chrono->getHours(),
+			engine.chrono->getMinutes(),
+			engine.chrono->getSeconds(),
+			engine.chrono->getTurns() );
+	// CURRENT DATE
+	statPanel->printf(debugX, debugY+4, "    [%d/%d/%d]",
+			engine.chrono->getYears(),
+			engine.chrono->getMonths(),
+			engine.chrono->getDays() );
 }
 // 	*** MESSAGES
 void GameGUI::message(const TCODColor &color, const char *msgText, ...) {

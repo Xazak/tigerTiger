@@ -6,7 +6,39 @@ DESC Definitions of the timekeeping systems, including world time and actor AP
 #include <map>
 class WorldClock {
 	// handles the game clock functions, including calendar and time tools
+	public:
+		WorldClock();
+//		~WorldClock();
+		void advanceTime(uint increment = 6); // default is 6 seconds
+		void save(TCODZip &fileBuffer);
+		void load(TCODZip &fileBuffer);
 
+		void setYears(uint newValue) { years = newValue; }
+		void setMonths(uint newValue) { months = newValue; }
+		void setDays(uint newValue) { days = newValue; }
+		void setHours(uint newValue) { hours = newValue; }
+		void setMinutes(uint newValue) { minutes = newValue; }
+		void setSeconds(uint newValue) { seconds = newValue; }
+		void setTurns(uint newValue) { turns = newValue; }
+//		void setDate(const char *dateString);
+
+		uint getYears() { return years; }
+		uint getMonths() { return months; }
+		uint getDays() { return days; }
+		uint getHours() { return hours; }
+		uint getMinutes() { return minutes; }
+		uint getSeconds() { return seconds; }
+		uint getTurns() { return turns; }
+//		char *getDate();
+
+	private:
+		uint years;
+		uint months;
+		uint days;
+		uint hours;
+		uint minutes;
+		uint seconds;
+		uint turns;
 };
 class ActorClock {
 	// handles the AP system for any Actor it is attached to

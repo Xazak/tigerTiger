@@ -112,7 +112,7 @@ void GameEngine::init() {
 	engine.gui->refreshViewport(); // force a viewport update
 	// print the MOTD
 	gui->message(TCODColor::orange, "Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
-//	chrono = new GameClock(); // create a world clock and set up AP tracking
+	chrono = new WorldClock(); // create a world clock
 }
 void GameEngine::term() {
 	allActors.clearAndDelete(); // delete all actors
@@ -219,6 +219,7 @@ void GameEngine::update() {
 			// the engine doesn't care about metagame operations
 			if (parser.stateChange == false) break;
 			engine.player->update();
+			engine.chrono->advanceTime();
 			engine.player->sentience->context->clear();
 			switchMode(ONGOING);
 			break;
@@ -236,6 +237,7 @@ void GameEngine::update() {
 				switchMode(IDLE);
 			} else { // if not, ask the actor to update
 				currActor->update();
+				// should time advance here? or just on player's turn?
 			}
 			break;
 		case NEWTURN:
@@ -340,7 +342,7 @@ void GameEngine::saveToFile() {
 	TCODZip fileBuffer; // create the compression buffer
 	fileBuffer.putInt(seed); // RNG seed
 	fileBuffer.putInt(fovRadius); // player's FOV radius
-//	chrono.save(fileBuffer); // world clock state
+	chrono->save(fileBuffer); // world clock state
 	map->save(fileBuffer);   // state of world tiles
 	player->save(fileBuffer);// player's state
 	fileBuffer.putInt(allActors.size() - 1); // quantity of non-player actors
@@ -359,7 +361,8 @@ void GameEngine::loadFromFile() {
 	// begin retrieving various game state data
 	seed = fileBuffer.getInt();
 	fovRadius = fileBuffer.getInt();
-//	chrono->load(fileBuffer);
+	chrono = new WorldClock();
+	chrono->load(fileBuffer);
 	int newWidth = fileBuffer.getInt();
 	int newHeight = fileBuffer.getInt();
 	map = new GameMap(newWidth, newHeight);
@@ -474,7 +477,7 @@ void GameEngine::refreshAP() {
 void GameEngine::switchMode(EngineState newMode) {
 	prevMode = currMode;
 	currMode = newMode;
-	switch (currMode) {
+/*	switch (currMode) {
 		case STARTUP:
 		LOGMSG("mode switch: " << currMode << ": STARTUP");
 		break;
@@ -496,4 +499,5 @@ void GameEngine::switchMode(EngineState newMode) {
 		default:
 		break;
 	}
+	*/
 }

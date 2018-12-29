@@ -5,6 +5,60 @@ DESC Implementations of the timekeeping systems, including world time and actor 
  */
 #include "main.hpp"
 
+// **** WorldClock
+WorldClock::WorldClock():
+	years(1823),
+	months(4),
+	days(13),
+	hours(7),
+	minutes(22),
+	seconds(36),
+	turns(0) { }
+void WorldClock::advanceTime(uint increment) {
+	turns++;
+	seconds += increment;
+	if (seconds >= 60) {
+		minutes++;
+		seconds %= 60;
+	}
+	if (minutes >= 60) {
+		hours++;
+		minutes %= 60;
+	}
+	if (hours >= 24) {
+		days++;
+		hours %= 24;
+	}
+	if (days >= 30) {
+		months++;
+		days %= 30;
+	}
+	if (months >= 12) {
+		years++;
+		months %= 12;
+	}
+}
+void WorldClock::save(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	fileBuffer.putInt(years);
+	fileBuffer.putInt(months);
+	fileBuffer.putInt(days);
+	fileBuffer.putInt(hours);
+	fileBuffer.putInt(minutes);
+	fileBuffer.putInt(seconds);
+	fileBuffer.putInt(turns);
+}
+void WorldClock::load(TCODZip &fileBuffer) {
+	LOGMSG("called");
+	setYears((uint)fileBuffer.getInt());
+	setMonths((uint)fileBuffer.getInt());
+	setDays((uint)fileBuffer.getInt());
+	setHours((uint)fileBuffer.getInt());
+	setMinutes((uint)fileBuffer.getInt());
+	setSeconds((uint)fileBuffer.getInt());
+	setTurns((uint)fileBuffer.getInt());
+}
+// **** ActorClock
 ActorClock::ActorClock(int newRefreshRate):
 	currAction(Sentience::Action::IDLE),
 	currState(ClockState::NO_ACTION),

@@ -16,7 +16,10 @@ void Sentience::load(TCODZip &fileBuffer) {
 	context->load(fileBuffer);
 }
 // General Sentience -- actions available to all living creatures
-//void Sentience::wait(Actor *subject, int numOfTurns = 1) {
+void Sentience::wait(Actor *subject, int numOfTurns) {
+	LOGMSG("called");
+	//do nothing
+}
 void Sentience::moveRel(Actor *subject, int targetx, int targety) { // RELATIVE COORDS
 	// move to the RELATIVE LOC specified by traveling on foot 'normally'
 	// presumably we've already checked for a valid target location?
@@ -92,6 +95,7 @@ bool PlayerSentience::update(Actor *subject) {
 	switch(subject->sentience->context->currAction) {
 		case Action::WAIT: // player will wait N = 1 turns
 			// does nothing yet, not even pass time...
+			subject->sentience->wait(subject);
 			break;
 		case Action::MOVE: // player will move to a new tile by relative coords
 			subject->sentience->moveRel(subject, context->echs, context->whye);

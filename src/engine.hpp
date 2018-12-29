@@ -46,7 +46,7 @@ class GameEngine {
 		EngineState prevMode; // and the previous state in case we need it
 
 		GameGUI *gui; // points to master GUI object
-//		GameClock *chrono; // points to world-scope timekeeping tools
+		WorldClock *chrono; // points to world-scope timekeeping tools
 		GameMap *map; // points to master map object
 		TCODRandom *rng; // pointer to RNG engine
 		TCODList<Actor *> allActors; // contains ALL ACTORS
