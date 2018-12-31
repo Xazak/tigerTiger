@@ -12,8 +12,8 @@ Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
 	xpos(inputX), ypos(inputY),
 	sigil(sigil),
 	obstructs(true), color(color),
-	sentience(nullptr), vitality(nullptr), mortality(nullptr), tempo(nullptr),
-	container(nullptr), portable(nullptr)
+	sentience(nullptr), vitality(nullptr), mortality(nullptr), //violent(nullptr),
+	tempo(nullptr),	container(nullptr), portable(nullptr)
 	{//		LOGMSG("Created " << name << " at " << xpos << ", " << ypos);	
 		if (newName == nullptr) {
 			name = "nobody";

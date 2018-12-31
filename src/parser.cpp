@@ -57,7 +57,7 @@ CmdInterpreter::~CmdInterpreter() {
 //	delete context;
 }
 void CmdInterpreter::init() {
-	LOGMSG("called");
+//	LOGMSG("called");
 	// link the parser's context pointer to the player's context object
 	playerContext = engine.player->sentience->context;
 }

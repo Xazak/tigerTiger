@@ -88,22 +88,16 @@ void GameMap::render() const {
 }
 void GameMap::init(bool newMap) {
 	// create the map objects
-	LOGMSG("called: " << newMap);
-//	rng = new TCODRandom(seed, TCOD_RNG_CMWC);
 	tiles = new Tile[width * height]; // use x + y * width to locate a tile
 	LOGMSG("new tilemap created");
 	visionMap = new TCODMap(width, height); // invokes the TCOD FOV map object
 	LOGMSG("new visionMap created");
-	// invoke the BSP tree tools to generate a dungeon graph
-//	TCODBsp bsp(0, 0, width, height);
-//	bsp.splitRecursive(rng, 8, ROOM_MAX_SIZE, ROOM_MAX_SIZE, 1.5f, 1.5f);
-//	BspListener listener(*this);
-//	bsp.traverseInvertedLevelOrder(&listener, (void *)withActors);
-	// invoke our custom mapgen code instead
+	// create a new map if specified to do so
 	if (newMap) {
 		generateTerrain(true, width, height); // this is my function
 		LOGMSG("generating terrain");
 	}
+	LOGMSG("map initialized");
 }
 void GameMap::save(TCODZip &fileBuffer) {
 	// save the map dimensions

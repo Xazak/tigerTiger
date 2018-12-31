@@ -141,24 +141,34 @@ void GameGUI::blitToScreen() {
 		TCODConsole::root, msgPanelXPos, msgPanelYPos);
 }
 void GameGUI::render() {
+	// Performs the call-fxn work of drawing the GUI elements
+	int lineHeight = 0; // index for deciding statPanel's text lines
+	int lineOffset = 0; // helper value for comparison purposes
 	// NOTE: clear() uses the Default_color settings defined above!
-	// Blank the viewport in prep for the upcoming render() calls
+	// Viewport Main
+	// blank the viewport in prep for the upcoming render() calls
 	viewport->setDefaultBackground(GUI_BACK);
 	viewport->setDefaultForeground(GUI_FORE);
 	viewport->clear();
 //	viewport->vline(viewport->getWidth() - 1, 0, viewport->getHeight());
 //	viewport->hline(0, viewport->getHeight() - 1, viewport->getWidth());
-	// Draw the stat panel
+	// Stat Panel
 	// panel borders
 	statPanel->setDefaultBackground(GUI_BACK);
 	statPanel->setDefaultForeground(GUI_FORE);
 	statPanel->clear();
-	statPanel->vline(0, 0, statPanel->getHeight());
-	// --stat blocks go here
-	// --DEBUG INFO
+	statPanel->vline(0, 0, statPanel->getHeight()); // left border
+	// character portrait block
 	statPanel->setDefaultBackground(TCODColor::brass);
-	debugStats();
-	// Draw the message log
+	statPanel->rect(1, 0, 20, 20, false, TCOD_BKGND_SET); // portrait block
+	lineHeight = 20;
+	// stat blocks
+	lineOffset = displayVitals(statPanel, lineHeight);
+	lineHeight += lineOffset;
+	// **** DEBUG INFO
+	lineOffset = debugStats(statPanel, lineHeight);
+	lineHeight += lineOffset;
+	// Message Log
 	// panel borders
 	msgPanel->setDefaultBackground(GUI_BACK);
 	msgPanel->setDefaultForeground(GUI_FORE);
@@ -225,35 +235,64 @@ void GameGUI::refreshScrollingEdges() {
 	guiCon->printf((x + width / 2), y, TCOD_BKGND_NONE, TCOD_CENTER,
 		"%s : %g/%g", name, curValue, maxValue);
 }*/
-void GameGUI::debugStats() {
-	// show some hard info about the game state
-	int debugX = 1;
-	int debugY = statPanel->getHeight() - 20;
-	statPanel->setDefaultForeground(TCODColor::white); // set text color
-	statPanel->rect(1, 0, 20, 20, false, TCOD_BKGND_SET); // portrait block
-	// HEADER
-	statPanel->printf(debugX, debugY, "   *** DEBUG ***");
-	// POSITION
-	statPanel->printf(debugX, debugY+1, "POS: %d, %d",
-			engine.player->xpos,
-			engine.player->ypos);
-	// AP STATE
-	statPanel->printf(debugX, debugY+2, "AXN: %d - %d/%d [%d]",
-			(uint)engine.player->tempo->getCurrAction(),
-			engine.player->tempo->getCurrAP(),
-			engine.player->tempo->getActionCost(),
-			(uint)engine.player->tempo->getCurrState() );
+int GameGUI::displayVitals(TCODConsole *console, int height) {
+	// display the player's HP, defense, core stats
+	// this is likely to change when we want more sophisticated GUI elements
+	// note that the left border occupies all of x = 0
+	int leftEdge = 1;
+	int offset = 0; // increases with each new line printed on
+	statPanel->setDefaultForeground(TCODColor::white);
 	// CURRENT TIME
-	statPanel->printf(debugX, debugY+3, "CLK: %d:%d.%d [%d]",
+	statPanel->printf(leftEdge, height + offset++, "CLK: %d:%d.%d [%d]",
 			engine.chrono->getHours(),
 			engine.chrono->getMinutes(),
 			engine.chrono->getSeconds(),
 			engine.chrono->getTurns() );
 	// CURRENT DATE
-	statPanel->printf(debugX, debugY+4, "    [%d/%d/%d]",
+	statPanel->printf(leftEdge, height + offset++, "    [%d/%d/%d]",
 			engine.chrono->getYears(),
 			engine.chrono->getMonths(),
 			engine.chrono->getDays() );
+	// HP
+	statPanel->printf(leftEdge, (height + offset++), " HP: %d / %d",
+			(int)engine.player->mortality->getCurrentHP(),
+			(int)engine.player->mortality->getMaximumHP() );
+	// Defense rating
+	statPanel->printf(leftEdge, (height + offset++), "Def: %d",
+			(int)engine.player->mortality->getDefenseRating() );
+	// Core Stats
+	statPanel->printf(leftEdge, (height + offset++), "Fer: %d    Ten: %d",
+			engine.player->vitality->getFerocity(),
+			engine.player->vitality->getTenacity() );
+	statPanel->printf(leftEdge, (height + offset++), "Swi: %d    Qui: %d",
+			engine.player->vitality->getSwiftness(),
+			engine.player->vitality->getQuiescence() );
+	statPanel->printf(leftEdge, (height + offset++), "Per: %d",
+			engine.player->vitality->getPerception() );
+	// Satiety
+//	statPanel->printf(leftEdge, (height + offset++), "Satiety: %s",
+//			engine.player->vitality->getSatietyStage() );
+
+	return offset;
+}
+int GameGUI::debugStats(TCODConsole *console, int height) {
+	// show some hard info about the game state
+	int leftEdge = 1;
+	int offset = 0;
+	statPanel->setDefaultForeground(TCODColor::white); // set text color
+	// HEADER
+	statPanel->printf(leftEdge, height + offset++, "   *** DEBUG ***");
+	// POSITION
+	statPanel->printf(leftEdge, height + offset++, "POS: %d, %d",
+			engine.player->xpos,
+			engine.player->ypos);
+	// AP STATE
+	statPanel->printf(leftEdge, height + offset++, "AXN: %d - %d/%d [%d]",
+			(uint)engine.player->tempo->getCurrAction(),
+			engine.player->tempo->getCurrAP(),
+			engine.player->tempo->getActionCost(),
+			(uint)engine.player->tempo->getCurrState() );
+	return offset;
 }
 // 	*** MESSAGES
 void GameGUI::message(const TCODColor &color, const char *msgText, ...) {

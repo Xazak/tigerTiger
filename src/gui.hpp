@@ -32,10 +32,11 @@ class GameGUI {
 			const TCODColor foreColor, const TCODColor backColor);
 		void refreshViewport(); // updates the viewport edge/offset coordinates
 		void refreshScrollingEdges(); // updates the far viewport boundaries
+//		void renderMouseLook();
+		// MESSAGE LOG TOOLS
 		// print a message to the log
 		void message(const TCODColor &color, const char *text, ...);
 		void clear(); // wipe the message log
-//		void renderMouseLook();
 
 		bool updateView = false; // if true, invoke render()
 		Menu menu; // basic menu object
@@ -63,7 +64,13 @@ class GameGUI {
 		void renderBar(int x, int y, int width, const char *name,
 			float value, float maxValue, const TCODColor &barColor,
 			const TCODColor &backColor);
-		void debugStats(); // draws a stat panel with debug info
+		// STAT PANEL TOOLS
+		// print the player's HP, defense, core stats
+		// returns the number of lines it took up printing its info
+		int displayVitals(TCODConsole *console, int height);
+		// draws a stat panel with debug info
+		// returns the number of lines it took up printing its info
+		int debugStats(TCODConsole *console, int height);
 		// simple object that populates the message log
 		struct Message {
 			char *msgText;

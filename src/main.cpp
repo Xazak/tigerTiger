@@ -13,8 +13,8 @@ GameEngine engine(80, 50); // init game engine with window size
 int main() {
 	// starts the game engine: brings up main menu and checks for saves
 	// RNG, map, time, etc. objects are NOT GUARANTEED until the loop starts!
+	// ie, after the player has selected [New Game|Continue]
 	engine.mainMenu();
-//	engine.load();
 	while (!TCODConsole::isWindowClosed()) { // main game loop
 		engine.render();
 		TCODConsole::flush(); // this needs to happen before gathering input
@@ -28,14 +28,9 @@ int main() {
 		if (parser.lastEvent != TCOD_EVENT_NONE) {
 			parser.translate();
 		}
-		// check if the game state should be iterated
-/*		if (parser.stateChange == true) {
-			engine.update();
-			parser.changeAction(Sentience::Action::IDLE);
-		}*/
 		engine.update();
 	}
-	// this is disabled for debugging purposes
+	// DEBUG: disabled to avoid overwriting any test saves
 //	engine.saveToFile(); // save when the window is closed
 	return 0; // NOTE: does this need to return exception codes?
 }

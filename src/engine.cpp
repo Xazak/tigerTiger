@@ -93,26 +93,35 @@ void GameEngine::init() {
 	// initialize the map
 	map = new GameMap(MAP_WIDTH, MAP_HEIGHT); // init a new map
 	map->init(true);
+	LOGMSG("map initialized");
+	chrono = new WorldClock(); // create a world clock
+	LOGMSG("world clock started");
 	// create a player object
-	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@', TCODColor::orange, "player");
+	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@',
+			TCODColor::orange, "player");
+	LOGMSG("player-actor created");
 	player->sentience = new PlayerSentience();
-//	LOGMSG("sentience OK");
-//	player->vitality = new Vitality();
-//	LOGMSG("vitality OK");
+	LOGMSG("sentience OK");
+	player->vitality = new Vitality();
+	LOGMSG("vitality OK");
 	player->mortality = new PlayerMortality(69, 47, "your corpse");
-//	LOGMSG("mortality OK");
+	LOGMSG("mortality OK");
 	player->tempo = new ActorClock(100);
-//	LOGMSG("temporality OK");
+	LOGMSG("temporality OK");
 	player->container = new Container(26);
-//	LOGMSG("inventory OK");
-	//player-pickable ?
+	LOGMSG("inventory OK");
+	//player is not portable by other NPCs
 	//player-attack
+//	LOGMSG("violence OK");
 	allActors.push(player); // register the player with the engine
+	LOGMSG("player registered with allActors");
 	parser.init(); // tell the parser to hook into the player actor
+	LOGMSG("parser initialized");
 	engine.gui->refreshViewport(); // force a viewport update
+	LOGMSG("viewport refreshed");
 	// print the MOTD
 	gui->message(TCODColor::orange, "Tiger Tiger, burning bright,\nIn the forests of the night;\nWhat immortal hand or eye,\nCould frame thy fearful symmetry?");
-	chrono = new WorldClock(); // create a world clock
+	LOGMSG("engine init FINISHED");
 }
 void GameEngine::term() {
 	allActors.clearAndDelete(); // delete all actors
@@ -388,13 +397,12 @@ void GameEngine::loadFromFile() {
 void GameEngine::exitGame() {
 }
 void GameEngine::deleteSavedGame() {
-	LOGMSG("called");
 	bool successFlag = false;
 	successFlag = TCODSystem::deleteFile("game.sav");
 	if (successFlag) {
-		LOGMSG("File deleted");
+		LOGMSG("SUCCESS");
 	} else {
-		LOGMSG("Could not delete file!");
+		LOGMSG("FAILED");
 	}
 }
 
