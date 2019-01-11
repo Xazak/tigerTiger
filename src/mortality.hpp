@@ -3,6 +3,13 @@ DATE Oct 25 2018
 AUTH xazak
 DESC Definitions of functions related to hit point adjustment and death.
  */
+class Limb {
+	public:
+		float skinIntegrity;
+		float fatIntegrity;
+		float muscleIntegrity;
+		float boneIntegrity;
+};
 class Mortality {
 	public:
 		Mortality(float newMaxHP, float newDefense, const char *newName);
@@ -27,10 +34,12 @@ class Mortality {
 		const char *cadaverTitle;
 
 	protected:
+		float bloodLevel; // in mL
 		float maximumHP;
 		float currentHP;
 		float defense;
 };
+/* removed pending update to damage modelling
 class PlayerMortality: public Mortality {
 	public:
 		PlayerMortality(float maximumHP, float defense, const char *cadaverTitle);
@@ -43,3 +52,4 @@ class NPCMortality: public Mortality {
 		void embraceDeath(Actor *subject);
 		//load/save routines
 };
+*/

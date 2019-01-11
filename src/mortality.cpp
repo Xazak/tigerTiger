@@ -60,6 +60,7 @@ float Mortality::adjustHP(Actor *subject, float hpAdjustment) {
 	currentHP += hpAdjustment; // perform the adjustment
 	return hpAdjustment; // report the adjusted HP amount in case we need it
 }
+/*
 // SUBTYPES
 // Player
 PlayerMortality::PlayerMortality (float newMaxHP, float newDefense,
@@ -77,3 +78,4 @@ void NPCMortality::embraceDeath(Actor *subject) {
 	engine.gui->message(TCODColor::lightGrey, "%s is dead.\n", subject->name);
 	Mortality::embraceDeath(subject);
 }
+*/
