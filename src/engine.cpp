@@ -91,20 +91,23 @@ GameEngine::~GameEngine() {
 // *** MAJOR FUNCTIONS
 void GameEngine::init() {
 	// initialize the map
+	// later, we can set this seed to generate randomly or whatever
+	seed = 0x0a987654;
+	rng = new TCODRandom(seed, TCOD_RNG_MT); // start up the RNG using mersenne
 	map = new GameMap(MAP_WIDTH, MAP_HEIGHT); // init a new map
 	map->init(true);
 	LOGMSG("map initialized");
 	chrono = new WorldClock(); // create a world clock
 	LOGMSG("world clock started");
 	// create a player object
-	player = new Actor(PLAYER_START_X, PLAYER_START_Y, '@',
+	player = new Actor(PLAYER_START_X, PLAYER_START_Y, 't',
 			TCODColor::orange, "player");
 	LOGMSG("player-actor created");
 	player->sentience = new PlayerSentience();
 	LOGMSG("sentience OK");
 	player->vitality = new Vitality();
 	LOGMSG("vitality OK");
-	player->mortality = new PlayerMortality(69, 47, "your corpse");
+	player->mortality = new Mortality(69, 47, "your corpse");
 	LOGMSG("mortality OK");
 	player->tempo = new ActorClock(100);
 	LOGMSG("temporality OK");
@@ -128,93 +131,7 @@ void GameEngine::term() {
 	actionQueue.clearAndDelete(); // wipe the action queue
 	if (map) delete map; // delete the map if it still exists
 	gui->clear(); // wipe the GUI
-}
-void GameEngine::save() {
-/*	OLD METHOD
-//	if (player->destructible->isDead()) {
-//		TCODSystem::deleteFile("game.sav");
-//	} else {
-		TCODZip zip;
-		//save the map first
-		zip.putInt(map->width);
-		zip.putInt(map->height);
-		map->save(zip);
-		// then the player
-		player->save(zip);
-		// then the other actors
-		zip.putInt(actors.size()-1);
-		for (Actor **it = actors.begin(); it != actors.end(); it++) {
-			if (*it != player) {
-				(*it)->save(zip);
-			}
-		}
-		// then the message log
-		gui->save(zip);
-		zip.saveToFile("game.sav");
-//	}
-		*/
-	// NEW METHOD
-	// invoke the scribe
-	ERRMSG("BAD SAVE() FXN CALLED!");
-}
-void GameEngine::load() {
-	ERRMSG("DEPRECATED LOAD() CALLED");
-/*	engine.gui->menu.clear(); // wipe the menu to ensure no artifacts
-	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
-	// add "Continue" if there's a save game to continue with
-	if (TCODSystem::fileExists("game.sav")) {
-		engine.gui->menu.addItem(Menu::CONTINUE, "Continue");
-	}
-	engine.gui->menu.addItem(Menu::EXIT, "Exit");
-	// handle menu choice input
-	Menu::MenuItemCode menuItem = engine.gui->menu.pick();
-	switch (menuItem) {
-		case Menu::EXIT:
-			LOGMSG(" EXIT ");
-			// fall through
-		case Menu::NONE:
-			LOGMSG(" NONE ");
-			exit(0);
-			break;
-		case Menu::NEW_GAME:
-			LOGMSG(" NEW GAME ");
-			engine.term();
-			engine.init();
-			break;
-		case Menu::SAVE:
-			// save the game to an external file
-			LOGMSG(" SAVE ");
-			break;
-		case Menu::CONTINUE:
-			// load the game from an external file
-			LOGMSG(" LOAD ");
-			break;
-		default:
-			ERRMSG("Invalid menu option encountered!");
-			break;
-	}
-	*/
-		// PREVIOUS ::CONTINUE CODE
-		/*TCODZip zip;
-		// Continue a saved game
-		engine.term();
-		zip.loadFromFile("game.sav");
-		int width = zip.getInt();
-		int height = zip.getInt();
-		map = new Map(width, height);
-		map->load(zip);
-		player = new Actor(0, 0, 0, NULL, TCODColor::white);
-		actors.push(player);
-		player->load(zip);
-		int nbActors = zip.getInt();
-		while (nbActors > 0) {
-			Actor *actor = new Actor(0, 0, 0, NULL, TCODColor::white);
-			actor->load(zip);
-			actors.push(actor);
-			nbActors--;
-		}
-		// the message log
-		gui->load(zip);*/
+	delete rng; // kill the RNG
 }
 void GameEngine::update() {
 	switch(currMode) {
@@ -369,6 +286,7 @@ void GameEngine::loadFromFile() {
 	fileBuffer.loadFromFile("game.sav"); // open the save game file
 	// begin retrieving various game state data
 	seed = fileBuffer.getInt();
+	rng = new TCODRandom(seed, TCOD_RNG_MT); // start up the RNG
 	fovRadius = fileBuffer.getInt();
 	chrono = new WorldClock();
 	chrono->load(fileBuffer);

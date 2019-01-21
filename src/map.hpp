@@ -4,9 +4,9 @@ AUTH xazak
 DESC Declarations for Map and Tile classes
  */
 struct Tile {
-	enum ProtoType { FLOOR, WALL, TRANSITION } proto;
+	enum ProtoType { WALL, FLOOR, TRANSITION } proto;
 	enum BiomeType { MOUNTAIN, GRASSLAND, RAINFOREST, MANGROVE, FARMLAND, CAVE } biome;
-	enum TerraType { GRASS, MUD, GRAVEL, WATER, ROCK, TREE, BUILDING } terrain;
+	enum TerraType { BEDROCK, GRASS, DIRT, MUD, WATER, GRAVEL, ROCK, BRUSH, BUILDING } terrain;
 	int  glyph;		// contains the ASCII code for the symbol to allow addressing of extended chars
 	TCODColor foreColor;
 	TCODColor backColor;
@@ -28,12 +28,6 @@ class GameMap {
 	public:
 		int width;
 		int height;
-		enum ObstructionType {
-			NOTHING,
-			WALL,
-			OBJECT,
-			CREATURE
-		};
 		// **** SYSTEM FXNS
 		GameMap(int width, int height);
 		~GameMap();
@@ -56,6 +50,7 @@ class GameMap {
 	protected:
 		Tile *tiles; // pointer to tile array
 		TCODMap *visionMap; // pointer to master map object
+		void generateTestMap(bool isNew, int width, int height);
 		void generateTerrain(bool isNew, int width, int height);
 		void dig(int x1, int y1, int x2, int y2); // creates a space for a room
 		// fills in an open space with room furniture, monster spawns, etc

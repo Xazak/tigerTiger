@@ -18,8 +18,6 @@ class GameEngine {
 		~GameEngine();
 		void init(); // starts the game engine
 		void term(); // stops the game engine
-		void save(); // write game state to external file
-		void load(); // load game state from external file
 		void update(); // processes game state updates
 		void render(); // invokes lower-level render requests
 		// *** MINOR FXNS

@@ -17,7 +17,7 @@ class Mortality {
 		virtual ~Mortality();
 		void save(TCODZip &fileBuffer);
 		void load(TCODZip &fileBuffer);
-		virtual void embraceDeath(Actor *subject); // corpse generation
+		virtual void embraceDeath(Actor *subject); // actor-corpse conversion
 		float adjustHP(Actor *subject, float hpAdjustment); // HP changes
 		// **** QUERIES
 		inline bool isDead() { return currentHP <= 0; }
@@ -35,6 +35,7 @@ class Mortality {
 
 	protected:
 		float bloodLevel; // in mL
+		// old variables
 		float maximumHP;
 		float currentHP;
 		float defense;
