@@ -92,13 +92,18 @@ void CmdInterpreter::translate() {
 			break;
 	}
 	// obtain any additional details to fill out the context
+	// THIS IS WHERE THE "BEFORE" PHASE OF THE ACTION SEQUENCE TAKES PLACE
+	// FIXME: include movement obstruction checks in context gathering!
+	int xTarget = 0;
+	int yTarget = 0;
 	switch(playerContext->currAction) {
 		case Sentience::Action::WAIT:
 			// player is doing nothing for a full turn
 			playerContext->echs = 1; // later we can mod this to allow multiturn waits
 			break;
 		case Sentience::Action::MOVE:
-			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
+			// player is moving to another tile
+			// figure out which tile
 			switch(lastKey.c) {
 				case 'h': // move left
 					playerContext->echs = -1;
@@ -131,6 +136,19 @@ void CmdInterpreter::translate() {
 				default:
 					break;
 			}
+			// is the target tile obstructed?
+			// get the absolute coords of the target tile
+			xTarget = engine.player->xpos + playerContext->echs;
+			yTarget = engine.player->ypos + playerContext->whye;
+			if (engine.map->isObstructed(xTarget, yTarget)) {
+				if (engine.map->isWall(xTarget, yTarget)) {
+					engine.gui->message(TCODColor::white, "You cannot see a way past!");
+				} else {
+					Actor *target = engine.map->getOccupant(xTarget, yTarget);
+					engine.gui->message(TCODColor::white, "You cannot get past the %s.", target->name);
+				}
+			}
+			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
 			break;
 		case Sentience::Action::RUN:
 			// as MOVE, but uses less AP

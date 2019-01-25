@@ -159,13 +159,17 @@ bool GameMap::isWall(int x, int y) const {
 }
 bool GameMap::isOccupied(int x, int y) const {
 	// returns true if the target tile contains an actor
+	LOGMSG("occupancy checked at " << x << ", " << y);
 	return tiles[x + y * width].occupant;
 }
 bool GameMap::isObstructed(int x, int y) const {
 	// returns true if the target cell contains an obstructing object
+	LOGMSG("obstruction checked at " << x << ", " << y);
 	Tile *target = &tiles[x + y * width];
 	if (isOccupied(x, y)) {
 		return target->occupant->obstructs;
+	} else if (isWall(x, y)) {
+		return true;
 	}
 	return false;
 }
@@ -187,8 +191,14 @@ bool GameMap::isHolding(int x, int y) const {
 //	return tiles[x + y * width].itemList;
 	return false;
 }
-Actor *getOccupant (int x, int y) {
-	return NULL;
+Actor* GameMap::getOccupant (int x, int y) {
+	// returns a pointer to the occupant of the specified tile
+	// should return nullptr if there's nothing occupying the tile
+	return tiles[x + y * width].occupant;
+}
+void GameMap::setOccupant (int x, int y, Actor *target) {
+	// changes the occupant of the specified cell; defaults to nullptr
+	tiles[x + y * width].occupant = target;
 }
 // **** GameMap Generation
 void GameMap::generateTestMap(bool isNew, int width, int height) {
@@ -228,25 +238,28 @@ void GameMap::generateTestMap(bool isNew, int width, int height) {
 	// carve out a simple room: all open tiles will be marked as grass
 	// leave a 3-tile border around the edge for bedrock
 	Tile *target = nullptr;
-	int newWidth = width - 3;
-	int newHeight = height - 3;
+	int modWidth = width - 3;
+	int modHeight = height - 3;
 	int echs = 0;
 	int whye = 0;
-	dig(3, 3, newWidth, newHeight);
+	dig(3, 3, modWidth, modHeight);
 	// paint some rock, dirt across the landscape
 	TCODNoise *noiseGen = new TCODNoise(2, engine.rng); // start a 2d noise generator
-	float index[2] = {0.0f, 0.0f}; // using x, y coords of map as inputs
+	float mapIndex[2] = {0.0f, 0.0f}; // using x, y coords of map as inputs
 	float result = 0.0f; // output value of -1<=n<=1, to be rounded
 	float upperBound = 0.5f;
 	float lowerBound = -0.5f;
 	// 1 = grass (do nothing), 0 = dirt, -1 = rock
 //	float foo = noiseGen->get(index);
-	for (echs = 0; echs < newWidth; echs++) {
-		for (whye = 0; whye < newHeight; whye++) {
+	for (echs = 0; echs < modWidth; echs++) {
+		for (whye = 0; whye < modHeight; whye++) {
+			// update the target pointer
 			target = &tiles[echs + whye * width];
-			index[0] = echs;
-			index[1] = whye;
-			result = noiseGen->get(index);
+			// set the input values for the noisegen
+			mapIndex[0] = echs;
+			mapIndex[1] = whye;
+			// ask the noise generator for a value
+			result = noiseGen->get(mapIndex);
 //			result = noiseGen->getTurbulence(index, 8.0f);
 			// round off result to nearest whole num
 			if (result <= lowerBound) { // ~-1
@@ -275,11 +288,12 @@ void GameMap::generateTestMap(bool isNew, int width, int height) {
 		}
 	}
 	// put a big watering hole in the middle
+	// JUST KIDDING, NOT YET IMPLEMENTED
 	// - pick an upper-left coordinate: mapCenterX,Y +- 1d8
 	// - take the horiz/vert distance to x/y axis as a, b
 	// - using mapCenter as (h, v) and a, b as above, mark all the water tiles
 	// normalize x, y and offset to the upper left by 30 and 20 tiles respc.
-	echs = (width / 2) - 30;
+/*	echs = (width / 2) - 30;
 	whye = (height / 2) - 20;
 	// adjust their positions for funsies
 	int offset = engine.rng->get(-5, 5);
@@ -296,11 +310,39 @@ void GameMap::generateTestMap(bool isNew, int width, int height) {
 	// ...
 	// y = b ( 1 - ((x - h) / a) ) + v
 	// where echs = h, whye = v, xDist = a, yDist = b
-
+*/
 	// put mud around the watering hole
 	// - as above, for +1 to a, b
 	// add some trees
 	// add some bushes to hide in
+	//   pick 20 random locations out of the middle portion of the map
+	//   put a bush on that spot if there's not a bush there already
+	// establish a range for x, y coords
+	modWidth = width / 3;
+	modHeight = height / 3;
+	// obtain shrubberies
+	for (echs = 0; echs < modWidth; echs++) {
+		for (whye = 0; whye < modHeight; whye++) {
+			// update the target pointer
+			target = &tiles[echs + whye * width];
+			// set the input values for the noisegen
+			mapIndex[0] = echs;
+			mapIndex[1] = whye;
+			// ask the noise generator for a value
+			result = noiseGen->get(mapIndex);
+//			result = noiseGen->getTurbulence(index, 8.0f);
+			// round off result to nearest whole num
+			if (result <= lowerBound) { // ~-1
+				result = -1.0f;
+			} else if (result < upperBound) { // ~0
+				result = 0.0f;
+			} else { // ~1
+				result = 1.0f;
+			}
+			if (result == 1.0f) addBush(echs, whye);
+		}
+	}
+
 	// add some tall grass to hide in
 
 }
@@ -311,8 +353,22 @@ void GameMap::addAnimal(int x, int y) {
 	monkey->mortality = new Mortality(5, 0, "monkey corpse");
 	monkey->container = new Container(1);
 	monkey->tempo = new ActorClock(100);
+	setOccupant(x, y, monkey);
 	engine.allActors.push(monkey);
 //	LOGMSG("New animal created at " << x << ", " << y);
+}
+void GameMap::addBush(int x, int y) {
+	// adds a size-1 fruit bush to the landscape
+	Actor *bush = new Actor(x, y, '&', TCODColor::darkerGreen, "fruit bush");
+	// bushes will be indestructible for now
+	bush->mortality = new Mortality(3, 6969, "dead wood");
+	// bushes will contain up to 3 fruits
+	bush->container = new Container(3);
+	// bushes will generate new fruits using a PropClock (NOT YET IMPLEMENTED)
+	// FIX: add 3 fruits to the bush immediately!
+	setOccupant(x, y, bush);
+	engine.allActors.push(bush);
+//	LOGMSG("New bush created at " << x << ", " << y);
 }
 void GameMap::generateTerrain(bool isNew, int width, int height) {
 	// isNew controls whether the map is being made from scratch or not

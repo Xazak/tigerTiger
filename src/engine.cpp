@@ -9,8 +9,8 @@ static const int MAP_HEIGHT = 1000;
 static const int MAP_WIDTH = 1000;
 //static const int PLAYER_START_X = 30;
 //static const int PLAYER_START_Y = 30;
-static const int PLAYER_START_X = 965;
-static const int PLAYER_START_Y = 965;
+static const int PLAYER_START_X = 300;
+static const int PLAYER_START_Y = 300;
 
 /*void GameEngine::Startup::update() {
 	// perform any start-of-game bookkeeping, then start a new turn
@@ -78,7 +78,7 @@ void DefeatMode::update() {
 // *** ENGINE MECHANICS
 GameEngine::GameEngine(int screenWidth, int screenHeight):
 	screenWidth(screenWidth), screenHeight(screenHeight),
-	fovRadius(10)
+	fovRadius(50)
 	{
 	// initialize the console
 	TCODConsole::initRoot(screenWidth, screenHeight, "TIGER!TIGER!", false);
@@ -116,6 +116,7 @@ void GameEngine::init() {
 	//player is not portable by other NPCs
 	//player-attack
 //	LOGMSG("violence OK");
+	engine.map->setOccupant(player->xpos, player->ypos, player);
 	allActors.push(player); // register the player with the engine
 	LOGMSG("player registered with allActors");
 	parser.init(); // tell the parser to hook into the player actor
@@ -205,10 +206,10 @@ void GameEngine::render() {
 	map->render(); // draw the map
 	// draw all visible actors
 	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
-		Actor *actor = *iter;
-		if (actor != player && map->isVisible(actor->xpos, actor->ypos)) {
-//			LOGMSG("Rendering actor " << actor->name);
-			actor->render();
+		Actor *target = *iter;
+		if (target != player && map->isVisible(target->xpos, target->ypos)) {
+//			LOGMSG("Rendering actor " << target->name);
+			target->render();
 		}
 		player->render();
 	}
@@ -391,7 +392,7 @@ void GameEngine::updateActionQueue() {
 	actionQueue.clear();
 	for (Actor **iter = allActors.begin(); iter != allActors.end(); iter++) {
 		Actor *subject = *iter;
-		actionQueue.push(subject);
+		if (subject->sentience) actionQueue.push(subject);
 	}
 }
 void GameEngine::refreshAP() {

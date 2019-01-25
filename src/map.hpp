@@ -43,9 +43,12 @@ class GameMap {
 		bool isVisible(int x, int y) const; // is the tile visible?
 		bool isExplored(int x, int y) const; // has the tile been explored?
 		bool isHolding(int x, int y) const; // are there items on the tile?
+		// **** GET/SET
 		Actor *getOccupant(int x, int y); // get a pointer to the actor standing on the target tile
+		void setOccupant(int x, int y, Actor *target); // set the tile occupant
 		// **** TOOLS
 		void addAnimal(int x, int y); // spawn an animal on the map
+		void addBush(int x, int y); // spawn a fruit bush on the map
 
 	protected:
 		Tile *tiles; // pointer to tile array

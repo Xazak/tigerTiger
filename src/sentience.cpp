@@ -23,8 +23,13 @@ void Sentience::wait(Actor *subject, int numOfTurns) {
 void Sentience::moveRel(Actor *subject, int targetx, int targety) { // RELATIVE COORDS
 	// move to the RELATIVE LOC specified by traveling on foot 'normally'
 	// presumably we've already checked for a valid target location?
+	// the subject is no longer occupying the current tile
+	engine.map->setOccupant(subject->xpos, subject->ypos, nullptr);
+	// move the subject to the new position
 	subject->xpos += targetx;
 	subject->ypos += targety;
+	// make the subject the occupant of the new tile
+	engine.map->setOccupant(subject->xpos, subject->ypos, subject);
 }
 void Sentience::moveAbs(Actor *subject, int targetx, int targety) { // ABSOLUTE COORDS
 	// move to the ABSOLUTE LOC specified by traveling on foot 'normally'
@@ -118,7 +123,7 @@ bool PlayerSentience::update(Actor *subject) {
 	if (subject->tempo->getCurrState() == ActorClock::ClockState::READY) {
 		subject->tempo->resetAction();
 	}
-	// subject->tempo->currState == NO_ACTION || CHARGING
+	// presumably now: subject->tempo->currState == NO_ACTION || CHARGING
 	return true;
 }
 bool PlayerSentience::update(ActionContext context) {
