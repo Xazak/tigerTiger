@@ -159,18 +159,24 @@ bool GameMap::isWall(int x, int y) const {
 }
 bool GameMap::isOccupied(int x, int y) const {
 	// returns true if the target tile contains an actor
-	LOGMSG("occupancy checked at " << x << ", " << y);
-	return tiles[x + y * width].occupant;
+//	LOGMSG("occupancy checked at " << x << ", " << y);
+//	return tiles[x + y * width].occupant;
+	if (tiles[x + y * width].occupant) return true;
+	// else
+	return false;
 }
 bool GameMap::isObstructed(int x, int y) const {
 	// returns true if the target cell contains an obstructing object
-	LOGMSG("obstruction checked at " << x << ", " << y);
+//	LOGMSG("obstruction checked at " << x << ", " << y);
 	Tile *target = &tiles[x + y * width];
 	if (isOccupied(x, y)) {
+//		LOGMSG("occupied by " << target->occupant->name);
 		return target->occupant->obstructs;
 	} else if (isWall(x, y)) {
+//		LOGMSG("occupied by wall");
 		return true;
 	}
+//	LOGMSG("not obstructed");
 	return false;
 }
 bool GameMap::isVisible(int x, int y) const {
@@ -370,6 +376,13 @@ void GameMap::addBush(int x, int y) {
 	engine.allActors.push(bush);
 //	LOGMSG("New bush created at " << x << ", " << y);
 }
+/* BUSH FRUIT SPECIFICATION
+	Actor *fruit = new Actor(0, 0, '%', TCODColor::normalLime, "fruit");
+	// must be able to pick up the fruit
+	fruit->portable = new Portable();
+	// must be able to eat the fruit (and regain health/nutrition)
+	
+*/
 void GameMap::generateTerrain(bool isNew, int width, int height) {
 	// isNew controls whether the map is being made from scratch or not
 	// currently all maps are new, and we ARE using the tutorial fxns

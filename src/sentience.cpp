@@ -33,9 +33,10 @@ void Sentience::moveRel(Actor *subject, int targetx, int targety) { // RELATIVE 
 }
 void Sentience::moveAbs(Actor *subject, int targetx, int targety) { // ABSOLUTE COORDS
 	// move to the ABSOLUTE LOC specified by traveling on foot 'normally'
-	// presumably we've already checked for a valid target location?
-	subject->xpos = targetx;
-	subject->ypos = targety;
+	LOGMSG(" called !!");
+	// ideally, this fxn should be working out some relative coords and then
+	// passing over to moveRel(), such that the obstruction checks, etc can be
+	// reused/stratified into a single location, in case they are changed later
 }
 //void Sentience::drop(Actor *subject, Actor *target);
 //void Sentience::consume(Actor *subject, Actor *target); // change to only allow consumable actors?
@@ -63,6 +64,7 @@ PlayerSentience::PlayerSentience(TCODZip &fileBuffer) {
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
+	// X) Whether the action will be allowed to occur or not
 	// 2) That the action is allowed to happen, eg moving into an empty tile
 	// 3) Any other details required for that action to be completed
 //	LOGMSG(subject->name << " updating");
@@ -103,7 +105,9 @@ bool PlayerSentience::update(Actor *subject) {
 			subject->sentience->wait(subject);
 			break;
 		case Action::MOVE: // player will move to a new tile by relative coords
-			subject->sentience->moveRel(subject, context->echs, context->whye);
+			if (context->isSuccessful()) {
+				subject->sentience->moveRel(subject, context->echs, context->whye);
+			}
 			break;
 		case Action::GROOM:
 			if (context->target) {
@@ -480,6 +484,7 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 ActionContext::ActionContext():
 	currAction(Sentience::Action::IDLE),
 	prevAction(Sentience::Action::IDLE),
+	successFlag(true),
 	target(nullptr),
 	echs(0), whye(0), zhee(0)
 	{	}
@@ -487,6 +492,7 @@ void ActionContext::save(TCODZip &fileBuffer) {
 	LOGMSG("called");
 	fileBuffer.putInt((int)currAction); // casting to int lets us refer by index
 	fileBuffer.putInt((int)prevAction);
+	fileBuffer.putInt((int)successFlag);
 	fileBuffer.putInt(target != nullptr);
 //	if (target) fileBuffer.putInt(???); // i need a permanent identifier!
 	fileBuffer.putInt(echs);
@@ -497,6 +503,7 @@ void ActionContext::load(TCODZip &fileBuffer) {
 	LOGMSG("called");
 	currAction = ((Sentience::Action)fileBuffer.getInt());
 	prevAction = ((Sentience::Action)fileBuffer.getInt());
+	successFlag = ((bool)fileBuffer.getInt());
 	bool hasTarget = fileBuffer.getInt();
 //	if (hasTarget) target = fileBuffer.XXX;
 	echs = fileBuffer.getInt();
@@ -511,6 +518,7 @@ void ActionContext::load(TCODZip &fileBuffer) {
 }
 void ActionContext::clear() {
 	// currAction and prevAction are handled by setAction()
+	successFlag = true;
 	target = nullptr;
 	echs = whye = zhee = 0;
 }

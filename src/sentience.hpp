@@ -134,14 +134,20 @@ class TigerAI: public Sentience {
 		void leap(int targetx, int targety); // ABSOLUTE COORDS
 		void slash(Actor *target);
 };
+// NOTE: all actions are assumed to be successful unless specified otherwise!
 struct ActionContext {
+	// controls
 	ActionContext();
 	void save(TCODZip &fileBuffer);
 	void load(TCODZip &fileBuffer);
 	void clear();	// wipe the details in preparation for a new action
 	void setAction(Sentience::Action newAction); // sets curr/prevAction
+	void setSuccess(bool newValue) { successFlag = newValue; }
+	bool isSuccessful() { return successFlag; }
+	// contents
 	Sentience::Action currAction;	// the action to be performed
 	Sentience::Action prevAction;	// the previous action performed
+	bool successFlag; // = false if an action is attempted and blocked
 	Actor *target;	// the actor upon which the action will be performed
 	int echs, whye, zhee;	// generic number containers
 };

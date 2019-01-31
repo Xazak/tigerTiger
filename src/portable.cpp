@@ -15,9 +15,11 @@ bool Portable::take (Actor *subject, Actor *object) {
 	}
 	return false;
 }
+// consume -> expend? ("consume" already used for eating food...)
 bool Portable::consume (Actor *subject, Actor *object) {
 	// removes an object from the inventory AND game world
 	// returns false if the object was not found in the subject's container
+	// FIXME: does it ^^^ though???
 	if (subject->container) {
 		subject->container->remove(object);
 		delete object;

@@ -15,7 +15,7 @@ DESC Implementation of the parser module.
 // | [b][j][n]
 // |
 // |        (m,n)
-	/* ACTION CONVERSIONS AND CONTEXT
+/*  ACTION CONVERSIONS AND CONTEXT
 	KEY ACTION  CONTEXT
 		IDLE    (unused by player, indicates parser awaiting input, ie between actions)
 	z	WAIT    for N turns | N = 1
@@ -140,6 +140,7 @@ void CmdInterpreter::translate() {
 			// get the absolute coords of the target tile
 			xTarget = engine.player->xpos + playerContext->echs;
 			yTarget = engine.player->ypos + playerContext->whye;
+			LOGMSG("player is moving to " << xTarget << ", " << yTarget);
 			if (engine.map->isObstructed(xTarget, yTarget)) {
 				if (engine.map->isWall(xTarget, yTarget)) {
 					engine.gui->message(TCODColor::white, "You cannot see a way past!");
@@ -147,6 +148,7 @@ void CmdInterpreter::translate() {
 					Actor *target = engine.map->getOccupant(xTarget, yTarget);
 					engine.gui->message(TCODColor::white, "You cannot get past the %s.", target->name);
 				}
+				playerContext->setSuccess(false);
 			}
 			// PLACE CHECK HERE FOR CONV TO RUN/SNEAK
 			break;

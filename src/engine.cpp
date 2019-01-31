@@ -9,8 +9,8 @@ static const int MAP_HEIGHT = 1000;
 static const int MAP_WIDTH = 1000;
 //static const int PLAYER_START_X = 30;
 //static const int PLAYER_START_Y = 30;
-static const int PLAYER_START_X = 300;
-static const int PLAYER_START_Y = 300;
+static const int PLAYER_START_X = 299;
+static const int PLAYER_START_Y = 299;
 
 /*void GameEngine::Startup::update() {
 	// perform any start-of-game bookkeeping, then start a new turn
