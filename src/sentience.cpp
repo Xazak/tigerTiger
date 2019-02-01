@@ -373,6 +373,28 @@ bool AnimalSentience::update(Actor *subject) {
 		// might need to add logic that removes dead actors from engine queue
 		return false;
 	}
+	// ***** NEW DECISION MAKING SYSTEM
+	/* METHOD
+	   1. Reassess goals
+		A. Check emotional states to determine new goal priorities
+		-- Internal states (satiety, etc) are queried at this stage
+		-- External effects apply their emotional modifiers when they occur
+		B. Check if the new goal is already achieved
+		C. YES: push to bottom, goto B w/ new goal; NO: use that goal
+	   2. (with UNACHIEVED Objective) consider what remains unachieved
+	    A. Consult worldstate config to see what may be done
+		B. If LOCAL worldstate does not support goal achievement...
+		 i. Consult memory for DISTANT worldstate (UNIMPLEMENTED)
+		ii. If nothing in memory, REASSESS GOALS
+	   3. If goal is achievable at local scope, try to accomplish it
+	    A. Uses a few metrics to assess success levels, modulated with heart[]
+		B. Builds a stack of verb-contexts that it then tries to compare with
+		C. At each turn, it compares the verb-context on top with its state
+	   */
+
+
+
+	// ***** OLD AD-HOC BEHAVIOR
 	// this is some really rough ad-hoc stuff for testing simple AI features
 	// all of it should be replaced with generalized behavior systems
 	// DECIDE ON AN ACTION:
@@ -507,6 +529,70 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 //	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
 }
+Sentience::Emotion AnimalSentience::EmotionMachine::strongestFeeling() {
+	// returns strongest emotion among the feelings[]
+	// start with JOY and compare each to the next, keeping the larger
+	Emotion biggestFeel = Sentience::Emotion::JOY;
+	int howMuchFeel = intensity[(uint)Sentience::Emotion::JOY];
+	for (uint index = 0; index != 8; index++) {
+		if (howMuchFeel < intensity[index]) {
+			biggestFeel = (Emotion)index;
+			howMuchFeel = intensity[index];
+		}
+	}
+	return biggestFeel;
+}
+void AnimalSentience::EmotionMachine::changeEmotion(Sentience::Emotion feeling, int delta) {
+	// changes the intensity of a specified emotion by the delta
+	// FIXME: this lacks any upper bound error correction!
+	int feelIndex = (int)feeling;
+	intensity[feelIndex] += delta;
+	if (intensity[feelIndex] < 0) { // did an emotion go into a negative score?
+		delta = (-1) * intensity[feelIndex]; // get the abs val of the difference
+		intensity[feelIndex] = 0; // cap the feeling at 0
+		if (feelIndex <= 3) { // in the range of 0-3
+			feelIndex += 4; // add 4 to get the opposing emotion
+		} else { // >= 4
+			feelIndex -= 4; // rmv 4 to get the opposing emotion
+		}
+		intensity[feelIndex] += delta; // raise the opposing emotion by the diff
+	}
+}
+void AnimalSentience::EmotionMachine::emotionDecay(int decayRate) {
+	// iterates across the feelings, reducing each by decayRate (default -1)
+	// the three highest feelings will not decay beyond 30/20/10 respectively
+	// figure out which feelings are strongest right now
+	uint firstFeel = (uint)Sentience::Emotion::JOY;
+	uint secondFeel = (uint)Sentience::Emotion::TRUST;
+	uint thirdFeel = (uint)Sentience::Emotion::FEAR;
+	uint feelIndex = 0;
+	for (feelIndex = 0; feelIndex < 8; feelIndex++) {
+		if (intensity[feelIndex] >= intensity[firstFeel]) {
+			firstFeel = feelIndex;
+		} else if (intensity[feelIndex] >= intensity[secondFeel]) {
+			secondFeel = feelIndex;
+		} else if (intensity[feelIndex] >= intensity[thirdFeel]) {
+			thirdFeel = feelIndex;
+		}
+	}
+	// iterate again and perform the decay adjustment
+	for (feelIndex = 0; feelIndex < 8; feelIndex++) {
+		intensity[feelIndex] -= decayRate;
+	}
+	// perform adjustments towards minima thresholds
+	if (intensity[firstFeel] < firstLevel) intensity[firstFeel] = firstLevel;
+	if (intensity[secondFeel] < secondLevel) intensity[secondFeel] = secondLevel;
+	if (intensity[thirdFeel] < thirdLevel) intensity[thirdFeel] = thirdLevel;
+}
+Sentience::Objective AnimalSentience::GoalMachine::firstPriority() {
+	// returns the most important goal, after assessing its objective graph
+	return (Sentience::Objective)0;
+}
+void AnimalSentience::GoalMachine::changeWeight(Objective row, Objective col, int delta) {
+	// changes a weight in the objective graph at row, col by delta
+}
+
+// *************
 // ActionContext -- general container for action context resolution
 ActionContext::ActionContext():
 	currAction(Sentience::Action::IDLE),

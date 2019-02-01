@@ -47,6 +47,24 @@ class Sentience {
 			WIELD,	// 29: player wants to use a weapon for attack purposes
 			INVENTORY // 30: player wants to see what they're carrying
 		};
+		enum class Emotion : uint {
+			JOY,
+			TRUST,
+			FEAR,
+			SURPRISE,
+			SADNESS,
+			DISGUST,
+			ANGER,
+			ANTICIPATION
+		};
+		enum class Objective : uint {
+			DEFENSE, // ie against an attacker
+			WATER,   // the actor is thirsty
+			FOOD,    // the actor is hungry
+			SHELTER, // either FIND a new home or RETURN to an established home
+			SLEEP,   // ie the actor is tired
+			SEX      // ie the actor is in heat
+		};
 		void save(TCODZip &fileBuffer); // save actor's context to file
 		void load(TCODZip &fileBuffer); // load actor's context from file
 		virtual bool update(Actor *subject) = 0;
@@ -88,8 +106,11 @@ class AnimalSentience: public Sentience {
 	public:
 		AnimalSentience();
 		AnimalSentience(TCODZip &fileBuffer);
-		bool update(Actor *subject);
-		bool update(ActionContext context);
+		bool update(Actor *subject); // used to request a state update
+		bool update(ActionContext context); // UNIMPLEMENTED
+		Sentience::Emotion getMood(); // returns the strongest Emotion in the heart[]
+		void adjustEmotion(Emotion feeling, int delta); // changes an emotion
+		Sentience::Objective getGoal(); // returns the foremost Objective in the brain[]
 	protected:
 		bool decideMoveAttack(Actor *subject, int targetx, int targety);
 		// animals use a simple 2-variable system of EMOTIONS and NEEDS
@@ -97,31 +118,33 @@ class AnimalSentience: public Sentience {
 		// AI GOAL-FINDING AND DECISION MAKING
 		// --an AI has a HEART, which contains a set of EMOTIONS, each in turn
 		// having an INTENSITY
+		// --represented as a list of Emotions and Intensities
 		// --if at any time an emotion accrues a negative intensity:
 		//		--the opposing emotion receives a bonus = |negative value|
 		//		--the negatively-scored emotion becomes = 0
 		// --an AI has a BRAIN, which contains a set of GOALS, such that the AI
 		// can choose one to pursue by asking itself for an internal status
+		// --represented as an adjacency matrix for a weighted graph
 		// --when the AI requests the status update, it is forced to decide
 		// which goal to pursue based on its emotional status
-		enum class Emotion : uint {
-			JOY,
-			TRUST,
-			FEAR,
-			SURPRISE,
-			SADNESS,
-			DISGUST,
-			ANGER,
-			ANTICIPATION
-		};
-		// this might be better represented as a weighted graph, such that we
-		// can use pathfinding tools to make decisions about goals
-		enum class Objective : uint {
-			FOOD,
-			WATER,
-			SLEEP,
-			SHELTER,
-			SEX
+		// the Emotions and Objectives are declared as enum uint to allow their
+		// use as indices for their respective object matrices
+		// example: intenseFeeling = heart[TRUST]; (== heart[1])
+		struct EmotionMachine {
+			Emotion strongestFeeling(); // returns strongest emotion in list
+			void changeEmotion(Emotion feeling, int delta);
+			void emotionDecay(int decayRate = -1);
+			int intensity[8]; // can use Emotions to index into this array
+			// minimum intensity levels: the 3 strongest emotions will not fall
+			// below these values as a result of decay
+			int firstLevel = 30;
+			int secondLevel = 20;
+			int thirdLevel = 10;
+		} heart;
+		struct GoalMachine {
+			Objective firstPriority(); // returns most important goal
+			void changeWeight(Objective row, Objective col, int delta);
+			uint priority[5][5]; // the adjacency matrix for the weighted graph
 		} brain;
 };
 class TigerAI: public Sentience {
