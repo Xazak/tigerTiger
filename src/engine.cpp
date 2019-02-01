@@ -182,7 +182,7 @@ void GameEngine::update() {
 			LOGMSG("WARNING: no state defn for DEFEAT");
 			break;
 		default:
-			ERRMSG("WARNING: Engine is in undefined state!");
+			ERRMSG("WARNING: Engine state is UNDEFINED!");
 			break;
 	}
 }
@@ -324,7 +324,6 @@ void GameEngine::deleteSavedGame() {
 		LOGMSG("FAILED");
 	}
 }
-
 void GameEngine::sendToBack(Actor *actor) {
 	allActors.remove(actor);
 	allActors.insertBefore(actor, 0);

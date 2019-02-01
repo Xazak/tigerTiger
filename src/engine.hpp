@@ -36,7 +36,7 @@ class GameEngine {
 		// iterates through allActors to find the actor at the given coords
 		// there's gotta be a better way to get this information...
 		Actor *getActor(int x, int y) const;
-		void updateActionQueue(); // populates the actionQueue with ACTORS
+		void updateActionQueue(); // fills the actionQueue with SENTIENT ACTORS
 		void refreshAP(); // iterates through actionQueue and grants AP
 		void switchMode(EngineState newMode); // handles engine state changes
 
@@ -48,7 +48,7 @@ class GameEngine {
 		GameMap *map; // points to master map object
 		TCODRandom *rng; // pointer to RNG engine
 		TCODList<Actor *> allActors; // contains ALL ACTORS
-		TCODList<Actor *> actionQueue; // contains only LOCAL and SENTIENT actors
+		TCODList<Actor *> actionQueue; // contains SENTIENT ACTORS
 		Actor *currActor; // points to the actor that is currently updating
 		Actor *player; // always points to player actor
 

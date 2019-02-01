@@ -70,10 +70,13 @@ Actor::~Actor() {
 }
 bool Actor::update() {
 	bool stateChange = false;
+	// this should really go farther down, in the sentience logic maybe...
 //	this->tempo->setMinimumAPCost(this->sentience->getCheapestActionCost());
+	// are we asking to update a creature?
 	if (sentience) {
 		stateChange = sentience->update(this);
 	}
+	// or perhaps an item?
 	return stateChange;
 }
 void Actor::render() const {

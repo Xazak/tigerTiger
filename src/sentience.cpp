@@ -49,9 +49,35 @@ void Sentience::groom(Actor *subject, Actor *target) {
 			subject->name,
 			target->name );
 }
-void Sentience::performAction(ActionContext context) {
-	// takes in a context and interprets it into an associated function call
-//	switch();
+bool Sentience::checkAction(ActionContext inputContext) {
+	// checks to see if a given action can be performed successfully
+	// if the action CANNOT be performed, it will trigger the correct feedback
+	// 	including action conversions (?)
+	// and return false
+	// otherwise, it handles whatever preliminary feedback should occur
+	// and returns true
+	bool successFlag = true; // assume an action is valid until it isn't
+	// only actions which require any preliminary checking will be listed
+	// thus, the default case handles everything else
+	int xTarget = 0;
+	int yTarget = 0;
+	switch (inputContext.currAction) {
+		default:
+			// ie WAIT,
+			// do nothing
+			break;
+		case Sentience::Action::MOVE:
+			// is the target tile obstructed?
+			// get the absolute coords of the target tile
+			xTarget = engine.player->xpos + inputContext.echs;
+			yTarget = engine.player->ypos + inputContext.whye;
+			LOGMSG("player wants to move to " << xTarget << ", " << yTarget);
+			if (engine.map->isObstructed(xTarget, yTarget)) {
+				inputContext.setSuccess(false);
+			}
+			break;
+	}
+	return successFlag;
 }
 // Player Sentience -- command interpreter, context handlers, etc
 PlayerSentience::PlayerSentience() {
@@ -64,18 +90,41 @@ PlayerSentience::PlayerSentience(TCODZip &fileBuffer) {
 bool PlayerSentience::update(Actor *subject) {
 	// by the time this function is invoked, we should know:
 	// 1) Exactly what action is to be performed
-	// X) Whether the action will be allowed to occur or not
-	// 2) That the action is allowed to happen, eg moving into an empty tile
-	// 3) Any other details required for that action to be completed
+	// 2) Any other details required for that action to be completed
 //	LOGMSG(subject->name << " updating");
 	// if the player's dead, don't even try to update
 	if (subject->mortality && subject->mortality->isDead()) {
 		ERRMSG(": Player is dead!");
 		return false;
 	}
-	// ask the parser what action the player will perform
-	// depending on the action, get additional info from parser
-	// when everything is accounted for, invoke the correct action
+	// FIRST THING: check to see if the world state will allow the action
+	if (checkAction(*subject->sentience->context) == false) {
+		// the player's action cannot be performed for some reason that
+		// checkAction was able to determine
+		// checkAction SHOULD NOT trigger feedback messages!
+		// disclose error feedback to the player
+		int xTarget = 0;
+		int yTarget = 0;
+		switch (context->currAction) {
+			default:
+				// do nothing
+				break;
+			case Sentience::Action::MOVE:
+				// is the target tile obstructed?
+				// get the absolute coords of the target tile
+				xTarget = engine.player->xpos + context->echs;
+				yTarget = engine.player->ypos + context->whye;
+				if (engine.map->isWall(xTarget, yTarget)) {
+					engine.gui->message(TCODColor::white, "You cannot see a way past!");
+				} else {
+					Actor *target = engine.map->getOccupant(xTarget, yTarget);
+					engine.gui->message(TCODColor::white, "You cannot get past the %s.", target->name);
+				}
+				break;
+		}
+
+		return false;
+	}
 	// are we already charging some action?
 	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
 		// if newAction matches currentAction, or if the player is using WAIT
@@ -328,7 +377,7 @@ bool AnimalSentience::update(Actor *subject) {
 	// all of it should be replaced with generalized behavior systems
 	// DECIDE ON AN ACTION:
 	// can the animal see the player?
-	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
+/*	if (engine.map->isVisible(subject->xpos, subject->ypos)) {
 		// the player is visible, time to get close and try to pet them
 		// are we adjacent to the player?
 		if (subject->getDistance(engine.player->xpos, engine.player->ypos) > 1) {
@@ -353,22 +402,6 @@ bool AnimalSentience::update(Actor *subject) {
 					targety = targety / -(targety);
 				}
 			}
-//			targetx = subject->xpos + xdiff;
-//			targety = subject->ypos + ydiff;
-			// find x, y components
-/*			int targetx = subject->xpos - engine.player->xpos;
-			int targety = subject->ypos - engine.player->ypos;
-			// normalize
-			if (targetx > 1) {
-				targetx = 1;
-			} else if (targetx < -1) {
-				targetx = -1;
-			}
-			if (targety > 1) {
-				targety = 1;
-			} else if (targety < -1) {
-				targety = -1;
-			}*/
 			// store the calculated movement
 			context->echs = targetx;
 			context->whye = targety;
@@ -379,13 +412,7 @@ bool AnimalSentience::update(Actor *subject) {
 			context->target = engine.player;
 			subject->tempo->changeAction(Action::GROOM);
 		}
-	} else {
-		// the player's not visible, let's just pick a random wander
-//		TCODRandom *rng = TCODRandom::getInstance();
-//		int targetx = subject->xpos + rng->getInt(-1, 1);
-//		int targety = subject->ypos + rng->getInt(-1, 1);
-//		decideMoveAttack(subject, targetx, targety);
-	}
+	}*/
 	// TRY TO PERFORM THE ACTION
 	subject->tempo->chargeAction();
 	if (subject->tempo->getCurrState() == ActorClock::ClockState::CHARGING) {
