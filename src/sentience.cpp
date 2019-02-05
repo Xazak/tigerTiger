@@ -7,6 +7,8 @@ DESC Contains action packages that provide decision-making tools for Actors.
 #include <stdio.h>
 #include <math.h>
 
+// **** SENTIENCE
+// **** utilities
 void Sentience::save(TCODZip &fileBuffer) {
 	LOGMSG("called");
 	context->save(fileBuffer);
@@ -15,7 +17,38 @@ void Sentience::load(TCODZip &fileBuffer) {
 	LOGMSG("called");
 	context->load(fileBuffer);
 }
-// General Sentience -- actions available to all living creatures
+// **** tools
+bool Sentience::checkAction(ActionContext inputContext) {
+	// checks to see if a given action can be performed successfully
+	// if the action CANNOT be performed, it will trigger the correct feedback
+	// 	including action conversions (?)
+	// and return false
+	// otherwise, it handles whatever preliminary feedback should occur
+	// and returns true
+	bool successFlag = true; // assume an action is valid until it isn't
+	// only actions which require any preliminary checking will be listed
+	// thus, the default case handles everything else
+	int xTarget = 0;
+	int yTarget = 0;
+	switch (inputContext.currAction) {
+		default:
+			// ie WAIT,
+			// do nothing
+			break;
+		case Sentience::Action::MOVE:
+			// is the target tile obstructed?
+			// get the absolute coords of the target tile
+			xTarget = engine.player->xpos + inputContext.echs;
+			yTarget = engine.player->ypos + inputContext.whye;
+			LOGMSG("player wants to move to " << xTarget << ", " << yTarget);
+			if (engine.map->isObstructed(xTarget, yTarget)) {
+				inputContext.setSuccess(false);
+			}
+			break;
+	}
+	return successFlag;
+}
+// **** universal verbs
 void Sentience::wait(Actor *subject, int numOfTurns) {
 	LOGMSG("called");
 	//do nothing
@@ -49,37 +82,7 @@ void Sentience::groom(Actor *subject, Actor *target) {
 			subject->name,
 			target->name );
 }
-bool Sentience::checkAction(ActionContext inputContext) {
-	// checks to see if a given action can be performed successfully
-	// if the action CANNOT be performed, it will trigger the correct feedback
-	// 	including action conversions (?)
-	// and return false
-	// otherwise, it handles whatever preliminary feedback should occur
-	// and returns true
-	bool successFlag = true; // assume an action is valid until it isn't
-	// only actions which require any preliminary checking will be listed
-	// thus, the default case handles everything else
-	int xTarget = 0;
-	int yTarget = 0;
-	switch (inputContext.currAction) {
-		default:
-			// ie WAIT,
-			// do nothing
-			break;
-		case Sentience::Action::MOVE:
-			// is the target tile obstructed?
-			// get the absolute coords of the target tile
-			xTarget = engine.player->xpos + inputContext.echs;
-			yTarget = engine.player->ypos + inputContext.whye;
-			LOGMSG("player wants to move to " << xTarget << ", " << yTarget);
-			if (engine.map->isObstructed(xTarget, yTarget)) {
-				inputContext.setSuccess(false);
-			}
-			break;
-	}
-	return successFlag;
-}
-// Player Sentience -- command interpreter, context handlers, etc
+// **** PLAYER Sentience
 PlayerSentience::PlayerSentience() {
 	context = new ActionContext();
 }
@@ -356,7 +359,8 @@ Actor *PlayerSentience::chooseFromInventory(Actor *subject) {
 	return NULL;
 }
 */
-// NPC Sentience -- AI routines, context handlers, etc
+// **** ANIMAL Sentience
+// **** utilities
 AnimalSentience::AnimalSentience() {
 	context = new ActionContext();
 }
@@ -391,7 +395,7 @@ bool AnimalSentience::update(Actor *subject) {
 		B. Builds a stack of verb-contexts that it then tries to compare with
 		C. At each turn, it compares the verb-context on top with its state
 	   */
-
+	
 
 
 	// ***** OLD AD-HOC BEHAVIOR
@@ -477,6 +481,75 @@ bool AnimalSentience::update(ActionContext context) {
 	LOGMSG(" called by ActionContext context");
 	return false;
 }
+// **** machine fxns
+// **** emotions
+Sentience::Emotion AnimalSentience::EmotionMachine::strongestFeeling() {
+	// returns strongest emotion among the feelings[]
+	// start with JOY and compare each to the next, keeping the larger
+	Emotion biggestFeel = Sentience::Emotion::JOY;
+	int howMuchFeel = intensity[(uint)Sentience::Emotion::JOY];
+	for (uint index = 0; index != 8; index++) {
+		if (howMuchFeel < intensity[index]) {
+			biggestFeel = (Emotion)index;
+			howMuchFeel = intensity[index];
+		}
+	}
+	return biggestFeel;
+}
+void AnimalSentience::EmotionMachine::changeEmotion(Sentience::Emotion feeling, int delta) {
+	// changes the intensity of a specified emotion by the delta
+	int feelIndex = (int)feeling;
+	intensity[feelIndex] += delta;
+	if (intensity[feelIndex] < 0) { // did an emotion go into a negative score?
+		delta = (-1) * intensity[feelIndex]; // get the abs val of the difference
+		intensity[feelIndex] = 0; // cap the feeling at 0
+		if (feelIndex <= 3) { // in the range of 0-3
+			feelIndex += 4; // add 4 to get the opposing emotion
+		} else { // >= 4
+			feelIndex -= 4; // rmv 4 to get the opposing emotion
+		}
+		intensity[feelIndex] += delta; // raise the opposing emotion by the diff
+	}
+	// cap all emotion intensities at 255 for arbitrary reasons
+	if (intensity[feelIndex] > 255) {
+		intensity[feelIndex] = 255;
+	}
+}
+void AnimalSentience::EmotionMachine::emotionDecay(int decayRate) {
+	// iterates across the feelings, reducing each by decayRate (default -1)
+	// the three highest feelings will not decay beyond 30/20/10 respectively
+	// figure out which feelings are strongest right now
+	uint firstFeel = (uint)Sentience::Emotion::JOY;
+	uint secondFeel = (uint)Sentience::Emotion::TRUST;
+	uint thirdFeel = (uint)Sentience::Emotion::FEAR;
+	uint feelIndex = 0;
+	for (feelIndex = 0; feelIndex < 8; feelIndex++) {
+		if (intensity[feelIndex] >= intensity[firstFeel]) {
+			firstFeel = feelIndex;
+		} else if (intensity[feelIndex] >= intensity[secondFeel]) {
+			secondFeel = feelIndex;
+		} else if (intensity[feelIndex] >= intensity[thirdFeel]) {
+			thirdFeel = feelIndex;
+		}
+	}
+	// iterate again and perform the decay adjustment
+	for (feelIndex = 0; feelIndex < 8; feelIndex++) {
+		intensity[feelIndex] -= decayRate;
+	}
+	// perform adjustments towards minima thresholds
+	if (intensity[firstFeel] < firstLevel) intensity[firstFeel] = firstLevel;
+	if (intensity[secondFeel] < secondLevel) intensity[secondFeel] = secondLevel;
+	if (intensity[thirdFeel] < thirdLevel) intensity[thirdFeel] = thirdLevel;
+}
+// **** goals
+Sentience::Objective AnimalSentience::GoalMachine::firstPriority() {
+	// returns the most important goal, after assessing its objective graph
+	return (Sentience::Objective)0; // FIXME
+}
+void AnimalSentience::GoalMachine::changeWeight(Objective row, Objective col, int delta) {
+	// changes a weight in the objective graph at row, col by delta
+}
+// **** decision-making tools
 bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety) {
 	// FIX: the movement code does NOT prevent actors from occupying the same
 	// tile as the player!
@@ -529,71 +602,7 @@ bool AnimalSentience::decideMoveAttack(Actor *subject, int targetx, int targety)
 //	LOGMSG(subject->name << " deducted 100 AP");
 	return true;
 }
-Sentience::Emotion AnimalSentience::EmotionMachine::strongestFeeling() {
-	// returns strongest emotion among the feelings[]
-	// start with JOY and compare each to the next, keeping the larger
-	Emotion biggestFeel = Sentience::Emotion::JOY;
-	int howMuchFeel = intensity[(uint)Sentience::Emotion::JOY];
-	for (uint index = 0; index != 8; index++) {
-		if (howMuchFeel < intensity[index]) {
-			biggestFeel = (Emotion)index;
-			howMuchFeel = intensity[index];
-		}
-	}
-	return biggestFeel;
-}
-void AnimalSentience::EmotionMachine::changeEmotion(Sentience::Emotion feeling, int delta) {
-	// changes the intensity of a specified emotion by the delta
-	// FIXME: this lacks any upper bound error correction!
-	int feelIndex = (int)feeling;
-	intensity[feelIndex] += delta;
-	if (intensity[feelIndex] < 0) { // did an emotion go into a negative score?
-		delta = (-1) * intensity[feelIndex]; // get the abs val of the difference
-		intensity[feelIndex] = 0; // cap the feeling at 0
-		if (feelIndex <= 3) { // in the range of 0-3
-			feelIndex += 4; // add 4 to get the opposing emotion
-		} else { // >= 4
-			feelIndex -= 4; // rmv 4 to get the opposing emotion
-		}
-		intensity[feelIndex] += delta; // raise the opposing emotion by the diff
-	}
-}
-void AnimalSentience::EmotionMachine::emotionDecay(int decayRate) {
-	// iterates across the feelings, reducing each by decayRate (default -1)
-	// the three highest feelings will not decay beyond 30/20/10 respectively
-	// figure out which feelings are strongest right now
-	uint firstFeel = (uint)Sentience::Emotion::JOY;
-	uint secondFeel = (uint)Sentience::Emotion::TRUST;
-	uint thirdFeel = (uint)Sentience::Emotion::FEAR;
-	uint feelIndex = 0;
-	for (feelIndex = 0; feelIndex < 8; feelIndex++) {
-		if (intensity[feelIndex] >= intensity[firstFeel]) {
-			firstFeel = feelIndex;
-		} else if (intensity[feelIndex] >= intensity[secondFeel]) {
-			secondFeel = feelIndex;
-		} else if (intensity[feelIndex] >= intensity[thirdFeel]) {
-			thirdFeel = feelIndex;
-		}
-	}
-	// iterate again and perform the decay adjustment
-	for (feelIndex = 0; feelIndex < 8; feelIndex++) {
-		intensity[feelIndex] -= decayRate;
-	}
-	// perform adjustments towards minima thresholds
-	if (intensity[firstFeel] < firstLevel) intensity[firstFeel] = firstLevel;
-	if (intensity[secondFeel] < secondLevel) intensity[secondFeel] = secondLevel;
-	if (intensity[thirdFeel] < thirdLevel) intensity[thirdFeel] = thirdLevel;
-}
-Sentience::Objective AnimalSentience::GoalMachine::firstPriority() {
-	// returns the most important goal, after assessing its objective graph
-	return (Sentience::Objective)0;
-}
-void AnimalSentience::GoalMachine::changeWeight(Objective row, Objective col, int delta) {
-	// changes a weight in the objective graph at row, col by delta
-}
-
-// *************
-// ActionContext -- general container for action context resolution
+// **** ActionContext -- general container for action context resolution
 ActionContext::ActionContext():
 	currAction(Sentience::Action::IDLE),
 	prevAction(Sentience::Action::IDLE),

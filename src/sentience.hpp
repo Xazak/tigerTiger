@@ -47,6 +47,8 @@ class Sentience {
 			WIELD,	// 29: player wants to use a weapon for attack purposes
 			INVENTORY // 30: player wants to see what they're carrying
 		};
+		// is it worth enumerating/tracking combinations of emotions somehow?
+		// might be useful when it comes to the emotion-goal interactions...
 		enum class Emotion : uint {
 			JOY,
 			TRUST,
