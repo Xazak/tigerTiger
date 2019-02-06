@@ -5,8 +5,6 @@ DESC Implementation of main game loop and assoc. functions
  */
 #include "main.hpp"
 
-typedef unsigned int uint;
-
 CmdInterpreter parser; // create a command parser
 GameEngine engine(80, 50); // init game engine with window size
 

@@ -144,6 +144,7 @@ class AnimalSentience: public Sentience {
 			int thirdLevel = 10;
 		} heart;
 		struct GoalMachine {
+			void assessPriorities(); // checks state and assigns goal priority
 			Objective firstPriority(); // returns most important goal
 			void changeWeight(Objective row, Objective col, int delta);
 			uint priority[5][5]; // the adjacency matrix for the weighted graph
