@@ -76,7 +76,11 @@ bool Actor::update() {
 	if (sentience) {
 		stateChange = sentience->update(this);
 	}
-	// or perhaps an item?
+	// or perhaps an item? (ie invoking a tool)
+	// if they have health and therefore satiety, cycle it and do bookkeeping
+	if (vitality) {
+//		this->vitality->metabolize();
+	}
 	return stateChange;
 }
 void Actor::render() const {

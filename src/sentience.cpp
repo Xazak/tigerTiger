@@ -48,6 +48,54 @@ bool Sentience::checkAction(ActionContext inputContext) {
 	}
 	return successFlag;
 }
+// **** diagnostics
+/* compare strength
+   check thirst
+   check hunger
+   check shelter
+   check sleep
+   check health
+   */
+int Sentience::compareStrength(Actor *first, Actor *second) {
+	// if *second is not provided, defaults to self (calling actor)
+	// returns a value indicating the relative difference in power level
+	// between the two Actors, given the following:
+	// PRECONDITIONS
+	// -- the two actors are both visible (cannot target an unseen actor)
+	// a negative value indicates advantage to the first; positive values
+	// indicate an advantage to the second
+	return 0;
+}
+uint Sentience::checkThirst(Actor *subject) {
+	// returns a percentage value indicating water need:
+	// 0 means "not thirsty at all", 100 means "dying of thirst"
+	if (!subject->vitality) { // if the actor doesn't have vitality...
+		return 0; // then the actor is never thirsty
+	}
+	return subject->vitality->getCurrentThirst();
+}
+uint Sentience::checkHunger(Actor *subject) {
+	// returns a percentage value indicating food need:
+	// 0 means "not hungry at all", 100 means "dying of hunger"
+	if (!subject->vitality) { // if the actor doesn't have vitality...
+		return 0; // then the actor is never hungry
+	}
+	return subject->vitality->getCurrentSatiety();
+}
+/*uint Sentience::checkShelter(Actor *subject) {
+	return 0;
+}*/
+uint Sentience::checkSleep(Actor *subject) {
+	// returns a percentage value indicating sleep need:
+	// 0 means "not tired at all", 100 means "narcoleptic"
+	if (!subject->vitality) { // if the actor doesn't have vitality...
+		return 0; // then the actor is never sleepy
+	}
+	return subject->vitality->getCurrentSleep();
+}
+/*uint Sentience::checkHealth(Actor *subject) {
+	return 0;
+}*/
 // **** universal verbs
 void Sentience::wait(Actor *subject, int numOfTurns) {
 	LOGMSG("called");

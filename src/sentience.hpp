@@ -74,6 +74,14 @@ class Sentience {
 //		virtual int getCheapestActionCost() = 0;
 		// GENERAL ACTIONS
 		bool checkAction(ActionContext inputContext); // aka BEFORE some action
+		// diagnostics
+		int compareStrength(Actor *first, Actor *second);
+		uint checkThirst(Actor *subject);
+		uint checkHunger(Actor *subject);
+		uint checkShelter(Actor *subject);
+		uint checkSleep(Actor *subject);
+		uint checkHealth(Actor *subject);
+		// general verbs
 		void wait(Actor *subject, int numOfTurns = 1);
 		void moveRel(Actor *subject, int targetx, int targety); // RELATIVE COORDS
 		void moveAbs(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS

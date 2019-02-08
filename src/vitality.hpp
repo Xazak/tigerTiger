@@ -5,15 +5,17 @@ DESC Definitions of the baseline statistics carried by every creature.
  */
 class Vitality {
 	public:
-
-		// con/destructors?
+		// con/destructors
+		Vitality();
+//		~Vitality();
 		void save(TCODZip &fileBuffer);
 		void load(TCODZip &fileBuffer);
 		// derived statistics
 		uint getLeapDistance();
 		uint getSprintSpeed();
 		// tools
-		void burnCalories(); // called at end of each player action
+		void metabolize(); // general bookkeeping function
+		void burnCalories(); // deducts calories according to (some) rate
 		void gainEnergy(uint calories); // called when player eats food
 		// sets/gets
 		void setFerocity(uint newValue) { this->ferocity = newValue; }
@@ -26,8 +28,12 @@ class Vitality {
 		uint getQuiescence() { return this->quiescence; }
 		void setPerception(uint newValue) { this->perception = newValue; }
 		uint getPerception() { return this->perception; }
-		void setSatiety(uint newValue) { this->satiety = newValue; }
-		uint getSatiety() { return this->satiety; }
+		void setCurrentSatiety(uint newValue) { this->currSatiety = newValue; }
+		uint getCurrentSatiety() { return this->currSatiety; }
+		void setCurrentThirst(uint newValue) { this->currThirst = newValue; }
+		uint getCurrentThirst() { return this->currThirst; }
+		void setCurrentSleep(uint newValue) { this->currSleep = newValue; }
+		uint getCurrentSleep() { return this->currSleep; }
 
 	protected:
 		uint ferocity; // burst-strength and power, damage rating
@@ -35,7 +41,13 @@ class Vitality {
 		uint swiftness; // speed, manual dexterity
 		uint quiescence; // stillness, stealthiness
 		uint perception; // acuity of sight and mind, wisdom
-		uint satiety; // high = well-fed, low = starving
+		uint tailLength;
+		uint currSatiety; // high = well-fed, low = starving
+		uint maxSatiety;
+		uint currThirst; // high = quenched, low = thirsty
+		uint maxThirst;
+		uint currSleep; // high = awake, low = narcoleptic
+		uint maxSleep;
 };
 class PlayerVitality: public Vitality {
 	public:
