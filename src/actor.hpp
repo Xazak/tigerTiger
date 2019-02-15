@@ -29,4 +29,9 @@ class Actor {
 		ActorClock *tempo; // ptr to AP system
 		Container *container; // ptr to actor's inventory
 		Portable *portable; // ptr to allow this actor to be picked up
+
+		// *** INSTANTIATION/SPAWN TOOLS
+		// **** LOOK IN CREATURES.CPP FOR THESE FXNS
+		void spawnCreature(std::string type, int x, int y);
+		void newLangurMonkey(int x, int y);
 };

@@ -20,6 +20,10 @@ class GameEngine {
 		void term(); // stops the game engine
 		void update(); // processes game state updates
 		void render(); // invokes lower-level render requests
+		// *** ACTOR INSTANTIATION
+		void spawnCreature(int x, int y);
+		void createLangurMonkey(int x, int y);
+		void spawnItem(std::string type, int x, int y);
 		// *** MINOR FXNS
 		void mainMenu();
 		void saveToFile();

@@ -215,6 +215,28 @@ void GameEngine::render() {
 	}
 	gui->blitToScreen();
 }
+// *** ACTOR INSTANTIATION
+void GameEngine::spawnCreature(int x, int y) {
+	// generates a creature of the matching type at x, y
+	// eventually these explicit calls will be replaced with a dictionary
+	createLangurMonkey(x, y);
+	LOGMSG("New monkey created at " << x << ", " << y);
+}
+void GameEngine::createLangurMonkey(int x, int y) {
+	// creates a langur monkey, the debug mascot, at the given coords
+	Actor *monkey = new Actor(x, y, 'm', TCODColor::lightGrey, "langur monkey");
+	monkey->sentience = new AnimalSentience();
+	monkey->mortality = new Mortality(5, 0, "monkey corpse");
+	monkey->container = new Container(1);
+	monkey->tempo = new ActorClock(100);
+	map->setOccupant(x, y, monkey);
+	allActors.push(monkey);
+}
+// *** ITEM INSTANTIATION
+// need another item generator that puts directly to a container
+void spawnItem(std::string type, int x, int y) {
+	// generates an item of the matching type at x, y
+}
 // *** MINOR FUNCTIONS
 void GameEngine::mainMenu() {
 	engine.gui->menu.clear(); // wipe the menu prior to rebuilding it

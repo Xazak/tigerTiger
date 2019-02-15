@@ -354,13 +354,7 @@ void GameMap::generateTestMap(bool isNew, int width, int height) {
 }
 void GameMap::addAnimal(int x, int y) {
 	// spawns an animal at the specified x,y coords
-	Actor *monkey = new Actor(x, y, 'm', TCODColor::sepia, "monkey");
-	monkey->sentience = new AnimalSentience();
-	monkey->mortality = new Mortality(5, 0, "monkey corpse");
-	monkey->container = new Container(1);
-	monkey->tempo = new ActorClock(100);
-	setOccupant(x, y, monkey);
-	engine.allActors.push(monkey);
+	engine.spawnCreature(x, y);
 //	LOGMSG("New animal created at " << x << ", " << y);
 }
 void GameMap::addBush(int x, int y) {

@@ -13,6 +13,9 @@ struct CoordinatePair {
 };
 
 // **** HEADERS
+#include <iostream>
+#include <string>
+#include <assert.h>
 #include "libtcod.hpp"
 class Actor; // this is a forward declaration
 // other implementation files go here
@@ -28,8 +31,6 @@ class Actor; // this is a forward declaration
 #include "map.hpp"
 #include "parser.hpp"
 #include "engine.hpp"
-#include <iostream>
-#include <assert.h>
 
 // *** DEBUG TOOLS AND DEFINITIONS ***
 // Enable debugging macros; comment out to remove

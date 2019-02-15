@@ -76,7 +76,7 @@ void CmdInterpreter::translate() {
 	// debug commands will be trapped here; don't expect them to be normal...
 	switch (lastKey.c) {
 		case 'm':	// spawn a monkey
-			engine.map->addAnimal((engine.player->xpos - 5), (engine.player->ypos - 5));
+			engine.spawnCreature((engine.player->xpos - 5), (engine.player->ypos - 5));
 			break;
 		default:
 			break;
