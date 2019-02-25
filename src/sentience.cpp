@@ -40,7 +40,7 @@ bool Sentience::checkAction(ActionContext inputContext) {
 			// get the absolute coords of the target tile
 			xTarget = engine.player->xpos + inputContext.echs;
 			yTarget = engine.player->ypos + inputContext.whye;
-			LOGMSG("player wants to move to " << xTarget << ", " << yTarget);
+//			LOGMSG("player wants to move to " << xTarget << ", " << yTarget);
 			if (engine.map->isObstructed(xTarget, yTarget)) {
 				inputContext.setSuccess(false);
 			}
@@ -443,8 +443,6 @@ bool AnimalSentience::update(Actor *subject) {
 		B. Builds a stack of verb-contexts that it then tries to compare with
 		C. At each turn, it compares the verb-context on top with its state
 	   */
-	
-
 
 	// ***** OLD AD-HOC BEHAVIOR
 	// this is some really rough ad-hoc stuff for testing simple AI features

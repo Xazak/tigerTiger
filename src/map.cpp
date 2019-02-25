@@ -326,6 +326,7 @@ void GameMap::generateTestMap(bool isNew, int width, int height) {
 	// establish a range for x, y coords
 	modWidth = width / 3;
 	modHeight = height / 3;
+	int chance = 0;
 	// obtain shrubberies
 	for (echs = 0; echs < modWidth; echs++) {
 		for (whye = 0; whye < modHeight; whye++) {
@@ -345,7 +346,9 @@ void GameMap::generateTestMap(bool isNew, int width, int height) {
 			} else { // ~1
 				result = 1.0f;
 			}
-			if (result == 1.0f) addBush(echs, whye);
+			// only place a bush 1/5 of the time
+			chance = engine.rng->get(1, 5);
+			if (chance == 5 && result == 1.0f) addBush(echs, whye);
 		}
 	}
 
@@ -410,7 +413,7 @@ void GameMap::dig (int x1, int y1, int x2, int y2) {
 			target->terrain = Tile::TerraType::GRASS;
 			target->glyph = 32;
 			target->foreColor = TCODColor::darkerGreen;
-			target->backColor = TCODColor::darkestGreen;
+			target->backColor = TCODColor::darkerSepia;
 			visionMap->setProperties(tilex, tiley, true, true);
 		}
 	}

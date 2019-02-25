@@ -44,9 +44,13 @@ void Menu::addItem(MenuItemCode code, const char *label) {
 }
 Menu::MenuItemCode Menu::pick() {
 //	static TCODImage img("menu_background1.png"); // main menu background image
+	// draws the menu on the screen and allows the player to choose an item
 	int selectedItem = 0;
 	while (!TCODConsole::isWindowClosed()) {
 //		img.blit2x(TCODConsole::root, 0, 0); // blit the bkgrnd img on screen
+		TCODConsole::root->setDefaultBackground(TCODColor::black);
+		TCODConsole::root->rect(8, 8, 20, 20, true, TCOD_BKGND_SET);
+		TCODConsole::root->printFrame(8, 8, 20, 20, true);
 		int currentItem = 0;
 		// we're going to let the menu blit to the root console for now
 		for (MenuItem **iter = menuListItems.begin();
@@ -60,6 +64,7 @@ Menu::MenuItemCode Menu::pick() {
 				TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
 			}
 			TCODConsole::root->printf(10, 10 + currentItem * 3, (*iter)->label);
+			TCODConsole::root->setDefaultForeground(TCODColor::lightGrey);
 			currentItem++;
 		}
 		TCODConsole::flush(); //?

@@ -140,7 +140,7 @@ void CmdInterpreter::translate() {
 			// get the absolute coords of the target tile
 			xTarget = engine.player->xpos + playerContext->echs;
 			yTarget = engine.player->ypos + playerContext->whye;
-			LOGMSG("player is moving to " << xTarget << ", " << yTarget);
+//			LOGMSG("player is moving to " << xTarget << ", " << yTarget);
 			if (engine.map->isObstructed(xTarget, yTarget)) {
 				if (engine.map->isWall(xTarget, yTarget)) {
 					engine.gui->message(TCODColor::white, "You cannot see a way past!");

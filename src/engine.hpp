@@ -23,7 +23,7 @@ class GameEngine {
 		// *** ACTOR INSTANTIATION
 		void spawnCreature(int x, int y);
 		void createLangurMonkey(int x, int y);
-		void spawnItem(std::string type, int x, int y);
+		void createBushFruit(int x, int y);
 		// *** MINOR FXNS
 		void mainMenu();
 		void saveToFile();

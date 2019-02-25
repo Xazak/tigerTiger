@@ -232,6 +232,14 @@ void GameEngine::createLangurMonkey(int x, int y) {
 	map->setOccupant(x, y, monkey);
 	allActors.push(monkey);
 }
+void GameEngine::createBushFruit(int x, int y) {
+	// creates a bush fruit at the specified coordinates
+	Actor *fruit = new Actor(0, 0, '%', TCODColor::lime, "fruit");
+	// must be able to pick up the fruit
+	fruit->portable = new Portable();
+	// must be able to eat the fruit (and regain health/nutrition)
+//	fruit->edible = new Edible();
+}
 // *** ITEM INSTANTIATION
 // need another item generator that puts directly to a container
 void spawnItem(std::string type, int x, int y) {
@@ -240,9 +248,11 @@ void spawnItem(std::string type, int x, int y) {
 // *** MINOR FUNCTIONS
 void GameEngine::mainMenu() {
 	engine.gui->menu.clear(); // wipe the menu prior to rebuilding it
+	// add "Return to Game" if there's a game running
 	if (currMode != STARTUP) {
 		engine.gui->menu.addItem(Menu::NONE, "Return to Game");
 	}
+	// always let the player start a new game
 	engine.gui->menu.addItem(Menu::NEW_GAME, "New Game");
 	// add "Continue" if the game just started up AND there's a game to load
 	if (currMode == STARTUP && TCODSystem::fileExists("game.sav") ) {
