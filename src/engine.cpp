@@ -238,7 +238,7 @@ void GameEngine::createBushFruit(int x, int y) {
 	// must be able to pick up the fruit
 	fruit->portable = new Portable();
 	// must be able to eat the fruit (and regain health/nutrition)
-//	fruit->edible = new Edible();
+	fruit->edible = new Consumable(10);
 }
 // *** ITEM INSTANTIATION
 // need another item generator that puts directly to a container

@@ -19,9 +19,9 @@ class Actor {
 		int sigil; // code number for actor's map sigil
 			// NOTE: numeric value is used here instead of a string so that we
 			// can invoke extended symbols in the ASCII standard
+		TCODColor color; // sigil color
 		const char *name; // actor's name
 		bool obstructs; // true = cannot be moved through
-		TCODColor color; // sigil color
 		Sentience *sentience; // ptr to AI subroutines
 		Vitality *vitality; // ptr to core stats and skill check bonuses
 		Mortality *mortality; // ptr to HP & death subroutines
@@ -29,6 +29,7 @@ class Actor {
 		ActorClock *tempo; // ptr to AP system
 		Container *container; // ptr to actor's inventory
 		Portable *portable; // ptr to allow this actor to be picked up
+		Consumable *edible; // ptr to allow this actor to be eaten by another
 
 		// *** INSTANTIATION/SPAWN TOOLS
 		// **** LOOK IN CREATURES.CPP FOR THESE FXNS

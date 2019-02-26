@@ -7,7 +7,7 @@ struct Tile {
 	enum ProtoType { WALL, FLOOR, TRANSITION } proto;
 	enum BiomeType { MOUNTAIN, GRASSLAND, RAINFOREST, MANGROVE, FARMLAND, CAVE } biome;
 	enum TerraType { BEDROCK, GRASS, DIRT, MUD, WATER, GRAVEL, ROCK, BRUSH, BUILDING } terrain;
-	int  glyph;		// contains the ASCII code for the symbol to allow addressing of extended chars
+	int  glyph; // contains the ASCII code for the symbol to allow addressing of extended chars
 	TCODColor foreColor;
 	TCODColor backColor;
 	/* Obstruction and Obfuscation are handled by the isWalkable() and
@@ -17,10 +17,10 @@ struct Tile {
 	 *    TCODMap::setProperties
 	 *    (int x, int y, bool isTransparent, bool isWalkable)
 	 */
-	bool explored;	// has the player seen this tile?
+	bool explored; // has the player seen this tile?
 	Actor *occupant; // pointer to the actor occupying this tile
 //	Scent *scentTrail; // pointer to scent information
-//	Item *itemList;	// pointer to tile's contents
+	Actor *itemList; // pointer to tile's contents
 	Tile();
 //	~Tile();
 };

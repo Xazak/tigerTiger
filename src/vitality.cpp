@@ -7,6 +7,30 @@ DESC This file implements the baseline statistics carried by every creature.
 #include "main.hpp"
 #include <math.h>
 
+// **** CONSUMABLE
+Consumable::Consumable(uint inputCalories):
+	caloricValue(inputCalories)
+	{
+
+	}
+uint Consumable::ingest() {
+	// returns the caloric value and removes the consumable/deducts a portion
+	// effects that occur due to ingesting the item should activate here
+	return caloricValue;
+}
+
+void Consumable::save(TCODZip &fileBuffer) {
+	// save to file
+	LOGMSG("called");
+	fileBuffer.putInt(caloricValue);
+}
+void Consumable::load(TCODZip &fileBuffer) {
+	// load from file
+	LOGMSG("called");
+	caloricValue = fileBuffer.getInt();
+}
+
+// **** VITALITY
 Vitality::Vitality() :
 	ferocity(5), tenacity(5), swiftness(5),
 	quiescence(5), perception(5), tailLength(30),
@@ -53,4 +77,9 @@ void Vitality::metabolize() {
 	// check new hunger/sleep level and change AP regen rate if needed
 	// deduct baseline thirst from water level
 	// deduct additional thirst to replenish blood vol up to maximum
+}
+//void Vitality::burnCalories();
+void Vitality::gainEnergy(uint calories) {
+	// adds the ingested calories to the actor's satiety meter
+	currSatiety += calories;
 }

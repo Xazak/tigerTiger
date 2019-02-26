@@ -3,6 +3,21 @@ DATE Nov 09 2018
 AUTH xazak
 DESC Definitions of the baseline statistics carried by every creature.
  */
+class Consumable {
+	// defines the Consumable type, for use with anything that a creature might
+	// ingest over the course of the game, including potions and food both
+	public:
+		Consumable(uint inputCalories = 0);
+//		~Consumable();
+
+		uint ingest(); // returns the caloric value and consumes the item
+		void save(TCODZip &fileBuffer); // save to file
+		void load(TCODZip &fileBuffer); // load from file
+		void setCaloricValue(int newValue) { caloricValue = newValue; }
+		uint getCaloricValue() { return caloricValue; }
+	private:
+		uint caloricValue; // how much is this worth in Kcal? (note: 0 is valid!)
+};
 class Vitality {
 	public:
 		// con/destructors

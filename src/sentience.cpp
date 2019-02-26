@@ -119,8 +119,24 @@ void Sentience::moveAbs(Actor *subject, int targetx, int targety) { // ABSOLUTE 
 	// passing over to moveRel(), such that the obstruction checks, etc can be
 	// reused/stratified into a single location, in case they are changed later
 }
-//void Sentience::drop(Actor *subject, Actor *target);
-//void Sentience::consume(Actor *subject, Actor *target); // change to only allow consumable actors?
+void Sentience::take(Actor *subject) {
+	// picks up an object lying at the subject's feet
+	
+}
+void Sentience::drop(Actor *subject, Actor *target) {
+	// drops the target item from the subject's inventory to the ground
+
+}
+void Sentience::consume(Actor *subject, Actor *target) {
+	// subject eats the consumable target
+	// this will fail silently if the target is not consumable!
+	if (!target->edible) {
+		// do nothing;
+		return;
+	} else {
+		subject->vitality->gainEnergy(target->edible->ingest());
+	}
+}
 //void Sentience::grab(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
 //void Sentience::toggleSit(Actor *subject);
 //void Sentience::rubOn(Actor *subject, Actor *target); // includes all general scent deposit verbs
@@ -663,6 +679,7 @@ void ActionContext::save(TCODZip &fileBuffer) {
 	fileBuffer.putInt((int)successFlag);
 	fileBuffer.putInt(target != nullptr);
 //	if (target) fileBuffer.putInt(???); // i need a permanent identifier!
+//	would saving the Actor pointer address work?
 	fileBuffer.putInt(echs);
 	fileBuffer.putInt(whye);
 	fileBuffer.putInt(zhee);

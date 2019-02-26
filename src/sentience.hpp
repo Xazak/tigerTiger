@@ -85,7 +85,8 @@ class Sentience {
 		void wait(Actor *subject, int numOfTurns = 1);
 		void moveRel(Actor *subject, int targetx, int targety); // RELATIVE COORDS
 		void moveAbs(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
-		void drop(Actor *subject, Actor *target);
+		void take(Actor *subject); // pick up an item from the ground
+		void drop(Actor *subject, Actor *target); // drop an item from the inventory
 		void consume(Actor *subject, Actor *target); // change to only allow consumable actors?
 		void grab(Actor *subject, int targetx, int targety); // ABSOLUTE COORDS
 		void toggleSit(Actor *subject);

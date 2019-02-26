@@ -19,9 +19,9 @@ struct CoordinatePair {
 #include "libtcod.hpp"
 class Actor; // this is a forward declaration
 // other implementation files go here
+#include "vitality.hpp"
 #include "sentience.hpp"
 #include "chrono.hpp"
-#include "vitality.hpp"
 #include "mortality.hpp"
 //#include "violent.hpp"
 #include "portable.hpp"

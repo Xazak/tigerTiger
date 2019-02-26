@@ -10,13 +10,13 @@ DESC Implementation of Actor class and associated subclasses
 Actor::Actor(int inputX, int inputY, int sigil, const TCODColor &color,
 	const char *newName):
 	xpos(inputX), ypos(inputY),
-	sigil(sigil),
-	obstructs(true), color(color),
+	sigil(sigil), color(color),
+	obstructs(true),
 	sentience(nullptr), vitality(nullptr), mortality(nullptr), //violent(nullptr),
-	tempo(nullptr),	container(nullptr), portable(nullptr)
+	tempo(nullptr),	container(nullptr), portable(nullptr), edible(nullptr)
 	{//		LOGMSG("Created " << name << " at " << xpos << ", " << ypos);	
 		if (newName == nullptr) {
-			name = "nobody";
+			name = strdup("nobody");
 		} else {
 			name = strdup(newName);
 		}
@@ -49,6 +49,8 @@ Actor::Actor(TCODZip &fileBuffer, bool isPlayer) {
 	LOGMSG("canContain: " << canContain);
 	bool isPortable = fileBuffer.getInt();
 	LOGMSG("isPortable: " << isPortable);
+	bool isEdible = fileBuffer.getInt();
+	LOGMSG("isEdible: " << isEdible);
 	// is there an attacker module?
 //	if (canAttack) attacker = new Attacker(fileBuffer);
 	if (canThink) {
@@ -64,6 +66,7 @@ Actor::Actor(TCODZip &fileBuffer, bool isPlayer) {
 	if (canMove) tempo = new ActorClock(fileBuffer);
 	if (canContain) container = new Container(fileBuffer);
 	if (isPortable) portable = new Portable();
+	if (isEdible) edible = new Consumable();
 }
 Actor::~Actor() {
 	// destructor
@@ -159,6 +162,10 @@ void Actor::save(TCODZip &fileBuffer) {
 	LOGMSG("saving portable: " << (portable != nullptr));
 	fileBuffer.putInt(portable != nullptr);
 	// portable does not require persistence
+
+	LOGMSG("saving edible: " << (edible != nullptr));
+	fileBuffer.putInt(edible != nullptr);
+	if (edible) edible->save(fileBuffer);
 	
 //	LOGMSG("saving attacker: " << (attacker != nullptr));
 //	fileBuffer.putInt(attacker != NULL);
@@ -225,5 +232,11 @@ void Actor::load(TCODZip &fileBuffer, bool isPlayer) {
 	if (hasPortable) {
 		portable = new Portable();
 		// does not have any data to load
+	}
+	bool hasEdible = fileBuffer.getInt();
+	LOGMSG("edible: " << hasEdible);
+	if (hasEdible) {
+		edible = new Consumable(0);
+		edible->load(fileBuffer);
 	}
 }
